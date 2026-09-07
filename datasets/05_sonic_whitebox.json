@@ -1,0 +1,44 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "SONIC-SW-01",
+      "hwsku": "Dell-EMC-S5248f-P-25G",
+      "platform": "x86_64-dell_s5248f_c3538-r0",
+      "mac": "52:54:00:12:34:56",
+      "type": "ToRRouter",
+      "docker_routing_config_mode": "unified"
+    }
+  },
+  "AAA": {
+    "authentication": {
+      "login": "local",
+      "fallback": "true"
+    }
+  },
+  "SSH": {
+    "PORT": {
+      "22": {
+        "authentication_retries": "10",
+        "root_login": "yes"
+      }
+    }
+  },
+  "MGMT_INTERFACE": {
+    "eth0|10.0.50.1/24": {
+      "gwaddr": "10.0.50.254"
+    }
+  },
+  "NTP": {
+    "global": {
+      "vrf": "mgmt"
+    }
+  },
+  "SYSLOG": {
+    "REMOTE_SERVER": {
+      "10.0.100.50": {
+        "remote_port": "514",
+        "severity": "notice"
+      }
+    }
+  }
+}

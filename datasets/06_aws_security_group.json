@@ -1,0 +1,41 @@
+{
+  "Description": "Production Web & Management Security Group Baseline",
+  "GroupName": "sg-production-perimeter",
+  "IpPermissions": [
+    {
+      "FromPort": 22,
+      "IpProtocol": "tcp",
+      "IpRanges": [
+        {
+          "CidrIp": "0.0.0.0/0",
+          "Description": "CRITICAL: Open SSH to Internet"
+        }
+      ],
+      "ToPort": 22
+    },
+    {
+      "FromPort": 3389,
+      "IpProtocol": "tcp",
+      "IpRanges": [
+        {
+          "CidrIp": "0.0.0.0/0",
+          "Description": "CRITICAL: Open RDP to Internet"
+        }
+      ],
+      "ToPort": 3389
+    },
+    {
+      "FromPort": 443,
+      "IpProtocol": "tcp",
+      "IpRanges": [
+        {
+          "CidrIp": "0.0.0.0/0",
+          "Description": "Public HTTPS Web Access"
+        }
+      ],
+      "ToPort": 443
+    }
+  ],
+  "OwnerId": "123456789012",
+  "GroupId": "sg-0a8b9c1d2e3f4a5b6"
+}

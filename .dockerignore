@@ -1,0 +1,11 @@
+.git
+.gitignore
+.idea
+.pytest_cache
+node_modules
+__pycache__
+*.pyc
+*.log
+.next
+.env
+sentinel_verification_sheet.pdf
