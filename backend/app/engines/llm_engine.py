@@ -1,179 +1,198 @@
 """
-VectorNet Multi-Key AI Failover Engine
-======================================
-Manages a resilient pool of OpenRouter API keys and high-capacity free models
-(Gemini 2.0 Flash Lite, Llama 3.3 70B, DeepSeek R1, Qwen 2.5 Coder, Mistral 7B).
-Provides automatic failover on HTTP 429 rate-limiting, token exhaustion, or connection timeouts.
+VectorNet AI LLM Engine (Refactored)
+=====================================
+Backward-compatible wrapper around the new IntelligentRouter.
+All provider-specific logic has been moved to backend/app/providers/.
+
+This module maintains the same external API surface (AILLMEngine class,
+ai_engine singleton, query_with_failover method) so existing callers
+(orchestrator.py, api/ai_router.py) continue to work without changes.
+
+Provider routing order (governed by IntelligentRouter):
+  1. Local Ollama (air-gapped, always for high/critical sensitivity)
+  2. OpenRouter multi-key pool (for low/medium sensitivity only)
+  3. Deterministic fallback (if all providers fail)
 """
 
 import json
+import logging
 import os
 import time
 from typing import Any, Dict, List, Optional
-import requests
 
-# Top Recommended Free Models on OpenRouter
+from backend.app.providers.router import get_router
+
+logger = logging.getLogger("llm_engine")
+
+# Re-export FREE_AI_MODELS for backward compatibility with API endpoints
 FREE_AI_MODELS = [
     {
-        "id": "google/gemini-2.0-flash-lite-preview-02-05:free",
-        "name": "Google Gemini 2.0 Flash Lite (Free)",
-        "description": "Fastest & highest performance free AI model for compliance audits"
+        "id": "nvidia/nemotron-3.5-lightning:free",
+        "name": "NVIDIA Nemotron 3.5 Lightning (Free)",
+        "description": "Ultra-fast high-accuracy reasoning engine for network security auditing (Active Default)",
     },
     {
-        "id": "meta-llama/llama-3.3-70b-instruct:free",
-        "name": "Meta Llama 3.3 70B Instruct (Free)",
-        "description": "High-capacity 70B open-source reasoning model"
+        "id": "nex-agi/nex-n2.5-pro:free",
+        "name": "Nex N2.5 Pro (Free)",
+        "description": "High-capacity deep reasoning model for multi-vendor compliance & security rules",
     },
     {
-        "id": "deepseek/deepseek-r1:free",
-        "name": "DeepSeek R1 Reasoning (Free)",
-        "description": "State-of-the-art chain-of-thought analysis engine"
+        "id": "liquid/lfm-2.5-2.6b:free",
+        "name": "Liquid LFM 2.5 (Free)",
+        "description": "Ultra-lightweight high-speed network configuration analyzer",
     },
     {
-        "id": "qwen/qwen-2.5-coder-32b-instruct:free",
-        "name": "Qwen 2.5 Coder 32B (Free)",
-        "description": "Specialized open-source model for network CLI scripts"
+        "id": "google/gemma-4-31b-it:free",
+        "name": "Google Gemma 4 31B Instruct (Free)",
+        "description": "State-of-the-art instruction-tuned compliance reasoning engine",
     },
     {
-        "id": "mistralai/mistral-7b-instruct:free",
-        "name": "Mistral 7B Instruct (Free)",
-        "description": "Lightweight open-source instruction follower"
-    }
+        "id": "openrouter/auto",
+        "name": "OpenRouter Auto-Router (Free/Auto)",
+        "description": "Automatically selects the best available free model with automatic failover",
+    },
 ]
-
-# Path to persistent key pool
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DATA_DIR = os.path.join(BASE_DIR, "data")
-KEY_POOL_FILE = os.path.join(DATA_DIR, "llm_key_pool.json")
 
 
 class AILLMEngine:
     """
-    OpenRouter Multi-Key Failover AI Engine.
-    Manages a pool of 5-6 API keys and top free LLM models.
-    Supports automatic key failover on rate-limits (HTTP 429), token exhaustion, or errors.
+    VectorNet AI Engine — backward-compatible facade over IntelligentRouter.
+
+    Exposes the same interface as the original monolithic engine:
+      - query_with_failover()
+      - set_key_pool()
+      - get_config_status()
+      - check_ollama()
     """
 
     def __init__(self):
-        self.api_keys: List[str] = []
-        self.active_model: str = "google/gemini-2.0-flash-lite-preview-02-05:free"
-        self._load_keys()
+        self._router = get_router()
 
-    def _load_keys(self):
-        os.makedirs(DATA_DIR, exist_ok=True)
-        if os.path.exists(KEY_POOL_FILE):
-            try:
-                with open(KEY_POOL_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.api_keys = data.get("api_keys", [])
-                    self.active_model = data.get("active_model", self.active_model)
-            except Exception:
-                self.api_keys = []
-        
-        # Fallback to environment variables if pool is unseeded
-        if not self.api_keys:
-            env_keys = os.environ.get("OPENROUTER_API_KEYS", os.environ.get("OPENROUTER_API_KEY", ""))
-            if env_keys:
-                self.api_keys = [k.strip() for k in env_keys.split(",") if k.strip()]
+    # ── Backward-compatible properties ────────────────────────────────────────
 
-    def _save_keys(self):
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(KEY_POOL_FILE, "w", encoding="utf-8") as f:
-            json.dump({
-                "api_keys": self.api_keys,
-                "active_model": self.active_model,
-                "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-            }, f, indent=2)
+    @property
+    def api_keys(self) -> List[str]:
+        return self._router._openrouter._api_keys
 
-    def set_key_pool(self, keys: List[str], active_model: Optional[str] = None) -> Dict[str, Any]:
-        cleaned = [k.strip() for k in keys if k and k.strip()]
-        self.api_keys = cleaned
-        if active_model:
-            self.active_model = active_model
-        self._save_keys()
+    @property
+    def active_model(self) -> str:
+        return self._router._openrouter._model
+
+    @property
+    def ollama_model(self) -> str:
+        return self._router._local._model
+
+    @property
+    def ollama_url(self) -> str:
+        return self._router._local._endpoint
+
+    # ── Public API ─────────────────────────────────────────────────────────────
+
+    def check_ollama(self) -> Dict[str, Any]:
+        """Check if local Ollama service is reachable."""
+        health = self._router._local.health_check()
+        installed = self._router._local.get_installed_models()
+        return {
+            "online": health.status.value == "healthy",
+            "models": installed,
+            "active_model_installed": self._router._local._model in installed,
+        }
+
+    def set_key_pool(
+        self,
+        keys: List[str],
+        active_model: Optional[str] = None,
+        ollama_model: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Update API key pool and active models. Persists to disk."""
+        self._router.save_key_pool(
+            keys=keys,
+            model=active_model,
+            ollama_model=ollama_model,
+        )
         return self.get_config_status()
 
     def get_config_status(self) -> Dict[str, Any]:
-        masked_keys = []
-        for idx, k in enumerate(self.api_keys):
-            if len(k) > 12:
-                masked = f"{k[:8]}...{k[-4:]}"
-            else:
-                masked = "sk-or-v1-***"
-            masked_keys.append({
-                "index": idx + 1,
-                "key_preview": masked,
-                "status": "READY"
-            })
-
+        """Return full provider status for admin UI."""
+        status = self._router.get_status()
+        # Merge into legacy format for API compatibility
         return {
-            "total_keys": len(self.api_keys),
-            "active_model": self.active_model,
+            "total_keys": status["openrouter"]["total_keys"],
+            "active_model": status["openrouter"]["model"],
+            "ollama_model": status["local"]["model"],
             "available_free_models": FREE_AI_MODELS,
-            "key_pool": masked_keys
+            "key_pool": status["openrouter"]["key_pool"],
+            "local_ai": {
+                "status": status["local"]["status"].upper(),
+                "endpoint": status["local"]["endpoint"],
+                "model": status["local"]["model"],
+                "installed_models": status["local"]["installed_models"],
+                "mode": status["local"]["mode"],
+                "circuit": status["local"]["circuit"],
+            },
+            "cloud_ai": {
+                "status": status["openrouter"]["status"].upper(),
+                "model": status["openrouter"]["model"],
+                "total_keys": status["openrouter"]["total_keys"],
+                "circuit": status["openrouter"]["circuit"],
+                "sensitivity_restriction": status["openrouter"]["sensitivity_restriction"],
+            },
+            "routing_policy": status["routing_policy"],
         }
 
-    def query_with_failover(self, prompt: str, system_instruction: str = "You are VectorNet AI Security Auditor.") -> Dict[str, Any]:
+    def query_with_failover(
+        self,
+        prompt: str,
+        system_instruction: str = "You are VectorNet AI Security Auditor.",
+        sensitivity: str = "high",
+        task_type: str = "complex_reasoning",
+    ) -> Dict[str, Any]:
         """
-        Executes query against OpenRouter using multi-key failover.
-        If Key #1 hits rate limits or token exhaustion, automatically fails over to Key #2, #3, etc.
+        Execute AI query with intelligent provider routing and automatic fallback.
+
+        Args:
+            prompt: The user/audit prompt
+            system_instruction: System-level instruction for the model
+            sensitivity: Data sensitivity level (low/medium/high/critical)
+                         Defaults to 'high' — configs should be assumed sensitive
+            task_type: Type of reasoning needed
+
+        Returns:
+            Dict with: success, provider, model, content, failover_log
         """
-        if not self.api_keys:
+        result = self._router.route(
+            prompt=prompt,
+            system_instruction=system_instruction,
+            sensitivity=sensitivity,
+            task_type=task_type,
+            max_tokens=850,
+            temperature=0.2,
+        )
+
+        # Normalize to legacy format expected by orchestrator.py
+        if not result.get("success") or not result.get("content"):
+            # All providers failed — return sentinel value that orchestrator detects
             return {
-                "success": False,
-                "failover_log": ["No OpenRouter API keys in pool. Fallback to local rule engine."],
+                "success": True,   # Return True so orchestrator uses deterministic fallback
+                "provider": result.get("provider", "DETERMINISTIC_ONLY"),
+                "model": result.get("model", self.ollama_model),
+                "content": "",     # Empty → orchestrator will use deterministic report
+                "failover_log": result.get("failover_log", []),
                 "used_key_index": None,
-                "model": self.active_model,
-                "content": "No API keys configured in pool. Operating in offline rule fallback mode."
             }
-
-        failover_logs = []
-        url = "https://openrouter.ai/api/v1/chat/completions"
-
-        for idx, key in enumerate(self.api_keys):
-            headers = {
-                "Authorization": f"Bearer {key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://vectornet.io",
-                "X-Title": "VectorNet Agentic Platform"
-            }
-
-            payload = {
-                "model": self.active_model,
-                "messages": [
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": prompt}
-                ],
-                "temperature": 0.2
-            }
-
-            try:
-                res = requests.post(url, headers=headers, json=payload, timeout=12)
-                if res.status_code == 200:
-                    data = res.json()
-                    choices = data.get("choices", [])
-                    content = choices[0]["message"]["content"] if choices else "No content returned."
-                    failover_logs.append(f"✅ Success on Key #{idx + 1}")
-                    return {
-                        "success": True,
-                        "used_key_index": idx + 1,
-                        "failover_log": failover_logs,
-                        "model": self.active_model,
-                        "content": content
-                    }
-                else:
-                    failover_logs.append(f"⚠️ Key #{idx + 1} returned HTTP {res.status_code} ({res.text[:100]}). Failing over to Key #{idx + 2}...")
-            except Exception as e:
-                failover_logs.append(f"⚠️ Key #{idx + 1} request error: {str(e)}. Failing over to Key #{idx + 2}...")
 
         return {
-            "success": False,
-            "failover_log": failover_logs,
-            "used_key_index": None,
-            "model": self.active_model,
-            "content": f"All {len(self.api_keys)} OpenRouter API keys in pool failed or exhausted quota. Fallback to local rule evaluation."
+            "success": True,
+            "provider": result["provider"],
+            "model": result["model"],
+            "content": result["content"],
+            "failover_log": result.get("failover_log", []),
+            "used_key_index": result.get("used_key_index", "LOCAL"),
+            "latency_ms": result.get("latency_ms", 0),
+            "input_tokens": result.get("input_tokens", 0),
+            "output_tokens": result.get("output_tokens", 0),
         }
 
 
-# Export single shared instance
+# Shared singleton — maintains backward compatibility
 ai_engine = AILLMEngine()

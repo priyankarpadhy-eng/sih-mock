@@ -1,4 +1,6 @@
 ---
+skill_id: juniper_junos_syslog_context
+category: syslog_context
 name: juniper-audit
 description: Parse and audit Juniper SRX (Junos) structured-data syslog logs (RT_FLOW, RT_IDS, RT_IDP, RT_UTM, RT_AAMW, RT_SECINTEL)
 ---

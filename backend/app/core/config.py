@@ -20,7 +20,10 @@ class Settings:
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
     
-    # AI OpenRouter Settings
+    # AI Local & Cloud Settings
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen3:4b")
+    PREFER_LOCAL_AI: bool = os.getenv("PREFER_LOCAL_AI", "true").lower() == "true"
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
     DEFAULT_AI_MODEL: str = os.getenv("DEFAULT_AI_MODEL", "google/gemini-2.0-flash-lite-preview-02-05:free")
     

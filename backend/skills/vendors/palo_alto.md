@@ -1,7 +1,10 @@
 ---
+skill_id: paloalto_syslog_context
 name: paloalto-audit
 description: Parse and audit Palo Alto Networks PAN-OS firewall logs (CSV syslog, CEF, or LEEF)
+category: syslog_context
 ---
+
 
 # Palo Alto Networks (PAN-OS) Log Audit Skill
 

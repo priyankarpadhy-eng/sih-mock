@@ -296,8 +296,8 @@ export default function AppContainer() {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('DEV-CSCO-01');
   const [assets, setAssets] = useState<any[]>(DEFAULT_ASSETS);
   const [logs, setLogs] = useState<any[]>(DEFAULT_LOGS);
-  const [rawConfig, setRawConfig] = useState<string>(SAMPLE_PRESETS.cisco_ios.raw);
-  const [detectedVendor, setDetectedVendor] = useState<string>("Cisco Systems (IOS / IOS-XE)");
+  const [rawConfig, setRawConfig] = useState<string>("");
+  const [detectedVendor, setDetectedVendor] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [auditResult, setAuditResult] = useState<any>(null);
 
@@ -312,14 +312,20 @@ export default function AppContainer() {
     }
   };
 
-  const runLocalEvaluation = (cfg: string) => {
-    const isCucme = cfg.toLowerCase().includes("cucme") || cfg.toLowerCase().includes("telephony-service");
-    const isCisco = cfg.toLowerCase().includes("cisco") || cfg.toLowerCase().includes("line vty") || cfg.toLowerCase().includes("enable secret") || isCucme;
-    const isJuniper = cfg.toLowerCase().includes("junos") || cfg.toLowerCase().includes("set system");
-    const isPalo = cfg.toLowerCase().includes("deviceconfig") || cfg.toLowerCase().includes("pan-os");
-    const isForti = cfg.toLowerCase().includes("fortigate") || cfg.toLowerCase().includes("admintimeout");
-    const isSonic = cfg.toLowerCase().includes("sonic") || cfg.toLowerCase().includes("device_metadata") || cfg.toLowerCase().includes("hwsku");
-    const isAws = cfg.toLowerCase().includes("security_group") || cfg.toLowerCase().includes("ip_permissions");
+  const detectVendorLocally = (cfg: string) => {
+    if (!cfg || !cfg.trim()) {
+      setDetectedVendor("");
+      return;
+    }
+    const cfgL = cfg.toLowerCase();
+    const isCucme = cfgL.includes("cucme") || cfgL.includes("telephony-service");
+    const isCisco = cfgL.includes("cisco") || cfgL.includes("line vty") || cfgL.includes("enable secret") || isCucme;
+    const isJuniper = cfgL.includes("junos") || cfgL.includes("set system") || cfgL.includes("set interfaces");
+    const isPalo = cfgL.includes("deviceconfig") || cfgL.includes("pan-os");
+    const isForti = cfgL.includes("fortigate") || cfgL.includes("admintimeout") || cfgL.includes("config system") || cfgL.includes("allowaccess") || cfgL.includes("fg-");
+    const isHuawei = cfgL.includes("sysname") || cfgL.includes("vrp") || cfgL.includes("display current-configuration");
+    const isSonic = cfgL.includes("sonic") || cfgL.includes("device_metadata") || cfgL.includes("hwsku");
+    const isAws = cfgL.includes("security_group") || cfgL.includes("ip_permissions");
 
     let vendor = "Generic Network Device";
     if (isCucme) vendor = "Cisco Systems (IOS 15.1 CUCME)";
@@ -327,169 +333,34 @@ export default function AppContainer() {
     else if (isJuniper) vendor = "Juniper Networks (JunOS)";
     else if (isPalo) vendor = "Palo Alto Networks (PAN-OS)";
     else if (isForti) vendor = "Fortinet (FortiOS)";
+    else if (isHuawei) vendor = "Huawei (VRP)";
     else if (isSonic) vendor = "Sonic Foundation (SONiC OS)";
     else if (isAws) vendor = "Amazon Web Services (AWS SG)";
 
     setDetectedVendor(vendor);
-
-    const execTimeoutOk = cfg.toLowerCase().includes("exec-timeout 10") || cfg.toLowerCase().includes("idle-timeout 10") || cfg.toLowerCase().includes("admintimeout 10");
-    const sha256Ok = cfg.toLowerCase().includes("algorithm-type sha256") || cfg.toLowerCase().includes("secret 9") || cfg.toLowerCase().includes("sha256");
-    const noTelnetHttpOk = (cfg.toLowerCase().includes("telnet disable") || cfg.toLowerCase().includes("no transport input telnet") || cfg.toLowerCase().includes("disable-telnet yes")) && !cfg.toLowerCase().includes("transport input telnet ssh");
-    const sshv2Ok = cfg.toLowerCase().includes("ssh version 2") || cfg.toLowerCase().includes("protocol-version v2");
-    const snmpv3Ok = cfg.toLowerCase().includes("snmp v3") || cfg.toLowerCase().includes("version v3") || cfg.toLowerCase().includes("delete 1");
-    const bannerOk = cfg.toLowerCase().includes("banner") || cfg.toLowerCase().includes("message");
-    const syslogOk = cfg.toLowerCase().includes("syslog") || cfg.toLowerCase().includes("logging host");
-
-    const findings = [
-      {
-        rule_id: "NIST-AC-12",
-        framework: "NIST SP 800-53 (Rev 5)",
-        control_ref: "AC-2 & AC-12",
-        title: "Session Idle Timeout",
-        description: "Exec session timeout must be explicitly set to <= 600 seconds.",
-        severity: "HIGH",
-        status: execTimeoutOk ? "PASS" : "FAIL",
-        observed_value: execTimeoutOk ? "600 seconds" : "Unlimited / Unset",
-        required_value: "<= 600 seconds",
-        remediation_cli: {
-          target_vendor: vendor,
-          rule_id: "NIST-AC-12",
-          remediation_cli: isCisco ? "line vty 0 15\n exec-timeout 10 0\nexit" : isJuniper ? "set system login idle-timeout 10" : "set deviceconfig system idle-timeout 10"
-        }
-      },
-      {
-        rule_id: "NIST-IA-5",
-        framework: "NIST SP 800-53 (Rev 5)",
-        control_ref: "IA-5(1)",
-        title: "Password Hashing",
-        description: "Enforces SHA-256 password hashing algorithm.",
-        severity: "CRITICAL",
-        status: sha256Ok ? "PASS" : "FAIL",
-        observed_value: sha256Ok ? "SHA256" : "MD5 / Plaintext",
-        required_value: "SHA256 / SHA512",
-        remediation_cli: {
-          target_vendor: vendor,
-          rule_id: "NIST-IA-5",
-          remediation_cli: isCisco ? "enable algorithm-type sha256 secret <SECURE_PASSWORD>\nservice password-encryption" : "set system root-authentication plain-text-password-sha256"
-        }
-      },
-      {
-        rule_id: "NIST-SC-8",
-        framework: "NIST SP 800-53 (Rev 5)",
-        control_ref: "SC-8",
-        title: "Cleartext Protocol Elimination",
-        description: "Telnet and HTTP management interfaces must be disabled.",
-        severity: "CRITICAL",
-        status: noTelnetHttpOk ? "PASS" : "FAIL",
-        observed_value: noTelnetHttpOk ? "Telnet: DISABLED, HTTP: DISABLED" : "Telnet: ENABLED (Log evidence: TELNET-3-CONN_ESTABLISHED)",
-        required_value: "Telnet: DISABLED, HTTP: DISABLED",
-        remediation_cli: {
-          target_vendor: vendor,
-          rule_id: "NIST-SC-8",
-          remediation_cli: isCisco ? "no ip http server\nline vty 0 15\n transport input ssh\nexit" : "set system services telnet disable"
-        }
-      },
-      {
-        rule_id: "CIS-1.1",
-        framework: "CIS Benchmarks",
-        control_ref: "Section 1.1",
-        title: "SSH v2 Mandatory Protocol",
-        description: "Requires Secure Shell version 2 protocol.",
-        severity: "HIGH",
-        status: sshv2Ok ? "PASS" : "FAIL",
-        observed_value: sshv2Ok ? "SSH Version 2" : "SSH Version 1 (Log evidence: SSH2_LOGON_UNAUTH)",
-        required_value: "SSH Enabled (Version 2)",
-        remediation_cli: {
-          target_vendor: vendor,
-          rule_id: "CIS-1.1",
-          remediation_cli: isCisco ? "ip domain-name local.net\ncrypto key generate rsa modulus 2048\nip ssh version 2" : "set system services ssh protocol-version v2"
-        }
-      },
-      {
-        rule_id: "CIS-2.2",
-        framework: "CIS Benchmarks",
-        control_ref: "Section 2.2",
-        title: "SNMP v3 Encryption",
-        description: "Enforces SNMPv3 auth/priv encryption and purges default community strings.",
-        severity: "HIGH",
-        status: snmpv3Ok ? "PASS" : "FAIL",
-        observed_value: snmpv3Ok ? "Version: V3, Default String: CLEARED" : "Version: V1/V2c (Log evidence: SNMP-4-UNENCRYPTED_QUERY)",
-        required_value: "SNMPv3 (Default String Cleared)",
-        remediation_cli: {
-          target_vendor: vendor,
-          rule_id: "CIS-2.2",
-          remediation_cli: isCisco ? "no snmp-server community public\nno snmp-server community private\nsnmp-server group SECGROUP v3 auth privacy" : "delete snmp community public"
-        }
-      },
-      {
-        rule_id: "STIG-NET-002",
-        framework: "DISA STIGs",
-        control_ref: "Rule STIG-NET-002",
-        title: "Warning Login Banner",
-        description: "Displays legal notice login banner warning prior to logon.",
-        severity: "MEDIUM",
-        status: bannerOk ? "PASS" : "FAIL",
-        observed_value: bannerOk ? "CONFIGURED" : "MISSING",
-        required_value: "CONFIGURED",
-        remediation_cli: {
-          target_vendor: vendor,
-          rule_id: "STIG-NET-002",
-          remediation_cli: "banner motd ^C\nRESTRICTED NETWORK - AUTHORIZED PERSONNEL ONLY\n^C"
-        }
-      },
-      {
-        rule_id: "ISO-27001-A12",
-        framework: "ISO/IEC 27001",
-        control_ref: "Annex A.12.4.1",
-        title: "Centralized Remote Logging",
-        description: "Forwards system logs to remote centralized syslog server.",
-        severity: "HIGH",
-        status: syslogOk ? "PASS" : "FAIL",
-        observed_value: syslogOk ? "SYSLOG FORWARDING ACTIVE" : "LOCAL ONLY / UNCONFIGURED",
-        required_value: "CENTRALIZED SYSLOG ACTIVE",
-        remediation_cli: {
-          target_vendor: vendor,
-          rule_id: "ISO-27001-A12",
-          remediation_cli: "logging host 10.0.100.50\nlogging trap informational"
-        }
-      }
-    ];
-
-    const passed = findings.filter(f => f.status === 'PASS').length;
-    const score = Math.round((passed / findings.length) * 100);
-    const hostnameMatch = cfg.match(/(?:hostname|host-name)\s+["']?([\w.-]+)["']?/i);
-    const hostname = hostnameMatch ? hostnameMatch[1] : "TAC-NODE-01";
-
-    setAuditResult({
-      total_checks: findings.length,
-      passed_checks: passed,
-      failed_checks: findings.length - passed,
-      warning_checks: 0,
-      compliance_score: score,
-      findings: findings,
-      sbm: {
-        device_metadata: { hostname, vendor }
-      }
-    });
   };
 
-  const handleEvaluate = async () => {
+  const handleEvaluate = async (cfgToEvaluate?: string) => {
+    const targetConfig = cfgToEvaluate || rawConfig;
+    if (!targetConfig.trim()) return;
+
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/verify', {
+      const response = await fetch('http://localhost:8000/api/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ device_id: selectedDeviceId, raw_config: rawConfig }),
+        body: new URLSearchParams({ raw_config: targetConfig }),
       });
       if (response.ok) {
         const data = await response.json();
         setAuditResult(data);
-        setDetectedVendor(data.sbm.device_metadata.vendor);
-      } else {
-        runLocalEvaluation(rawConfig);
+        if (data.sbm?.device_metadata?.vendor) {
+          setDetectedVendor(data.sbm.device_metadata.vendor);
+        }
+        return data;
       }
-    } catch {
-      runLocalEvaluation(rawConfig);
+    } catch (err) {
+      console.error("Evaluation error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -500,7 +371,7 @@ export default function AppContainer() {
       const sample = SAMPLE_PRESETS[key];
       setRawConfig(sample.raw);
       setDetectedVendor(sample.vendor);
-      runLocalEvaluation(sample.raw);
+      handleEvaluate(sample.raw);
     }
   };
 
@@ -536,7 +407,7 @@ export default function AppContainer() {
       .then(data => setLogs(data))
       .catch(() => {});
 
-    runLocalEvaluation(rawConfig);
+    detectVendorLocally(rawConfig);
   }, []);
 
   const hostname = auditResult?.sbm?.device_metadata?.hostname || "TAC-NODE-01";
@@ -573,17 +444,26 @@ export default function AppContainer() {
           />
         )}
 
-        {activeTab === 'ingestion' && (
+        {(activeTab === 'ingestion' || activeTab === 'auditor') && (
           <IngestionPage
             rawConfig={rawConfig}
             onConfigChange={(newCfg) => {
               setRawConfig(newCfg);
-              runLocalEvaluation(newCfg);
+              detectVendorLocally(newCfg);
+              if (newCfg.trim()) {
+                handleEvaluate(newCfg);
+              } else {
+                setAuditResult(null);
+              }
             }}
             detectedVendor={detectedVendor}
             onEvaluate={handleEvaluate}
             onNavigate={setActiveTab}
             onLoadPreset={handleLoadSample}
+            isLoading={isLoading}
+            auditResult={auditResult}
+            complianceScore={complianceScore}
+            hostname={hostname}
           />
         )}
 
@@ -619,22 +499,6 @@ export default function AppContainer() {
             onSelectDevice={setSelectedDeviceId}
             onNavigate={setActiveTab}
             onVerifyAndAudit={handleEvaluate}
-          />
-        )}
-
-        {activeTab === 'auditor' && (
-          <AuditorPage
-            rawConfig={rawConfig}
-            onConfigChange={(newCfg) => {
-              setRawConfig(newCfg);
-              runLocalEvaluation(newCfg);
-            }}
-            detectedVendor={detectedVendor}
-            onEvaluate={handleEvaluate}
-            onLoadSample={handleLoadSample}
-            isLoading={isLoading}
-            auditResult={auditResult}
-            onNavigate={setActiveTab}
           />
         )}
 

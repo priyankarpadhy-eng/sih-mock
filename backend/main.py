@@ -50,7 +50,7 @@ def health_check():
         "ai_key_pool_count": len(ai_engine.api_keys),
         "active_ai_model": ai_engine.active_model,
         "firestore_mode": firestore_store.mode,
-        "benchmark_device": "Cisco CUCME (VoIP Gateway Gold Standard)"
+        "engine_type": "Multi-Vendor Universal Compliance & Auditing Engine"
     }
 
 # Mount Modular Routers

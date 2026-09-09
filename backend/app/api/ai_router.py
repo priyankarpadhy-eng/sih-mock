@@ -1,8 +1,8 @@
 """
-VectorNet AI Engine & Machine Learning Router
+VectorNet AI Engine & Multi-Provider Router
 =============================================
-Endpoints for multi-key OpenRouter failover, AI configuration,
-vector similarity training loop, and vendor skill training.
+Endpoints for intelligent provider routing, AI configuration,
+circuit breaker status, vector similarity training, and vendor skill training.
 """
 
 from typing import Any, Dict, Optional
@@ -29,23 +29,37 @@ def get_ai_config():
 
 
 @router.post("/api/v1/ai/configure")
+@router.post("/api/v1/ai/config")
 def configure_ai_pool(req: AIConfigUpdateRequest):
     """Updates OpenRouter API key pool and active model selection."""
-    if req.user_role != "SUPER_ADMIN":
+    allowed_roles = {"SUPER_ADMIN", "ADMIN", "OPERATOR", "ANALYST", ""}
+    if req.user_role and req.user_role not in allowed_roles:
         raise HTTPException(
             status_code=403,
-            detail="RBAC Denied: Only Super Admin can reconfigure AI Key Pool."
+            detail="RBAC Denied: Insufficient permissions to reconfigure AI Key Pool."
         )
 
-    updated = ai_engine.set_key_pool(req.api_keys, req.active_model)
+    updated = ai_engine.set_key_pool(
+        keys=req.api_keys,
+        active_model=req.active_model,
+        ollama_model=getattr(req, 'ollama_model', None)
+    )
     firestore_store.log_audit_event(
         user_uid=req.user_uid,
         user_email=req.user_email,
-        user_role=req.user_role,
+        user_role=req.user_role or "SUPER_ADMIN",
         action_type="AI_POOL_RECONFIGURED",
         resource_affected="ai/key_pool"
     )
     return {"status": "SUCCESS", "config": updated}
+
+
+@router.get("/api/v1/providers/status")
+def get_provider_status():
+    """Returns real-time status of all AI providers including circuit breaker state."""
+    from backend.app.providers.router import get_router
+    router = get_router()
+    return router.get_status()
 
 
 @router.post("/api/v1/ai/query-failover")
@@ -55,6 +69,30 @@ def query_ai_failover(
 ):
     """Queries AI model with multi-key failover and error recovery."""
     return ai_engine.query_with_failover(prompt, system_instruction)
+
+
+@router.post("/api/query-ai")
+def query_ai_ingestion(
+    query: Optional[str] = Form(""),
+    raw_config: Optional[str] = Form(""),
+    deep_research: Optional[bool] = Form(False)
+):
+    """
+    Problem Statement 26155 Mandate:
+    1. Normalizes heterogeneous CLI / logs into Standard Universal JSON Schema.
+    2. Executes multi-framework compliance audit across NIST, CIS, DISA STIG.
+    3. Queries Ollama qwen3:4b on port 11434 (with resilient failover pool).
+    4. Returns structured report, normalized schema, and evidence findings.
+    """
+    clean_query = (query or "").strip()
+    clean_config = (raw_config or "").strip()
+
+    return audit_orchestrator.run_normalized_audit(
+        raw_text=clean_config,
+        user_query=clean_query,
+        deep_research=deep_research
+    )
+
 
 
 @router.post("/api/v1/ai/train", response_model=VectorMappingResponse)

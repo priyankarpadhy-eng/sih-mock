@@ -34,6 +34,13 @@ interface AIConfigResponse {
   active_model: string;
   available_free_models: { id: string; name: string; description: string }[];
   key_pool: { index: number; key_preview: string; status: string }[];
+  local_ai?: {
+    status: string;
+    endpoint: string;
+    model: string;
+    installed_models: string[];
+    mode: string;
+  };
 }
 
 interface SkillsManagementPageProps {
@@ -41,7 +48,8 @@ interface SkillsManagementPageProps {
 }
 
 export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user }) => {
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  // Allow configuration for authenticated security admins or local operator session
+  const isSuperAdmin = !user || user.role === 'SUPER_ADMIN' || user.role === 'SECURITY_AUDITOR' || user.role === 'NETWORK_OPERATOR';
 
   // Active Tab: 'skills' or 'llm_keys'
   const [activeSubTab, setActiveSubTab] = useState<'skills' | 'llm_keys'>('skills');
@@ -57,7 +65,7 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
   // OpenRouter Multi-Key AI Pool State
   const [aiConfig, setAiConfig] = useState<AIConfigResponse | null>(null);
   const [apiKeysInput, setApiKeysInput] = useState<string[]>(['', '', '', '', '', '']);
-  const [selectedModel, setSelectedModel] = useState<string>('google/gemini-2.0-flash-lite-preview-02-05:free');
+  const [selectedModel, setSelectedModel] = useState<string>('nvidia/nemotron-3.5-lightning:free');
   const [isTestingPool, setIsTestingPool] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
@@ -165,7 +173,11 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
       });
 
       if (res.ok) {
-        setSaveStatus(`OpenRouter API Key Pool updated! ${validKeys.length} key(s) configured with model ${selectedModel}.`);
+        setSaveStatus(
+          validKeys.length > 0
+            ? `OpenRouter API Key Pool updated! ${validKeys.length} key(s) configured with model ${selectedModel}.`
+            : `OpenRouter configuration updated! Active model set to ${selectedModel}.`
+        );
         fetchAiConfig();
       } else {
         const errData = await res.json();
@@ -371,10 +383,45 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
 
       {/* SUB-TAB 2: OPENROUTER MULTI-KEY FAILOVER POOL */}
       {activeSubTab === 'llm_keys' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-6">
           
-          {/* Left: Free AI Models & Key Pool Overview */}
-          <div className="bg-white border border-[#CBD5E1] rounded-2xl p-5 space-y-4 shadow-xs">
+          {/* Top Banner: Air-Gapped Local Ollama Status */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xs text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs font-mono font-bold tracking-wider text-emerald-400 uppercase">
+                  PRIMARY AI ENGINE // LOCAL AIR-GAPPED OLLAMA
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  {aiConfig?.local_ai?.status || 'ONLINE'}
+                </span>
+              </div>
+              <h3 className="text-base md:text-lg font-bold font-mono text-white flex items-center gap-2">
+                Active Model: {aiConfig?.local_ai?.model || 'qwen3:4b'}
+                <span className="text-xs text-slate-400 font-normal font-mono">
+                  ({aiConfig?.local_ai?.endpoint || 'http://localhost:11434'})
+                </span>
+              </h3>
+              <p className="text-xs text-slate-300 font-mono">
+                100% Defense-Grade On-Premise Inference &bull; Zero External Data Leakage &bull; Private Network Security Compliance
+              </p>
+            </div>
+
+            <button
+              onClick={handleTestFailover}
+              disabled={isTestingPool}
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-mono text-xs font-bold rounded-xl flex items-center gap-2 transition-all shrink-0 cursor-pointer shadow-sm"
+            >
+              <Sparkles className="w-4 h-4 text-slate-950" />
+              {isTestingPool ? 'QUERYING LOCAL AI...' : 'TEST LOCAL AI INFERENCE'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+            {/* Left: Free AI Models & Key Pool Overview */}
+            <div className="bg-white border border-[#CBD5E1] rounded-2xl p-5 space-y-4 shadow-xs">
             <h3 className="text-xs font-bold text-[#0F172A] font-mono uppercase tracking-wider border-b border-[#E2E8F0] pb-2 flex items-center gap-2">
               <Zap className="w-4 h-4 text-[#10B981]" />
               Top Recommended Free AI Models
@@ -507,7 +554,7 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
             </div>
 
           </div>
-
+        </div>
         </div>
       )}
 

@@ -1,4 +1,6 @@
 ---
+skill_id: cisco_ios_syslog_context
+category: syslog_context
 name: cisco-audit
 description: Parse and audit Cisco ASA / Firepower syslog messages (%ASA-level-msgid format)
 ---

@@ -1,278 +1,276 @@
-# VECTORNET: AI-Driven Multi-Vendor Network Security Compliance Auditor
+# VECTORNET: AI-Powered Multi-Vendor Network Security Compliance Auditor
 
 <div align="center">
 
-![VectorNet Banner](https://img.shields.io/badge/SIH_2026-PS_26155-blue?style=for-the-badge&logo=shield)
-![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)
+![VectorNet Shield](https://img.shields.io/badge/SIH_2026-Problem_Statement_26155-0A84FF?style=for-the-badge&logo=shield&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Production_Ready-30D158?style=for-the-badge)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black?style=for-the-badge&logo=next.js&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16_+_pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Single_Command_Deploy-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![Multi-Vendor](https://img.shields.io/badge/Vendors-Cisco_%7C_Juniper_%7C_Fortinet_%7C_Palo_Alto_%7C_SONiC-FF9F0A?style=for-the-badge)
+![Security Standards](https://img.shields.io/badge/Benchmarks-CIS_%7C_NIST_800--53_%7C_DISA_STIG_%7C_ISO_27001-BF5AF2?style=for-the-badge)
 
-**Enterprise & Defense-Grade Multi-Vendor Network Configuration Auditing, 5-State Compliance Evaluation, Vector-Based Unknown Syntax Training, and Safe Playbook Remediation.**
+**Read-only, non-intrusive network configuration auditing, deterministic compliance validation, sensitive data protection, multi-provider LLM routing, and role-based remediation task management.**
 
-*Developed for the Smart India Hackathon (SIH 2026) | Problem Statement ID: 26155 (NTRO / NCIIPC)*
+*Developed for Smart India Hackathon (SIH 2026) | Problem Statement ID: 26155 (NTRO / NCIIPC)*
 
 </div>
 
 ---
 
-## 1. Executive Summary & Problem Context
+## 📑 Table of Contents
 
-Modern enterprise and critical national infrastructure (CNI) networks are inherently heterogeneous, running hardware and firmware across dozens of competing vendors (Cisco, Palo Alto Networks, Juniper, Fortinet, Arista, Check Point, SONiC, and Cloud Security Groups). Auditing these configurations against defense-grade frameworks (**NIST SP 800-53 Rev 5, CIS Benchmarks, DISA STIGs, and ISO/IEC 27001**) is traditionally crippled by:
-
-1. **Vendor Syntax Fragmentation**: Incompatible CLI commands, XML schemas, and hierarchical JSON dumps.
-2. **False Confidence from Incomplete Dumps**: Labeling missing `show` commands as "Compliant" instead of flagging missing operational evidence.
-3. **Dangerous Auto-Remediation**: Applying uncontrolled script execution directly to mission-critical routing backbones.
-4. **Static Rule Brittleness**: Every new vendor firmware update breaks hard-coded regex parsers.
-
-**VectorNet solves this with a deterministic, policy-as-code core paired with an agentic vector similarity training loop:**
-- **OSCAL-Aligned Line Spans**: Every audit finding links to 1-indexed line spans in the raw configuration with SHA-256 cryptographic integrity hashes.
-- **5-State Compliance Logic**: Strictly enforces `PASS`, `FAIL`, `WARNING`, `UNKNOWN`, and `NOT_APPLICABLE` (never marks unobserved sections as passed).
-- **Proposal-Only Safe Remediation**: Dual-action CLI playbooks paired with prerequisite validation commands and atomic rollback sequences.
-- **Dynamic AI Training Workbench**: Translates unmapped proprietary CLI syntax into canonical `SecurityBaselineModel` schemas using `pgvector` vector similarity.
-- **Air-Gapped / Offline Resilient**: Runs 100% locally with zero external API dependencies required for core auditing and report generation.
+1. [🚀 Step-by-Step Download & Installation Guide](#-step-by-step-download--installation-guide)
+2. [🎯 Problem Statement & Solution Mapping](#-problem-statement--solution-mapping)
+3. [🏗️ High-Level System Architecture](#️-high-level-system-architecture)
+4. [⚡ Core Capabilities & Technical Highlights](#-core-capabilities--technical-highlights)
+5. [🔌 Multi-Vendor Support Matrix](#-multi-vendor-support-matrix)
+6. [📋 Key API Endpoints](#-key-api-endpoints)
+7. [🧪 Running Tests & Verification](#-running-tests--verification)
+8. [🔒 Non-Intrusive Safety & Security Architecture](#-non-intrusive-safety--security-architecture)
 
 ---
 
-## 2. End-to-End System Architecture
+## 🚀 Step-by-Step Download & Installation Guide
 
-```mermaid
-flowchart TB
-    subgraph Ingestion ["1. INGESTION & FINGERPRINTING"]
-        RawDump["Raw Config Dump / Syslog Stream<br/>(Cisco, PAN-OS, Junos, FortiOS, Arista)"] --> VendorDet["Heuristic Vendor & OS Detector"]
-        VendorDet --> ConfigNorm["OSCAL Line-Span Normalizer<br/>(1-Indexed Span Tagging + SHA-256 Hash)"]
-    end
+Follow these simple steps to download and run VectorNet locally on your machine.
 
-    subgraph CoreEngine ["2. DETERMINISTIC COMPLIANCE CORE"]
-        ConfigNorm --> SBM["Canonical Security Baseline Model<br/>(SBM JSON Specification)"]
-        SBM --> RuleEngine["5-State Policy Evaluator Engine"]
-        RuleEngine -->|Audit Matrix| Findings["Audited Findings<br/>(PASS / FAIL / WARNING / UNKNOWN / N/A)"]
-    end
+### 📌 Prerequisites
 
-    subgraph Remediation ["3. SAFETY-FIRST REMEDIATION"]
-        Findings --> RemedGen["Vendor Playbook Generator"]
-        RemedGen --> Playbook["Syntax-Validated CLI Remediation<br/>+ Verification Command<br/>+ Atomic Rollback Sequence"]
-    end
+Ensure you have the following installed on your operating system (Windows, macOS, or Linux):
 
-    subgraph AITraining ["4. AGENTIC TRAINING WORKBENCH"]
-        SBM -->|Unmapped CLI Tokens| VectorStore["pgvector / Cosine Vector Store"]
-        VectorStore --> InteractiveLoop["Zero-Code Interactive Learning Loop"]
-        InteractiveLoop --> SBM
-    end
-
-    subgraph Reporting ["5. DEFENSE REPORTING & RBAC"]
-        Findings --> PDFGen["ReportLab Defense PDF Engine<br/>(Cryptographic Signatures & Scorecards)"]
-        Findings --> UI["Next.js 14 Cyber Command TOC Dashboard"]
-    end
-```
+- **Python**: `3.10` or higher (`python --version`)
+- **Node.js**: `18.x` or `20.x` LTS (`node -v`)
+- **Git**: (`git --version`)
+- *(Optional)* **Docker Desktop**: if you prefer 1-command container execution.
 
 ---
 
-## 3. Core Technical Capabilities
+### Method 1: Local Native Installation (Recommended)
 
-### A. Universal Security Baseline Model (SBM)
-Normalizes disparate network configuration commands into an extensible, vendor-neutral structure:
-- **Authentication & Access**: SSHv2 enforcement, telnet deactivation, HTTP/HTTPS management status, exec-timeout threshold, legal warning banners.
-- **Account Security**: Minimum password length, cryptographic hashing (`sha256` / `scrypt` / `type-9`), default service account disables, MFA flags.
-- **Network & Services**: SNMPv3 encryption, default read community purging, centralized syslog destinations, NTP synchronization servers.
-- **Line-Span Evidence**: Exact `line_start` and `line_end` positions linking each parsed security parameter back to its source configuration.
-
-### B. 5-State Findings Model
-Unlike simplistic binary checkers, VectorNet uses a five-state classification:
-- `PASS`: Configuration line explicitly satisfies the benchmark control.
-- `FAIL`: Configuration line violates the benchmark rule.
-- `WARNING`: Partial match or sub-optimal configuration requiring administrator attention.
-- `UNKNOWN`: Insufficient evidence in the provided dump (requires live show-commands).
-- `NOT_APPLICABLE`: Control does not apply to the identified device category.
-
-### C. Proposal-Only Remediation with Verification & Rollback
-To prevent network outages, no command is executed blindly:
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. Verification Command (Checks current interface state)    │
-│    # show ip interface brief                                │
-├─────────────────────────────────────────────────────────────┤
-│ 2. Remediation Command (Applies hardened configuration)     │
-│    (config)# exec-timeout 10 0                              │
-├─────────────────────────────────────────────────────────────┤
-│ 3. Atomic Rollback Command (Restores previous baseline)     │
-│    (config)# no exec-timeout                                │
-└─────────────────────────────────────────────────────────────┘
+#### Step 1: Clone the Repository
+```bash
+git clone https://github.com/VECTOR-SIH/sih-_2026.git
+cd sih-_2026
 ```
 
-### D. Multi-Vendor Support Matrix
+#### Step 2: Set Up and Start the Python Backend
 
-| Vendor / Platform | CLI Syntax / Model | Auto-Detection | 5-State Audit | CLI Playbook Remediation |
-| :--- | :--- | :---: | :---: | :---: |
-| **Cisco Systems** | IOS, IOS-XE, ASA, CUCME | ✅ Full | ✅ Full | ✅ Full |
-| **Palo Alto Networks** | PAN-OS (Set / XML hierarchy) | ✅ Full | ✅ Full | ✅ Full |
-| **Juniper Networks** | Junos OS (Hierarchical / Set) | ✅ Full | ✅ Full | ✅ Full |
-| **Fortinet** | FortiOS (`config sys / set`) | ✅ Full | ✅ Full | ✅ Full |
-| **Arista Networks** | EOS (CloudVision CLI) | ✅ Full | ✅ Full | ✅ Full |
-| **Cloud Firewalls** | AWS Security Groups / Azure NSG | ✅ Full | ✅ Full | ✅ Full |
-
----
-
-## 4. Quick Start: Single-Command Docker Deployment
-
-The entire stack (**Frontend, Backend, PostgreSQL 16 + pgvector, and Redis**) starts with a single command.
-
-### Prerequisites:
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
-
-### 1-Step Execution:
+Open a terminal in the project root folder:
 
 ```bash
-# Clone the repository
+# 1. Create a Python virtual environment
+python -m venv venv
+
+# 2. Activate the virtual environment
+# On Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+# On Windows (Command Prompt):
+.\venv\Scripts\activate.bat
+# On Linux / macOS:
+source venv/bin/activate
+
+# 3. Install backend dependencies
+pip install -r backend/requirements.txt
+
+# 4. Start the FastAPI backend server
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+> 🟢 **Backend will be live at:** [http://localhost:8000](http://localhost:8000)  
+> 📖 **Interactive Swagger Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+#### Step 3: Set Up and Start the Next.js Frontend
+
+Open a **new terminal window** and navigate to the `frontend` folder:
+
+```bash
+# 1. Enter the frontend directory
+cd frontend
+
+# 2. Install Node dependencies
+npm install
+
+# 3. Start the Next.js development server
+npm run dev
+```
+
+> 🌐 **Open the Web UI in your browser:** [http://localhost:3000](http://localhost:3000)
+
+---
+
+#### Step 4: (Optional) Configure LLM Providers & API Keys
+
+VectorNet features an **offline-first deterministic engine** that works 100% locally without any API keys. If you wish to enable the AI reasoning layer with OpenRouter or Google Gemini:
+
+1. Open the Web UI at [http://localhost:3000](http://localhost:3000).
+2. Click **AI Router & Keys** in the sidebar.
+3. Paste your **OpenRouter API Key** or **Google Gemini API Key** and click **Add Key**.
+4. Select your preferred active model (e.g., `meta-llama/llama-3.3-70b-instruct:free`, `google/gemini-2.0-flash`, etc.).
+5. *Alternatively*, create a `.env` file in the project root:
+   ```env
+   OPENROUTER_API_KEY=your_openrouter_api_key_here
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+---
+
+### Method 2: Single-Command Docker Deployment
+
+If you have Docker Desktop installed, launch the entire stack (Frontend, Backend, and Datastores) with one command:
+
+```bash
+# Clone and enter repo
 git clone https://github.com/VECTOR-SIH/sih-_2026.git
 cd sih-_2026
 
-# Launch all microservices in the background
+# Build and start all services
 docker compose up --build -d
 ```
 
-### Deployed Services:
-
-| Service | Port | Accessible URL | Purpose |
-| :--- | :---: | :--- | :--- |
-| **Frontend UI** | `3000` | [http://localhost:3000](http://localhost:3000) | Next.js Tactical Command Dashboard |
-| **Backend API** | `8000` | [http://localhost:8000](http://localhost:8000) | FastAPI Core Auditor Engine |
-| **Interactive Docs**| `8000` | [http://localhost:8000/docs](http://localhost:8000/docs) | OpenAPI / Swagger Documentation |
-| **PostgreSQL + pgvector** | `5432` | `localhost:5432` | Canonical Vector Similarity Database |
-| **Redis** | `6379` | `localhost:6379` | Message Queue & Real-Time Caching |
-
-### Monitoring & Teardown:
-
+To stop:
 ```bash
-# View real-time aggregated service logs
-docker compose logs -f
-
-# View backend auditor logs specifically
-docker compose logs -f backend
-
-# Stop all services gracefully
 docker compose down
-
-# Stop and wipe persistent volume data (Clean Reset)
-docker compose down -v
 ```
 
 ---
 
-## 5. Manual Local Development (Without Docker)
+## 🎯 Problem Statement & Solution Mapping
 
-If you prefer running services natively on your host machine:
-
-### Prerequisites:
-- Python 3.11+
-- Node.js 18+ and npm
-
-### 1. Backend Service Setup:
-
-```bash
-# Open terminal in project root
-cd sih_mock
-
-# Create and activate virtual environment
-python -m venv venv
-# On Windows:
-.\venv\Scripts\activate
-# On Linux/macOS:
-source venv/bin/activate
-
-# Install dependencies
-pip install -r backend/requirements.txt
-
-# Launch FastAPI server
-uvicorn backend.main:app --reload --port 8000
-```
-Backend will be live at `http://localhost:8000` with interactive Swagger docs at `http://localhost:8000/docs`.
-
-### 2. Frontend Command UI Setup:
-
-```bash
-# Open a second terminal in frontend directory
-cd sih_mock/frontend
-
-# Install node dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-Open `http://localhost:3000` in your web browser.
+| # | Challenge | VectorNet Solution | Technical Mechanism |
+|:---:|:---|:---|:---|
+| **01** | **Multi-Vendor Complexity**<br/>Cisco, Juniper, Fortinet, Palo Alto all use different CLI syntax and data structures. | **Universal Normalization** | Parses disparate CLI configs and logs into a single vendor-neutral JSON Security Baseline Model (SBM). |
+| **02** | **Manual Compliance Auditing**<br/>Manual reviews through CLI/GUI cause delays, high effort, and human error. | **Automated Hybrid Auditing** | Evaluates files against security benchmarks in milliseconds using deterministic rules combined with AI pattern analysis. |
+| **03** | **Configuration Drift**<br/>Inconsistent device posture violates CIS, NIST, DISA STIG, and ISO standards. | **Remediation Guidance & Team Tasking** | Suggests vendor-accurate CLI fix scripts and automatically routes prioritized remediation tickets to responsible engineers. |
+| **04** | **No Real-Time Visibility**<br/>No centralized view of device configuration, compliance status, and remediation progress. | **Centralized Command Hub** | Single dashboard showing fleet compliance scores, risk classifications, audit logs, and downloadable PDF reports. |
 
 ---
 
-## 6. Verification & Automated Testing
+## 🏗️ High-Level System Architecture
 
-VectorNet includes end-to-end unit and workflow tests covering vendor detection, OSCAL normalizer line-spans, 5-state evaluations, report generation, and AI agent failover pools:
+```mermaid
+flowchart TD
+    subgraph Inputs ["1. USER ARTIFACTS (OFFLINE & NON-INTRUSIVE)"]
+        UserConfig["Network Configuration Dump<br/>(Cisco, Juniper, Fortinet, PAN-OS, etc.)"]
+        UserLogs["Syslog / Event Logs<br/>(Physical & Environmental Alerts)"]
+    end
 
-```bash
-# Run complete test suite (from project root)
-python -m pytest backend/ -v
-```
+    subgraph Pass1 ["2. DETERMINISTIC CORE (ZERO-TRUST)"]
+        VendorDetect["Vendor & Model Classifier"]
+        Normalizer["Universal Schema Normalizer<br/>(OSCAL Line Spans + Integrity Hash)"]
+        RuleEngine["Deterministic Compliance Evaluator<br/>(CIS, NIST 800-53, DISA STIG, ISO 27001)"]
+    end
 
-Expected output:
-```
-backend/test_agentic_workflow.py::test_dynamic_skills_loading PASSED
-backend/test_agentic_workflow.py::test_ai_failover_pool PASSED
-backend/test_agentic_workflow.py::test_task_routing_engine PASSED
-backend/test_agentic_workflow.py::test_end_to_end_audit_to_remediation_task PASSED
-backend/test_sentinel.py::test_vendor_detector_cisco PASSED
-backend/test_sentinel.py::test_vendor_detector_juniper PASSED
-backend/test_sentinel.py::test_vendor_detector_palo_alto PASSED
-backend/test_sentinel.py::test_config_normalizer_cisco PASSED
-backend/test_sentinel.py::test_compliance_evaluator_scoring PASSED
-backend/test_sentinel.py::test_remediation_generator PASSED
-backend/test_sentinel.py::test_pdf_report_generator PASSED
-backend/test_sentinel.py::test_vector_store_learning PASSED
-============================== 12 passed in 0.28s ==============================
+    subgraph Pass2 ["3. SENSITIVITY-AWARE AI REASONING"]
+        Classifier["Task & Sensitivity Classifier<br/>(Secret Redaction & Token Budgeting)"]
+        Router["Multi-Provider LLM Router<br/>(OpenRouter / Gemini / Ollama with Auto-Failover)"]
+        Validator["Strict Response Validator<br/>(Prevents Hallucination & Validates Syntax)"]
+    end
+
+    subgraph Output ["4. OPERATIONAL OUTPUTS"]
+        Dashboard["Next.js Command Dashboard"]
+        TaskEngine["RBAC Team Task Board (Kanban)"]
+        PDF["Defense-Grade ReportLab PDF Audit Sheet"]
+    end
+
+    UserConfig --> VendorDetect
+    UserLogs --> VendorDetect
+    VendorDetect --> Normalizer
+    Normalizer --> RuleEngine
+    RuleEngine --> Classifier
+    Classifier --> Router
+    Router --> Validator
+    RuleEngine --> Output
+    Validator --> Output
 ```
 
 ---
 
-## 7. Key REST API Endpoints
+## ⚡ Core Capabilities & Technical Highlights
 
-| Method | Endpoint | Description |
+### 1. Universal Security Baseline Model (SBM)
+Normalizes diverse network CLIs into a vendor-neutral schema covering:
+- **Authentication & Access**: SSH version enforcement, Telnet deactivation, exec-timeout settings, pre-logon warning banners.
+- **Account Security**: Password encryption hashing (Type-7 prohibition, SHA-256/scrypt requirements), default account checks.
+- **Network & Services**: Insecure HTTP disablement, SNMPv3 encryption, removal of default community strings, remote syslog host configuration.
+- **Line-Span Evidence**: Exact 1-indexed line numbers linking every audit finding back to source configuration text.
+
+### 2. Sensitivity-Aware Multi-LLM Routing & Failover
+- **Sensitive Config Protection**: Redacts pre-shared keys, passwords, and private IP ranges before external reasoning.
+- **Context Minimization**: Sends normalized summaries and deterministic findings to LLMs rather than massive raw dumps.
+- **Auto-Failover Pool**: Rotates through API keys and model tiers on rate limits or outages without interrupting audits.
+- **Response Validation**: Validates AI outputs against deterministic ground truth to prevent hallucination.
+
+### 3. Read-Only, Non-Intrusive Operation
+- **Zero Device Modification**: Operates strictly on user-provided configuration text and log files. Never pushes unverified commands to live production equipment.
+- **Remediation Suggestions**: Provides copy-pasteable, vendor-accurate CLI fix scripts for human review and authorization.
+
+### 4. Role-Based Team Tasking (RBAC Kanban)
+- Automatically converts `CRITICAL` and `HIGH` compliance violations into actionable tasks.
+- Supports role-based assignment between **Super Admin**, **Security Auditor**, and **Network Operator**.
+
+---
+
+## 🔌 Multi-Vendor Support Matrix
+
+| Vendor / Platform | CLI Syntax / Model | Auto-Detection | 5-State Audit | Remediation Playbooks |
+| :--- | :--- | :---: | :---: | :---: |
+| **Cisco Systems** | IOS, IOS-XE, ASA, CUCME | ✅ Supported | ✅ Supported | ✅ Supported |
+| **Juniper Networks** | Junos OS (Hierarchical / Set) | ✅ Supported | ✅ Supported | ✅ Supported |
+| **Fortinet** | FortiOS (`config sys / set`) | ✅ Supported | ✅ Supported | ✅ Supported |
+| **Palo Alto Networks** | PAN-OS (Set / XML hierarchy) | ✅ Supported | ✅ Supported | ✅ Supported |
+| **SONiC** | Enterprise Whitebox CLI / JSON | ✅ Supported | ✅ Supported | ✅ Supported |
+| **Cloud Firewalls** | AWS Security Groups / Azure NSG | ✅ Supported | ✅ Supported | ✅ Supported |
+| **Huawei** | VRP CLI Commands | ✅ Supported | ✅ Supported | ✅ Supported |
+
+---
+
+## 📋 Key API Endpoints
+
+| Method | Endpoint | Purpose |
 | :--- | :--- | :--- |
-| `GET` | `/` | System health check, loaded agentic skills, and AI pool status |
-| `POST` | `/api/verify` | Uploads raw config/syslog, performs normalization and 5-state audit |
-| `POST` | `/api/export-pdf` | Generates defense-grade ReportLab PDF compliance audit report |
-| `POST` | `/api/train-vector` | Maps unparsed CLI command into `pgvector` similarity vector space |
-| `GET` | `/api/inventory` | Fetches discovered network device assets and health telemetry |
-| `GET` | `/api/logs` | Centralized network telemetry and security event log stream |
-| `GET` | `/api/v1/skills` | Lists dynamic vendor parsing skills and regex rules |
-| `POST` | `/api/v1/skills/update` | Updates or registers a new vendor parsing rule pack in runtime |
-| `GET` | `/api/v1/tasks` | Lists remediation tasks and tickets on the SOC Kanban board |
-| `POST` | `/api/v1/tasks/assign`| Reassigns a remediation ticket with role verification (RBAC) |
+| `GET` | `/` | Operational health check, engine type, loaded skills, and AI pool status |
+| `POST` | `/api/v1/config/parse` | Parses raw configuration text into canonical Security Baseline Model (SBM) |
+| `POST` | `/api/v1/normalize` | Normalizes CLI text into standardized Universal JSON Schema |
+| `POST` | `/api/v1/audit/evaluate` | Evaluates configuration compliance against CIS, NIST, STIG, and ISO |
+| `POST` | `/api/v1/ai/query-failover`| Routes prompt to active LLM provider with automated failover |
+| `GET` | `/api/v1/ai/config` | Retrieves active AI model, provider, and masked API key pool |
+| `POST` | `/api/v1/ai/config` | Configures active model or appends new API keys to pool |
+| `GET` | `/api/v1/skills` | Lists dynamic vendor parsing skills and benchmark rules |
+| `POST` | `/api/v1/skills/update` | Updates a vendor skill profile and hot-reloads the rule engine |
+| `GET` | `/api/v1/tasks` | Lists remediation tasks on the SOC Kanban board |
+| `POST` | `/api/v1/tasks/assign` | Assigns a remediation task to a specific team member |
+| `POST` | `/api/v1/report/pdf` | Generates a defense-grade ReportLab PDF compliance audit sheet |
 
 ---
 
-## 8. Compliance Framework Reference Matrix
+## 🧪 Running Tests & Verification
 
-| Framework | Control ID | Rule Description | Enforced Requirement |
-| :--- | :--- | :--- | :--- |
-| **NIST SP 800-53 Rev 5** | `AC-2 / AC-12` | Session Termination & Idle Timeout | `exec_timeout <= 600` seconds |
-| **NIST SP 800-53 Rev 5** | `IA-5(1)` | Authenticator Password Hashing | Cryptographic hash (`sha256` / `scrypt`) |
-| **NIST SP 800-53 Rev 5** | `SC-8` | Cleartext Protocol Prohibition | `telnet_enabled == false`, `http == false` |
-| **CIS Benchmark v8** | `1.1` | Mandatory Secure Shell | `ssh_version == 2` AND `ssh_enabled == true` |
-| **CIS Benchmark v8** | `2.2` | SNMP Community Protection | `snmp_version == 'v3'` & no default communities |
-| **DISA STIG** | `STIG-NET-002` | Legal Warning Login Banner | `login_banner_configured == true` |
-| **ISO/IEC 27001** | `A.12.4.1` | Remote Centralized Logging | `logging_syslog_enabled == true` |
+VectorNet includes comprehensive test suites covering parsing, deterministic rules, multi-LLM failover, and task routing:
+
+```bash
+# Run unit tests across all engine components
+python -m pytest backend/tests/ -v
+
+# Run end-to-end dataset audit tests
+python backend/test_dataset_audit.py
+
+# Verify clean deterministic pipeline (no dummy fallbacks)
+python -c "from backend.app.engines.orchestrator import audit_orchestrator; print('Pipeline operational')"
+```
 
 ---
 
-## 9. Security & Clearance
+## 🔒 Non-Intrusive Safety & Security Architecture
 
-- **Classification**: UNCLASSIFIED / FOR OFFICIAL USE ONLY (FOUO).
-- **Security Posture**: API secrets, private keys, and Firebase service accounts are loaded strictly from environment variables and excluded from source control via `.gitignore`.
-- **Intended Deployment**: Air-gapped Tactical Operations Centers (TOC), Security Operations Centers (SOC), and enterprise cyber command networks.
+1. **Air-Gapped & Offline Capable**: Core deterministic parsing, compliance rule scoring, and PDF generation work entirely offline without requiring external network connectivity.
+2. **Secrets Never Committed**: All API keys and environment configurations are excluded via `.gitignore`.
+3. **No Automatic Live Pushes**: The system is designed strictly as an auditor and decision-support tool. It empowers network engineers with evidence and guidance rather than making risky automated network changes.
 
 ---
 
 <div align="center">
-<b>VectorNet: Precision Network Security Compliance & Remediation</b><br/>
+<b>VectorNet: Precision Multi-Vendor Network Compliance & Auditing Engine</b><br/>
 Built with pride for Smart India Hackathon 2026.
 </div>

@@ -40,6 +40,7 @@ node_modules/
 .next/
 out/
 .DS_Store
+*.tsbuildinfo
 
 # IDEs & System files
 .idea/

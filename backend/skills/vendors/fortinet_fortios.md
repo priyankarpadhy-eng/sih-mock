@@ -1,4 +1,6 @@
 ---
+skill_id: fortinet_fortios_syslog_context
+category: syslog_context
 name: fortinet-audit
 description: Parse and audit Fortinet FortiGate logs (native key=value syslog or CEF format)
 ---
