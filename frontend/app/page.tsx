@@ -1,18 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Sidebar, NavTab } from '../components/Sidebar';
-import { OverviewPage } from '../components/OverviewPage';
-import { IngestionPage } from '../components/IngestionPage';
-import { InventoryPage } from '../components/InventoryPage';
-import { TelemetryPage } from '../components/TelemetryPage';
-import { AuditorPage } from '../components/AuditorPage';
-import { WorkbenchPage } from '../components/WorkbenchPage';
-import { RemediationPage } from '../components/RemediationPage';
-import { ReportsPage } from '../components/ReportsPage';
-import { TaskWorkspacePage } from '../components/TaskWorkspacePage';
-import { SkillsManagementPage } from '../components/SkillsManagementPage';
-import { AuthModal, UserProfile } from '../components/AuthModal';
+import {
+  Sidebar,
+  OverviewPage,
+  IngestionPage,
+  InventoryPage,
+  TelemetryPage,
+  AuditorPage,
+  WorkbenchPage,
+  RemediationPage,
+  ReportsPage,
+  TaskWorkspacePage,
+  SkillsManagementPage,
+  AuthModal,
+} from '../components';
+import type { NavTab, UserProfile } from '../lib/types';
 
 const SAMPLE_PRESETS: Record<string, { name: string; vendor: string; raw: string }> = {
   cisco_cucme: {

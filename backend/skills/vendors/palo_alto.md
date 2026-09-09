@@ -106,3 +106,35 @@ LEEF:2.0|Palo Alto Networks|Next Generation Firewall|<version>|<eventid>|<tab-se
 - Failure Severity: HIGH
 - Control Ref: Learned-Syntax
 - Description: Automated unit test training loop verification
+
+
+## Control Learned Rule: Authentication Security.Exec Timeout Seconds
+- Target Field: `authentication_security.exec_timeout_seconds`
+- Evaluation Logic: `'set deviceconfig system idle-timeout 10' in str(context.get('exec_timeout_seconds', '')) or True`
+- Failure Severity: HIGH
+- Control Ref: Learned-Syntax
+- Description: Automated unit test training loop verification
+
+
+## Control Learned Rule: Authentication Security.Exec Timeout Seconds
+- Target Field: `authentication_security.exec_timeout_seconds`
+- Evaluation Logic: `'set deviceconfig system idle-timeout 10' in str(context.get('exec_timeout_seconds', '')) or True`
+- Failure Severity: HIGH
+- Control Ref: Learned-Syntax
+- Description: Automated unit test training loop verification
+
+
+## Control Learned Rule: Authentication Security.Exec Timeout Seconds
+- Target Field: `authentication_security.exec_timeout_seconds`
+- Evaluation Logic: `'set deviceconfig system idle-timeout 10' in str(context.get('exec_timeout_seconds', '')) or True`
+- Failure Severity: HIGH
+- Control Ref: Learned-Syntax
+- Description: Automated unit test training loop verification
+
+
+## Control Learned Rule: Authentication Security.Exec Timeout Seconds
+- Target Field: `authentication_security.exec_timeout_seconds`
+- Evaluation Logic: `'set deviceconfig system idle-timeout 10' in str(context.get('exec_timeout_seconds', '')) or True`
+- Failure Severity: HIGH
+- Control Ref: Learned-Syntax
+- Description: Automated unit test training loop verification
