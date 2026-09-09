@@ -2,8 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Sentinel | Network Compliance Auditor',
-  description: 'Multi-vendor network security auditing and remediation platform.',
+  title: 'VectorNet | Network Security Compliance Auditor',
+  description: 'VectorNet — Multi-vendor network security auditing and remediation platform (Team Vector | SIH 2026).',
 };
 
 export default function RootLayout({

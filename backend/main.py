@@ -31,7 +31,7 @@ from backend.task_router import (
 from backend.audit_orchestrator import audit_orchestrator
 
 app = FastAPI(
-    title="Sentinel-Net Agentic Compliance & Workflow Engine API",
+    title="VectorNet Agentic Compliance & Workflow Engine API",
     description="Engine for SIH 2026 Problem Statement 26155 (NTRO/NCIIPC)",
     version="3.0.0"
 )
@@ -52,7 +52,7 @@ app.add_middleware(
 def health_check():
     return {
         "status": "ONLINE",
-        "service": "Sentinel-Net Agentic Cyber Command API Engine (SIH 26155)",
+        "service": "VectorNet Agentic Cyber Command API Engine (SIH 26155)",
         "agentic_skills_loaded": len(skills_engine.skills),
         "ai_key_pool_count": len(ai_engine.api_keys),
         "active_ai_model": ai_engine.active_model,
@@ -120,7 +120,7 @@ def update_ai_config(req: AIConfigUpdateRequest):
     return {"status": "SUCCESS", "config": updated}
 
 @app.post("/api/v1/ai/query-failover")
-def query_ai_failover(prompt: str = Form(...), system_instruction: str = Form("You are Sentinel-Net AI Auditor.")):
+def query_ai_failover(prompt: str = Form(...), system_instruction: str = Form("You are VectorNet AI Auditor.")):
     res = ai_engine.query_with_failover(prompt, system_instruction)
     return res
 
@@ -179,7 +179,7 @@ def verify_auth_token(req: TokenVerifyRequest):
     if not user:
         user = {
             "uid": "FIREBASE_UID_SUPERADMIN_01",
-            "email": "priyankar@sentinel.net",
+            "email": "priyankar@vectornet.io",
             "display_name": "Priyankar Padhy",
             "role": "SUPER_ADMIN",
             "team_id": "TEAM_VECTOR_DEFENSE"
@@ -214,7 +214,7 @@ def create_task(req: TaskCreateRequest):
     entry = firestore_store.create_task(req.model_dump())
     firestore_store.log_audit_event(
         user_uid=req.reporter_uid,
-        user_email="admin@sentinel.net",
+        user_email="admin@vectornet.io",
         user_role="SUPER_ADMIN",
         action_type="TASK_CREATED",
         resource_affected=f"tasks/{entry['task_id']}"
@@ -229,7 +229,7 @@ def assign_task(req: TaskAssignRequest):
     
     firestore_store.log_audit_event(
         user_uid=req.user_uid,
-        user_email="admin@sentinel.net",
+        user_email="admin@vectornet.io",
         user_role="SUPER_ADMIN",
         action_type="TASK_UPDATED",
         resource_affected=f"tasks/{req.task_id}"
@@ -284,7 +284,7 @@ async def normalize_config(
     sbm = ConfigNormalizer.parse_config(text_content, override_vendor=vendor_override)
     firestore_store.log_audit_event(
         user_uid="FIREBASE_UID_AUDITOR_02",
-        user_email="auditor@sentinel.net",
+        user_email="auditor@vectornet.io",
         user_role="SECURITY_AUDITOR",
         action_type="CONFIG_UPLOADED",
         resource_affected=f"configs/{sbm.device_metadata.hostname}"
@@ -310,7 +310,7 @@ def train_skill_rule(req: TrainRuleRequest):
     )
     firestore_store.log_audit_event(
         user_uid=req.user_uid or "FIREBASE_UID_SUPERADMIN_01",
-        user_email="admin@sentinel.net",
+        user_email="admin@vectornet.io",
         user_role="SUPER_ADMIN",
         action_type="SKILL_RULE_TRAINED",
         resource_affected=f"skills/{result.get('file', 'custom')}"
@@ -359,7 +359,7 @@ def generate_remediation(rule_id: Optional[str] = None, vendor: str = "Cisco Sys
     
     firestore_store.log_audit_event(
         user_uid="FIREBASE_UID_OPERATOR_03",
-        user_email="operator@sentinel.net",
+        user_email="operator@vectornet.io",
         user_role="NETWORK_OPERATOR",
         action_type="REMEDIATION_EXECUTED",
         resource_affected=f"remediation/{vendor}"
@@ -380,7 +380,7 @@ async def get_pdf_report(
     summary = ComplianceEngine.evaluate_compliance(sbm)
     
     pdf_bytes = PDFReportGenerator.generate_pdf(summary)
-    filename = f"sentinel_verification_sheet_{summary.sbm.device_metadata.hostname.lower()}.pdf"
+    filename = f"vectornet_verification_sheet_{summary.sbm.device_metadata.hostname.lower()}.pdf"
     disp = f"attachment; filename=\"{filename}\"" if download else f"inline; filename=\"{filename}\""
     
     return Response(
@@ -400,7 +400,7 @@ async def post_pdf_report(
     summary = ComplianceEngine.evaluate_compliance(sbm)
     
     pdf_bytes = PDFReportGenerator.generate_pdf(summary)
-    filename = f"sentinel_verification_sheet_{summary.sbm.device_metadata.hostname.lower()}.pdf"
+    filename = f"vectornet_verification_sheet_{summary.sbm.device_metadata.hostname.lower()}.pdf"
     disp = f"attachment; filename=\"{filename}\"" if download else f"inline; filename=\"{filename}\""
     
     return Response(

@@ -40,7 +40,7 @@ export const PostureHeader: React.FC<PostureHeaderProps> = ({
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-tactical-cyan animate-pulse"></span>
-            <span className="text-xs font-mono tracking-widest text-tactical-cyan uppercase">SENTINEL-NET // TOC COMMAND ENGINE</span>
+            <span className="text-xs font-mono tracking-widest text-tactical-cyan uppercase">VECTORNET // TOC COMMAND ENGINE</span>
           </div>
           <h1 className="text-2xl font-bold text-toc-heading tracking-tight flex items-center gap-3">
             {hostname}

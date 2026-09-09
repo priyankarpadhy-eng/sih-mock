@@ -184,7 +184,7 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
     try {
       const formData = new FormData();
       formData.append('prompt', 'Verify system status and describe NIST AC-12 compliance rule.');
-      formData.append('system_instruction', 'You are Sentinel-Net AI Agent.');
+      formData.append('system_instruction', 'You are VectorNet AI Agent.');
 
       const res = await fetch('http://localhost:8000/api/v1/ai/query-failover', {
         method: 'POST',
@@ -501,7 +501,7 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
               <div>
                 <span className="font-bold">How Automatic Key Failover Works:</span>
                 <p className="text-[11px] text-sky-800 mt-0.5 leading-relaxed">
-                  Sentinel-Net uses free high-capacity OpenRouter models. If a key runs out of daily tokens or returns HTTP 429 rate limit, the system instantly switches to Key #2, then Key #3, ensuring 100% continuous compliance scanning without downtime.
+                  VectorNet uses free high-capacity OpenRouter models. If a key runs out of daily tokens or returns HTTP 429 rate limit, the system instantly switches to Key #2, then Key #3, ensuring 100% continuous compliance scanning without downtime.
                 </p>
               </div>
             </div>

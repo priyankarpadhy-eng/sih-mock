@@ -1,57 +1,104 @@
 ---
-skill_id: vendor_palo_alto
-skill_name: Palo Alto Networks PAN-OS Security Skill
-category: vendor
-vendor: Palo Alto Networks
-os_version: PAN-OS 9.x - 11.x
+name: paloalto-audit
+description: Parse and audit Palo Alto Networks PAN-OS firewall logs (CSV syslog, CEF, or LEEF)
 ---
 
-# PALO ALTO NETWORKS PAN-OS AUDIT PROFILE
+# Palo Alto Networks (PAN-OS) Log Audit Skill
 
-## 1. LOG FORMAT & SYSLOG DIALECT
-PAN-OS comma-separated values (CSV) log dialect:
-- System Logs: `1,2026/09/06 11:04:30,001801000001,SYSTEM,general,0,2026/09/06 11:04:30,,auth-fail,,0,0,general,low,"Failed auth for user 'admin' from 172.16.4.12",...`
-- Threat Logs: `1,...,THREAT,vulnerability,...`
-- Config Audit: `1,...,CONFIG,admin,...`
+## How to recognize this format
 
-## 2. KNOWN-BENIGN NOISY LOGS (SUPPRESS)
-- `eventid="userid-service-agent-connected"` (Routine User-ID agent heartbeat)
-- `eventid="url-cloud-connected"` (Normal PAN-DB cloud reachability check)
-- `eventid="auth-success"` (Scheduled service account login from trusted IP)
-- `eventid="wildfire-cloud-connected"` (Malware analysis telemetry ping)
+**Native CSV syslog** — comma-separated values, no field names inline, must
+be positionally decoded. Fourth-from-front field is typically the log `Type`:
 
-## 3. VENDOR-SPECIFIC ATTACK SIGNATURES & MISCONFIG PATTERNS
-- **Telnet or Plain HTTP Admin Enabled**: `set deviceconfig system service disable-telnet no` or `set deviceconfig system service disable-http no` -> Flag as NIST-SC-8 FAIL
-- **Idle Timeout Missing / Excessive**: `set deviceconfig system idle-timeout 0` or missing -> Flag as NIST-AC-12 FAIL
-- **Permissive Security Zone Rules**: `set rulebase security rules allow-all action allow` without App-ID -> Flag as CIS-Firewall FAIL
-- **Default Warning Banner Missing**: Absence of `set deviceconfig system login-banner "..."` -> Flag as DISA-STIG-002 FAIL
-- **Unencrypted Syslog**: `set shared log-settings syslog server ... transport TCP` without TLS cert profile.
-
-## 4. SAMPLE ANNOTATED LOG & CONFIG SNIPPETS
-```panos
-set deviceconfig system hostname FW-PAN-TACTICAL-01
-set deviceconfig system idle-timeout 0                       # [FAIL: NIST-AC-12 Infinite idle session]
-set deviceconfig system service disable-telnet no            # [FAIL: NIST-SC-8 Telnet service active]
-set deviceconfig system service disable-http no              # [FAIL: NIST-SC-8 Plain HTTP management active]
-set deviceconfig system login-banner ""                      # [FAIL: DISA-STIG-002 Empty legal banner]
-set security zones trust interfaces ge-0/0/0.0
+```
+<FUTURE_USE>,<Receive Time>,<Serial Number>,<Type>,<Subtype>,...
 ```
 
-## 5. HARDENING & ROLLBACK PLAYBOOKS
-```panos
-# Hardening Sequence
-set deviceconfig system idle-timeout 10
-set deviceconfig system service disable-telnet yes
-set deviceconfig system service disable-http yes
-set deviceconfig system login-banner "WARNING: AUTHORIZED MILITARY / ENTERPRISE PERSONNEL ONLY."
-commit
-
-# Rollback Sequence
-set deviceconfig system idle-timeout 0
-set deviceconfig system service disable-telnet no
-commit
+Example (Threat log, type=THREAT):
+```
+...,2019-07-03T00:36:24.000000Z,,3,THREAT,5,file,<src-ip>,...,PA-5220,0,client to server,...
 ```
 
+**CEF format** (when syslog forwarding is set to CEF):
+```
+<date> <host> CEF:0|Fortinet... wait — for PAN it's:
+<date> <host> CEF:0|Palo Alto Networks|Firewall|<version>|<logid>|<name>|<severity>|<extension>
+```
+Real example:
+```
+Feb 12 10:31:04 syslog-800c CEF:0|Fortinet|... 
+```
+(Note: use the vendor field in the CEF header itself to confirm — PAN CEF
+headers read `CEF:0|Palo Alto Networks|...`.)
+
+**LEEF format**:
+```
+LEEF:2.0|Palo Alto Networks|Next Generation Firewall|<version>|<eventid>|<tab-separated key=value pairs>
+```
+
+## The five core log types (native CSV `Type` field)
+
+| Type | Subtype values | Contains |
+|---|---|---|
+| `TRAFFIC` | `start`, `end`, `drop`, `deny` | Session-level connection records |
+| `THREAT` | varies by engine: `virus`, `spyware`, `vulnerability`, `url`, `file`, `wildfire`, `scan`, `flood` | IPS/AV/URL-filter/WildFire detections |
+| `CONFIG` | (unused) | Configuration changes |
+| `SYSTEM` | Event ID driven | System/admin events (login, HA, licensing) |
+| `HIP-MATCH` | — | GlobalProtect Host Information Profile matches |
+
+## Key field mapping (CSV -> CEF -> LEEF, for cross-referencing exports)
+
+| Meaning | CSV field | CEF field | LEEF field |
+|---|---|---|---|
+| Receive time | `receive_time` | `rt` | `devTime` |
+| Device serial | `serial` | `deviceExternalId` | `SerialNumber` |
+| Log type | `type` | header field | `cat` |
+| Subtype | `subtype` | `cat`/header | `Subtype` |
+| Threat category | `thr_category` | `PanOSThreatCategory` | `ThreatCategory` |
+| Source/dest IP | `src`/`dst` | `src`/`dst` | `src`/`dst` |
+| Rule matched | (rule name field) | — | `Rule` |
+| Action | `action` | `act` | `Action` |
+
+## Severity (native — varies by log type, not a single global field)
+
+| Log type | Severity source | -> Global tier |
+|---|---|---|
+| THREAT | `severity` field: `critical, high, medium, low, informational` | Direct 1:1 map |
+| TRAFFIC | Implicit via `subtype`: `deny`/`drop` = notable, `start`/`end` = routine | deny/drop -> Medium/High; start/end -> Low |
+| CONFIG | Always treat as Medium minimum — any config change is worth a look | Medium |
+| SYSTEM | `severity` field present, same 5-tier scale as THREAT | Direct 1:1 map |
+
+## High-value patterns to watch for
+
+- **TRAFFIC subtype=deny/drop clustering**: same heuristic as ACL denies on
+  other vendors — group by `src` across a time window; many distinct `dst`
+  ports = scan, many distinct `src` to one `dst` port = spray/DDoS attempt.
+- **THREAT severity=critical/high with action != block/reset**: a detected
+  threat that was *not* blocked (e.g. `action=alert` only) is higher priority
+  than one that was blocked — the traffic got through.
+- **WildFire verdict = malicious with subtype=file/wildfire**: always Critical
+  regardless of stated severity field, since it means a file was actually
+  submitted and detonated as malicious.
+- **CONFIG log entries with no matching SYSTEM admin-login event nearby**:
+  suggests either API-driven change (verify it's expected automation) or a
+  logging gap — flag either way.
+- **HIP-MATCH failures** (host doesn't meet posture profile) followed shortly
+  by a TRAFFIC allow on a sensitive zone: possible policy bypass, flag as High.
+- **Repeated `url` subtype THREAT entries with category=unknown/not-resolved**
+  from one internal host: possible DGA-based C2 (domain generation algorithm),
+  flag as Medium/High for further investigation.
+
+## Parsing notes
+
+- CSV fields are positional and version-dependent — the number of columns
+  changes between PAN-OS versions as new fields are appended at the end.
+  Never assume a fixed column count; anchor parsing on the known early fields
+  (`receive_time`, `serial`, `type`, `subtype`) and treat trailing columns as
+  best-effort.
+- Commas inside a field value are escaped with backslash — don't naively
+  split on every comma without honoring escape sequences.
+- `FUTURE_USE` placeholder fields exist in the schema — safe to ignore, not
+  a parsing error if empty.
 
 ## Control Learned Rule: Authentication Security.Exec Timeout Seconds
 - Target Field: `authentication_security.exec_timeout_seconds`

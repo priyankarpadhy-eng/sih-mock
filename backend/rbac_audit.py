@@ -11,7 +11,7 @@ class Role(str):
 
 class RBACAuditEngine:
     """
-    System Security, Role-Based Access Control (RBAC) & Immutable Audit Trail Engine for Sentinel-Net.
+    System Security, Role-Based Access Control (RBAC) & Immutable Audit Trail Engine for VectorNet.
     Tracks all administrative actions, AI training loop mappings, and config uploads.
     """
 
@@ -30,7 +30,7 @@ class RBACAuditEngine:
                 "action": "SYSTEM_INITIALIZATION",
                 "timestamp": now_ts,
                 "ip_address": "127.0.0.1",
-                "details": {"status": "Sentinel-Net Core Engine Bootstrapped"}
+                "details": {"status": "VectorNet Core Engine Bootstrapped"}
             },
             {
                 "id": f"aud-{uuid.uuid4().hex[:8]}",

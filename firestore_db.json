@@ -38,6 +38,315 @@
   ],
   "tasks": [
     {
+      "task_id": "TASK-2026-81A3",
+      "title": "Remediate NIST-SC-8: NIST-SC-8: Control SC-8 Transmission Confidentiality (No Telnet)",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "NIST-SC-8",
+        "raw_value": "True"
+      },
+      "remediation_script": "[REMEDIATION SCRIPT FOR CISCO IOS]\n! Fix 1: Disable Telnet & Set Session Timeout\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\n!\n! Fix 2: Upgrade Weak Password Hashes\nno username b\nusername b privilege 15 secret 4 <NEW_STRONG_SECRET>",
+      "comments": [
+        {
+          "comment_id": "Cff9e",
+          "author_uid": "FIREBASE_UID_OPERATOR_03",
+          "author_name": "Priyankar Padhy",
+          "text": "Test automated comment log entry.",
+          "timestamp": "2026-09-09T04:31:06Z"
+        }
+      ],
+      "created_at": "2026-09-09T04:31:06Z",
+      "updated_at": "2026-09-09T04:31:06Z"
+    },
+    {
+      "task_id": "TASK-2026-2E86",
+      "title": "Remediate NIST-AC-12: NIST-AC-12: Control AC-12 Session Inactivity Logout",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "NIST-AC-12",
+        "raw_value": "0"
+      },
+      "remediation_script": "! Fix 1: Disable Telnet & Set Session Timeout (NIST AC-12 & CIS 1.1.2)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-09T04:31:06Z",
+      "updated_at": "2026-09-09T04:31:06Z"
+    },
+    {
+      "task_id": "TASK-2026-E609",
+      "title": "Remediate DISA-IA-5: DISA-IA-5: Reversible Password Encryption Prohibition",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "DISA-IA-5",
+        "raw_value": "type_7, sha256_or_md5"
+      },
+      "remediation_script": "! Fix 2: Upgrade Weak Type 7 Password Hashes to Strong Secret Hashes\nno username b\nusername b privilege 15 secret 4 <NEW_STRONG_SECRET>\nenable secret 4 <NEW_ENABLE_SECRET>",
+      "comments": [],
+      "created_at": "2026-09-09T04:31:06Z",
+      "updated_at": "2026-09-09T04:31:06Z"
+    },
+    {
+      "task_id": "TASK-2026-98C4",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "True"
+      },
+      "remediation_script": "! Fix 1: Disable Telnet & Set Session Timeout (NIST AC-12 & CIS 1.1.2)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-09T04:31:06Z",
+      "updated_at": "2026-09-09T04:31:06Z"
+    },
+    {
+      "task_id": "TASK-2026-764D",
+      "title": "Remediate NIST-SC-8: NIST-SC-8: Control SC-8 Transmission Confidentiality (No Telnet)",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "NIST-SC-8",
+        "raw_value": "True"
+      },
+      "remediation_script": "[REMEDIATION SCRIPT FOR CISCO IOS]\n! Fix 1: Disable Telnet & Set Session Timeout\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\n!\n! Fix 2: Upgrade Weak Password Hashes\nno username b\nusername b privilege 15 secret 4 <NEW_STRONG_SECRET>",
+      "comments": [
+        {
+          "comment_id": "C87b9",
+          "author_uid": "FIREBASE_UID_OPERATOR_03",
+          "author_name": "Priyankar Padhy",
+          "text": "Test automated comment log entry.",
+          "timestamp": "2026-09-09T02:07:02Z"
+        }
+      ],
+      "created_at": "2026-09-09T02:07:02Z",
+      "updated_at": "2026-09-09T02:07:02Z"
+    },
+    {
+      "task_id": "TASK-2026-0BF7",
+      "title": "Remediate NIST-AC-12: NIST-AC-12: Control AC-12 Session Inactivity Logout",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "NIST-AC-12",
+        "raw_value": "0"
+      },
+      "remediation_script": "! Fix 1: Disable Telnet & Set Session Timeout (NIST AC-12 & CIS 1.1.2)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-09T02:07:02Z",
+      "updated_at": "2026-09-09T02:07:02Z"
+    },
+    {
+      "task_id": "TASK-2026-FC2B",
+      "title": "Remediate DISA-IA-5: DISA-IA-5: Reversible Password Encryption Prohibition",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "DISA-IA-5",
+        "raw_value": "type_7, sha256_or_md5"
+      },
+      "remediation_script": "! Fix 2: Upgrade Weak Type 7 Password Hashes to Strong Secret Hashes\nno username b\nusername b privilege 15 secret 4 <NEW_STRONG_SECRET>\nenable secret 4 <NEW_ENABLE_SECRET>",
+      "comments": [],
+      "created_at": "2026-09-09T02:07:02Z",
+      "updated_at": "2026-09-09T02:07:02Z"
+    },
+    {
+      "task_id": "TASK-2026-3EDB",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "True"
+      },
+      "remediation_script": "! Fix 1: Disable Telnet & Set Session Timeout (NIST AC-12 & CIS 1.1.2)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-09T02:07:02Z",
+      "updated_at": "2026-09-09T02:07:02Z"
+    },
+    {
+      "task_id": "TASK-2026-76F1",
+      "title": "Remediate NIST-SC-8: NIST-SC-8: Control SC-8 Transmission Confidentiality (No Telnet)",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "NIST-SC-8",
+        "raw_value": "True"
+      },
+      "remediation_script": "[REMEDIATION SCRIPT FOR CISCO IOS]\n! Fix 1: Disable Telnet & Set Session Timeout\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\n!\n! Fix 2: Upgrade Weak Password Hashes\nno username b\nusername b privilege 15 secret 4 <NEW_STRONG_SECRET>",
+      "comments": [
+        {
+          "comment_id": "C60fe",
+          "author_uid": "FIREBASE_UID_OPERATOR_03",
+          "author_name": "Priyankar Padhy",
+          "text": "Test automated comment log entry.",
+          "timestamp": "2026-09-09T01:28:33Z"
+        }
+      ],
+      "created_at": "2026-09-09T01:28:33Z",
+      "updated_at": "2026-09-09T01:28:33Z"
+    },
+    {
+      "task_id": "TASK-2026-F38E",
+      "title": "Remediate NIST-AC-12: NIST-AC-12: Control AC-12 Session Inactivity Logout",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "NIST-AC-12",
+        "raw_value": "0"
+      },
+      "remediation_script": "! Fix 1: Disable Telnet & Set Session Timeout (NIST AC-12 & CIS 1.1.2)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-09T01:28:33Z",
+      "updated_at": "2026-09-09T01:28:33Z"
+    },
+    {
+      "task_id": "TASK-2026-8BB0",
+      "title": "Remediate DISA-IA-5: DISA-IA-5: Reversible Password Encryption Prohibition",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "DISA-IA-5",
+        "raw_value": "type_7, sha256_or_md5"
+      },
+      "remediation_script": "! Fix 2: Upgrade Weak Type 7 Password Hashes to Strong Secret Hashes\nno username b\nusername b privilege 15 secret 4 <NEW_STRONG_SECRET>\nenable secret 4 <NEW_ENABLE_SECRET>",
+      "comments": [],
+      "created_at": "2026-09-09T01:28:33Z",
+      "updated_at": "2026-09-09T01:28:33Z"
+    },
+    {
+      "task_id": "TASK-2026-EB89",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-CUCME",
+      "device_hostname": "CUCME",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "True"
+      },
+      "remediation_script": "! Fix 1: Disable Telnet & Set Session Timeout (NIST AC-12 & CIS 1.1.2)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-09T01:28:33Z",
+      "updated_at": "2026-09-09T01:28:33Z"
+    },
+    {
+      "task_id": "TASK-2026-550A",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-FW-PAN-TACTICAL-01",
+      "device_hostname": "FW-PAN-TACTICAL-01",
+      "vendor": "Palo Alto Networks",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "# Palo Alto PAN-OS Remediation\nset deviceconfig system idle-timeout 10\nset deviceconfig system service disable-telnet yes",
+      "comments": [],
+      "created_at": "2026-09-09T01:28:02Z",
+      "updated_at": "2026-09-09T01:28:02Z"
+    },
+    {
+      "task_id": "TASK-2026-DFBB",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-FW-PAN-TACTICAL-01",
+      "device_hostname": "FW-PAN-TACTICAL-01",
+      "vendor": "Palo Alto Networks",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "# Palo Alto PAN-OS Remediation\nset deviceconfig system idle-timeout 10\nset deviceconfig system service disable-telnet yes",
+      "comments": [],
+      "created_at": "2026-09-09T01:28:02Z",
+      "updated_at": "2026-09-09T01:28:02Z"
+    },
+    {
+      "task_id": "TASK-2026-5EA4",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-FW-PAN-TACTICAL-01",
+      "device_hostname": "FW-PAN-TACTICAL-01",
+      "vendor": "Palo Alto Networks",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "# Palo Alto PAN-OS Remediation\nset deviceconfig system idle-timeout 10\nset deviceconfig system service disable-telnet yes",
+      "comments": [],
+      "created_at": "2026-09-09T01:27:59Z",
+      "updated_at": "2026-09-09T01:27:59Z"
+    },
+    {
       "task_id": "TASK-2026-E81E",
       "title": "Remediate NIST-SC-8: NIST-SC-8: Control SC-8 Transmission Confidentiality (No Telnet)",
       "device_id": "DEV-CUCME",
@@ -2150,6 +2459,156 @@
     }
   ],
   "audit_logs": [
+    {
+      "log_id": "LOG-1D3E99",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-81A3",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T04:31:06Z"
+    },
+    {
+      "log_id": "LOG-0D41FB",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-2E86",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T04:31:06Z"
+    },
+    {
+      "log_id": "LOG-DEBC5E",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-E609",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T04:31:06Z"
+    },
+    {
+      "log_id": "LOG-85DD31",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-98C4",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T04:31:06Z"
+    },
+    {
+      "log_id": "LOG-0CB48F",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-764D",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T02:07:02Z"
+    },
+    {
+      "log_id": "LOG-68AFE3",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-0BF7",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T02:07:02Z"
+    },
+    {
+      "log_id": "LOG-DFA20B",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-FC2B",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T02:07:02Z"
+    },
+    {
+      "log_id": "LOG-B86417",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-3EDB",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T02:07:02Z"
+    },
+    {
+      "log_id": "LOG-4CB8EC",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-76F1",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T01:28:33Z"
+    },
+    {
+      "log_id": "LOG-F6A69D",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-F38E",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T01:28:33Z"
+    },
+    {
+      "log_id": "LOG-B0C388",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-8BB0",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T01:28:33Z"
+    },
+    {
+      "log_id": "LOG-C7DC66",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-EB89",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T01:28:33Z"
+    },
+    {
+      "log_id": "LOG-839C9C",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-550A",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T01:28:02Z"
+    },
+    {
+      "log_id": "LOG-D6451B",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-DFBB",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T01:28:02Z"
+    },
+    {
+      "log_id": "LOG-519222",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@sentinel.net",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-5EA4",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-09T01:27:59Z"
+    },
     {
       "log_id": "LOG-D3A61F",
       "user_uid": "SYSTEM_AUTOMATED_ENGINE",

@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 class VendorDetectorEngine:
     """
-    Multi-tiered Vendor Detection & Signature Engine for Sentinel-Net.
+    Multi-tiered Vendor Detection & Signature Engine for VectorNet.
     Tier 1: Header/Banner Regex Matcher (High Confidence)
     Tier 2: Fallback NLP / Keyword Frequency Classifier for Device Type & Vendor
     """

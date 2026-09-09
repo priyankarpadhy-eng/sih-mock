@@ -37,7 +37,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
       if (!response.ok) throw new Error('PDF export failed');
 
       const blob = await response.blob();
-      const filename = `sentinel_verification_sheet_${(hostname || 'cucme').toLowerCase()}.pdf`;
+      const filename = `vectornet_verification_sheet_${(hostname || 'cucme').toLowerCase()}.pdf`;
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -102,7 +102,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#10B981]" />
             <span className="font-bold text-[#0F172A]">DOCUMENT PREVIEW:</span>
-            <span>sentinel_verification_sheet_{(hostname || 'cucme').toLowerCase()}.pdf</span>
+            <span>vectornet_verification_sheet_{(hostname || 'cucme').toLowerCase()}.pdf</span>
           </div>
           <div className="text-[11px] text-[#64748B]">
             STATUS: <span className="font-bold text-[#DC2626]">NON-COMPLIANT</span> | SCORE: <span className="font-bold text-[#0F172A]">{complianceScore}%</span>

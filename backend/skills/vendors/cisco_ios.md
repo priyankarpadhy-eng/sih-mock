@@ -1,69 +1,87 @@
 ---
-skill_id: vendor_cisco_ios
-skill_name: Cisco Systems IOS / IOS-XE & CUCME Audit Skill
-category: vendor
-vendor: Cisco Systems
-os_version: IOS / IOS-XE 15.x - 17.x, CUCME
+name: cisco-audit
+description: Parse and audit Cisco ASA / Firepower syslog messages (%ASA-level-msgid format)
 ---
 
-# CISCO SYSTEMS IOS / IOS-XE AUDIT PROFILE
+# Cisco ASA / Firepower Log Audit Skill
 
-## 1. LOG FORMAT & SYSLOG DIALECT
-Cisco standard facility-severity-mnemonic structure:
-- Pattern: `%<FACILITY>-<SEVERITY>-<MNEMONIC>: <MESSAGE_TEXT>`
-- Severity Levels: `0` (Emergencies) to `7` (Debugging)
-- Example: `%SYS-5-CONFIG_I: Configured from console by admin on vty0 (10.0.5.22)`
-- Auth Failures: `%SEC_LOGIN-4-LOGIN_FAILED`, `%SSH-4-SSH2_LOGON_UNAUTH`
-- Cleartext Alert: `%TELNET-3-CONN_ESTABLISHED`
+## How to recognize this format
 
-## 2. KNOWN-BENIGN NOISY LOGS (SUPPRESS)
-- `%LINK-3-UPDOWN: Interface GigabitEthernet0/0/1, changed state to up` (Scheduled link negotiation)
-- `%SYS-6-LOGGINGHOST_STARTSTOP: Logging to host 10.0.100.50 started` (Normal telemetry initialization)
-- `%OSPF-5-ADJCHANGE: Process 1, Nbr 10.0.0.2 on GigabitEthernet0/0/0 from LOADING to FULL` (Routine routing adjacency)
-- `%LINEPROTO-5-UPDOWN: Line protocol on Interface Loopback0, changed state to up`
+Lines contain the literal string `%ASA-` followed by a digit 0-7, a dash, and
+a 6-digit message ID:
 
-## 3. VENDOR-SPECIFIC ATTACK SIGNATURES & MISCONFIG PATTERNS
-- **Type-7 Weak Encryption**: `password 7 0822455D0A16` (Easily reversible XOR cipher) -> Flag as DISA-IA-5 FAIL
-- **Telnet Allowed on VTY**: `transport input telnet` or `transport input all` or `transport input telnet ssh` -> Flag as NIST-SC-8 FAIL
-- **Infinite Exec Timeout**: `exec-timeout 0 0` or missing under `line con 0` / `line vty` -> Flag as NIST-AC-12 FAIL
-- **Default SNMP Strings**: `snmp-server community public RO` or `snmp-server community private RW` -> Flag as CIS-2.2 FAIL
-- **Missing Banner**: Absence of `banner motd` or `banner login` -> Flag as DISA-STIG-002 FAIL
-- **SSH v1 Downgrade**: `ip ssh version 1` -> Flag as CIS-1.1 FAIL
-
-## 4. SAMPLE ANNOTATED LOG & CONFIG SNIPPETS
-```cisco
-! MISCONFIGURATION: Weak type-7 password and telnet enabled on VTY lines
-hostname TAC-ROUTER-01
-enable secret 5 $1$mER7$vX3Y80x1g0f7    ! [WARNING: MD5 is deprecated, migrate to Type-9 scrypt]
-service password-encryption
-!
-username backup privilege 15 password 7 0822455D0A16 ! [FAIL: DISA-IA-5 Type-7 reversible hash]
-!
-line vty 0 4
- exec-timeout 0 0                       ! [FAIL: NIST-AC-12 Infinite timeout]
- transport input telnet ssh             ! [FAIL: NIST-SC-8 Telnet enabled]
-!
-snmp-server community public RO         ! [FAIL: CIS-2.2 Default community string]
+```
+<timestamp> <device-id> : %ASA-<level>-<msgid>: <message text>
 ```
 
-## 5. HARDENING & ROLLBACK PLAYBOOKS
-```cisco
-! Hardening Sequence
-configure terminal
- username backup secret <STRONG_PASSWORD>
- line vty 0 4
-  transport input ssh
-  exec-timeout 10 0
-  exit
- no snmp-server community public
- no snmp-server community private
- snmp-server group SECGROUP v3 auth privacy
-exit
-
-! Atomic Rollback Sequence
-configure terminal
- line vty 0 4
-  exec-timeout 0 0
-  transport input telnet ssh
-exit
+Example (real device output):
 ```
+%ASA-4-411004: Interface GigabitEthernet0/6, changed state to administratively down
+```
+
+With full syslog envelope + EMBLEM prefix:
+```
+Feb 12 2023 13:22:47 tismtlinternetfw1 : %ASA-4-106023: Deny icmp src OUTSIDE:0.33.18.22 dst INSIDE:170.217.223.242 (type 11, code 0) by access-group "OUTSIDE_ACL" [0x0, 0x0]
+```
+
+## Field breakdown
+
+| Field | Description |
+|---|---|
+| Timestamp | Device-local time, format varies (`Mon DD YYYY HH:MM:SS` common) |
+| Device-ID | Configured hostname/identifier of the ASA (absent if EMBLEM format and device-id logging off) |
+| `ASA` | Fixed facility literal |
+| Level | 0–7 severity digit (see table below) |
+| Msgid | 6-digit stable ID — this is the reliable field to match/group on, NOT the free-text message |
+| Message text | Free-form, contains src/dst/interface/acl details as substituted variables |
+
+## Severity levels (native ASA scale — map to global tiers)
+
+| ASA Level | Name | Meaning | -> Global tier |
+|---|---|---|---|
+| 0 | emergencies | System unusable | Critical |
+| 1 | alert | Immediate action needed | Critical |
+| 2 | critical | Critical conditions | Critical |
+| 3 | error | Error conditions | High |
+| 4 | warning | Warning conditions | Medium/High (see msgid table) |
+| 5 | notification | Normal but significant | Medium |
+| 6 | informational | Informational only | Low |
+| 7 | debugging | Debug only, should not be in production logs | Informational |
+
+## High-value message IDs to specifically watch for
+
+These are real, documented ASA syslog IDs worth pattern-matching on:
+
+| Msgid | Level | Meaning | Audit relevance |
+|---|---|---|---|
+| 106023 | 4 | Deny by access-group (ACL deny) | Repeated denies from one source = scan/probe; sudden stop = rule change or source gave up |
+| 106001 | 2 | Inbound TCP connection denied | Same as above, higher default severity |
+| 113005 | 3 | AAA authentication rejected | Auth failure — check for bursts |
+| 113004 | 6 | AAA user authenticated | Pair with 113005 to compute failure ratio per user/source |
+| 302013/302014 | 6 | TCP connection built/teardown | Session lifecycle; use for beaconing interval analysis |
+| 305011/305012 | 6 | NAT translation built/deleted | Cross-check NAT source ports against expected pool range |
+| 411004/411003 | 4 | Interface administratively up/down | Unexpected interface flaps outside maintenance windows |
+| 419002 | 4 | Duplicate TCP SYN, possible spoofing indicator | Flag for review |
+| 500004 | 3 | Invalid transport field values | Malformed packet — possible fuzzing/exploit attempt |
+| 710003 | 4/5 | ACL deny on management access | Management-plane probing — treat as higher priority than data-plane ACL denies |
+| 722xxx range | 4/5 | AnyConnect/VPN session errors | Credential stuffing or client misconfig against VPN gateway |
+
+Full canonical list: "Cisco Secure Firewall ASA Series Syslog Messages" guide,
+organized by severity — msgid is stable across ASA software versions, message
+text wording is not, so always group/dedupe on msgid + key fields, not on the
+raw text string.
+
+## Audit heuristics specific to ASA
+
+- **106023/106001 clustering**: group denies by source IP within a rolling
+  5-minute window. 10+ distinct destination ports from one source = port scan.
+  10+ distinct source IPs to one destination port = distributed scan/spray.
+- **113005 bursts**: 5+ failures for one username within 2 minutes = flag as
+  High (brute force). Failures across many usernames from one source IP within
+  a short window = flag as High (credential spray), regardless of per-user count.
+- **Msgid gaps**: ASA syslog doesn't include sequence numbers by default, so
+  gap detection must be done on receive-time continuity at the collector, not
+  on the message content itself — note this as a limitation if asked to find gaps.
+- **EMBLEM vs plain**: if `format` metadata (from a log pipeline) shows `LOG`
+  instead of `EMBLEM`/`PARSED`, that line failed to parse — flag it as a
+  parsing gap, don't guess at its meaning.

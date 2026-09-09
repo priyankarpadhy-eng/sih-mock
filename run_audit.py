@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Sentinel-Net Universal CLI Audit Runner (SIH 2026 PS 26155)
+VectorNet Universal CLI Audit Runner (Team Vector | SIH 2026 PS 26155)
 Orchestration: Detect Vendor -> Inject global.md + Vendor Skill -> Execute Audit
 """
 
@@ -17,7 +17,7 @@ from backend.vendor_detector import detect_vendor
 from backend.sample_configs import SAMPLE_CONFIGS
 
 def main():
-    parser = argparse.ArgumentParser(description="Sentinel-Net Multi-Vendor Network Compliance Auditor")
+    parser = argparse.ArgumentParser(description="VectorNet Multi-Vendor Network Compliance Auditor")
     parser.add_argument("file", nargs="?", help="Path to raw network config or syslog dump (e.g. datasets/01_cisco_ios_cucme.cfg)")
     parser.add_argument("--vendor", "-v", help="Explicit vendor override (cisco, juniper, paloalto, fortinet, checkpoint)")
     parser.add_argument("--query", "-q", help="Optional specific audit query or question")
@@ -36,7 +36,7 @@ def main():
         source_label = "datasets/01_cisco_ios_cucme.cfg"
 
     print(f"\n{'='*70}")
-    print(f"SENTINEL-NET AGENTIC AUDIT ORCHESTRATOR")
+    print(f"VECTORNET AGENTIC AUDIT ORCHESTRATOR")
     print(f"Target: {source_label} | Lines: {len(raw_text.splitlines())}")
     print(f"{'='*70}\n")
 

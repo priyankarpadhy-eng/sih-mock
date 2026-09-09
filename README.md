@@ -1,8 +1,8 @@
-# SENTINEL-NET: AI-Driven Multi-Vendor Network Security Compliance Auditor
+# VECTORNET: AI-Driven Multi-Vendor Network Security Compliance Auditor
 
 <div align="center">
 
-![Sentinel-Net Banner](https://img.shields.io/badge/SIH_2026-PS_26155-blue?style=for-the-badge&logo=shield)
+![VectorNet Banner](https://img.shields.io/badge/SIH_2026-PS_26155-blue?style=for-the-badge&logo=shield)
 ![Status](https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black?style=for-the-badge&logo=next.js&logoColor=white)
@@ -26,7 +26,7 @@ Modern enterprise and critical national infrastructure (CNI) networks are inhere
 3. **Dangerous Auto-Remediation**: Applying uncontrolled script execution directly to mission-critical routing backbones.
 4. **Static Rule Brittleness**: Every new vendor firmware update breaks hard-coded regex parsers.
 
-**Sentinel-Net solves this with a deterministic, policy-as-code core paired with an agentic vector similarity training loop:**
+**VectorNet solves this with a deterministic, policy-as-code core paired with an agentic vector similarity training loop:**
 - **OSCAL-Aligned Line Spans**: Every audit finding links to 1-indexed line spans in the raw configuration with SHA-256 cryptographic integrity hashes.
 - **5-State Compliance Logic**: Strictly enforces `PASS`, `FAIL`, `WARNING`, `UNKNOWN`, and `NOT_APPLICABLE` (never marks unobserved sections as passed).
 - **Proposal-Only Safe Remediation**: Dual-action CLI playbooks paired with prerequisite validation commands and atomic rollback sequences.
@@ -79,7 +79,7 @@ Normalizes disparate network configuration commands into an extensible, vendor-n
 - **Line-Span Evidence**: Exact `line_start` and `line_end` positions linking each parsed security parameter back to its source configuration.
 
 ### B. 5-State Findings Model
-Unlike simplistic binary checkers, Sentinel-Net uses a five-state classification:
+Unlike simplistic binary checkers, VectorNet uses a five-state classification:
 - `PASS`: Configuration line explicitly satisfies the benchmark control.
 - `FAIL`: Configuration line violates the benchmark rule.
 - `WARNING`: Partial match or sub-optimal configuration requiring administrator attention.
@@ -207,7 +207,7 @@ Open `http://localhost:3000` in your web browser.
 
 ## 6. Verification & Automated Testing
 
-Sentinel-Net includes end-to-end unit and workflow tests covering vendor detection, OSCAL normalizer line-spans, 5-state evaluations, report generation, and AI agent failover pools:
+VectorNet includes end-to-end unit and workflow tests covering vendor detection, OSCAL normalizer line-spans, 5-state evaluations, report generation, and AI agent failover pools:
 
 ```bash
 # Run complete test suite (from project root)
@@ -273,6 +273,6 @@ backend/test_sentinel.py::test_vector_store_learning PASSED
 ---
 
 <div align="center">
-<b>Sentinel-Net: Precision Network Security Compliance & Remediation</b><br/>
+<b>VectorNet: Precision Network Security Compliance & Remediation</b><br/>
 Built with pride for Smart India Hackathon 2026.
 </div>

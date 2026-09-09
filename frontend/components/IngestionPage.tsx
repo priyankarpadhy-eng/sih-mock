@@ -347,7 +347,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-2">
               <span className="font-semibold text-[#0F172A] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#F97316]" />
-                Sentinel Analysis
+                VectorNet Analysis
               </span>
               <button
                 type="button"
@@ -461,7 +461,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
       {/* Bottom Footer */}
       <div className="w-full max-w-[760px] mx-auto flex items-center justify-between text-[11px] text-[#94A3B8] pt-8">
         <div className="flex-1 text-center">
-          Sentinel-Net can make mistakes. Check important info. See <span className="underline cursor-pointer hover:text-[#0F172A]" onClick={() => onNavigate('auditor')}>Compliance Policies</span>.
+          VectorNet can make mistakes. Check important info. See <span className="underline cursor-pointer hover:text-[#0F172A]" onClick={() => onNavigate('auditor')}>Compliance Policies</span>.
         </div>
 
         <div className="flex items-center gap-2 text-[#94A3B8] shrink-0">

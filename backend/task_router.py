@@ -22,14 +22,14 @@ class SkillUpdateRequest(BaseModel):
     filepath: str
     content: str
     user_uid: str = "FIREBASE_UID_SUPERADMIN_01"
-    user_email: str = "admin@sentinel.net"
+    user_email: str = "admin@vectornet.io"
     user_role: str = "SUPER_ADMIN"
 
 class AIConfigUpdateRequest(BaseModel):
     api_keys: List[str]
     active_model: Optional[str] = "google/gemini-2.0-flash-lite-preview-02-05:free"
     user_uid: str = "FIREBASE_UID_SUPERADMIN_01"
-    user_email: str = "admin@sentinel.net"
+    user_email: str = "admin@vectornet.io"
     user_role: str = "SUPER_ADMIN"
 
 class TaskAssignRequest(BaseModel):
@@ -103,7 +103,7 @@ class TaskEngine:
                 # Log audit event to Firestore
                 firestore_store.log_audit_event(
                     user_uid="SYSTEM_AUTOMATED_ENGINE",
-                    user_email="engine@sentinel.net",
+                    user_email="engine@vectornet.io",
                     user_role="SUPER_ADMIN",
                     action_type="TASK_ASSIGNED",
                     resource_affected=f"tasks/{entry['task_id']}"

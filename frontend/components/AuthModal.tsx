@@ -21,28 +21,28 @@ interface AuthModalProps {
 const DEMO_USERS: UserProfile[] = [
   {
     uid: 'FIREBASE_UID_SUPERADMIN_01',
-    email: 'priyankar@sentinel.net',
+    email: 'priyankar@vectornet.io',
     display_name: 'Priyankar Padhy',
     role: 'SUPER_ADMIN',
     team_id: 'TEAM_VECTOR_DEFENSE'
   },
   {
     uid: 'FIREBASE_UID_AUDITOR_02',
-    email: 'auditor@sentinel.net',
+    email: 'auditor@vectornet.io',
     display_name: 'Senior Cyber Auditor',
     role: 'SECURITY_AUDITOR',
     team_id: 'TEAM_VECTOR_DEFENSE'
   },
   {
     uid: 'FIREBASE_UID_OPERATOR_03',
-    email: 'operator@sentinel.net',
+    email: 'operator@vectornet.io',
     display_name: 'Lead Network Operator',
     role: 'NETWORK_OPERATOR',
     team_id: 'TEAM_VECTOR_DEFENSE'
   },
   {
     uid: 'FIREBASE_UID_VIEWER_04',
-    email: 'viewer@sentinel.net',
+    email: 'viewer@vectornet.io',
     display_name: 'Command Viewer',
     role: 'VIEWER',
     team_id: 'TEAM_VECTOR_DEFENSE'
@@ -133,7 +133,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-bold text-[#0F172A] font-serif">
-                {isSignUp ? 'Create Sentinel Account' : 'Sentinel Authentication'}
+                {isSignUp ? 'Create VectorNet Account' : 'VectorNet Authentication'}
               </h2>
               <p className="text-[11px] text-[#64748B] font-mono">Firebase Auth & Role-Based Access Control</p>
             </div>
@@ -177,7 +177,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <Mail className="w-4 h-4 text-[#64748B]" />
               <input
                 type="email"
-                placeholder="priyankar@sentinel.net"
+                placeholder="priyankar@vectornet.io"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-transparent text-xs text-[#0F172A] outline-none w-full font-mono"

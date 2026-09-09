@@ -2,7 +2,7 @@ from typing import Dict, Any
 
 class RemediationGenerator:
     """
-    Vendor CLI Remediation Script Generator for Sentinel-Net.
+    Vendor CLI Remediation Script Generator for VectorNet.
     Generates exact syntax-correct CLI fix sequences and rollback plans
     under a strict 'Proposal-Only' safety model (SIH PS 26155).
     """

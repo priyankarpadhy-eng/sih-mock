@@ -29,8 +29,8 @@ def load_dotenv_if_present():
 
 class FirestoreStore:
     """
-    Firebase Authentication & Cloud Firestore Database Architecture Wrapper for Sentinel-Net.
-    Manages Firestore Collections: 'users', 'tasks', and 'audit_logs'.
+    Firebase Authentication & Cloud Firestore Database Architecture Wrapper for VectorNet.
+    Supports live Firestore Cloud Connection if FIREBASE_CREDENTIALS_JSON or FIREBASE_PROJECT_ID is set.
     Supports dual-mode: Live Firebase Cloud Firestore or JSON file-backed store fallback.
     """
 
@@ -105,7 +105,7 @@ class FirestoreStore:
         self._local_data["users"] = [
             {
                 "uid": "FIREBASE_UID_SUPERADMIN_01",
-                "email": "priyankar@sentinel.net",
+                "email": "priyankar@vectornet.io",
                 "display_name": "Priyankar Padhy",
                 "role": "SUPER_ADMIN",
                 "team_id": "TEAM_VECTOR_DEFENSE",
@@ -114,7 +114,7 @@ class FirestoreStore:
             },
             {
                 "uid": "FIREBASE_UID_AUDITOR_02",
-                "email": "auditor@sentinel.net",
+                "email": "auditor@vectornet.io",
                 "display_name": "Senior Cyber Auditor",
                 "role": "SECURITY_AUDITOR",
                 "team_id": "TEAM_VECTOR_DEFENSE",
@@ -123,7 +123,7 @@ class FirestoreStore:
             },
             {
                 "uid": "FIREBASE_UID_OPERATOR_03",
-                "email": "operator@sentinel.net",
+                "email": "operator@vectornet.io",
                 "display_name": "Lead Network Operator",
                 "role": "NETWORK_OPERATOR",
                 "team_id": "TEAM_VECTOR_DEFENSE",
@@ -187,7 +187,7 @@ class FirestoreStore:
             {
                 "log_id": "LOG-99201",
                 "user_uid": "FIREBASE_UID_SUPERADMIN_01",
-                "user_email": "priyankar@sentinel.net",
+                "user_email": "priyankar@vectornet.io",
                 "user_role": "SUPER_ADMIN",
                 "action_type": "SKILL_FILE_UPDATED",
                 "resource_affected": "skills/vendors/sonic_whitebox.md",

@@ -16,7 +16,7 @@ except Exception:
 
 class VectorStoreEngine:
     """
-    Mandatory AI Interactive Training Loop & pgvector/Vector Similarity Engine for Sentinel-Net.
+    Mandatory AI Interactive Training Loop & pgvector/Vector Similarity Engine for VectorNet.
     Performs zero-code learning inference for new vendor CLI commands.
     """
 

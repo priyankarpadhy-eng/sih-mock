@@ -102,7 +102,7 @@ class MultiKeyAIEngine:
             "key_pool": masked_keys
         }
 
-    def query_with_failover(self, prompt: str, system_instruction: str = "You are Sentinel-Net AI Security Auditor.") -> Dict[str, Any]:
+    def query_with_failover(self, prompt: str, system_instruction: str = "You are VectorNet AI Security Auditor.") -> Dict[str, Any]:
         """
         Executes query against OpenRouter using multi-key failover.
         If Key #1 hits rate limits or token exhaustion, automatically fails over to Key #2, #3, etc.
@@ -123,8 +123,8 @@ class MultiKeyAIEngine:
             headers = {
                 "Authorization": f"Bearer {key}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "https://sentinel.net",
-                "X-Title": "Sentinel-Net Agentic Platform"
+                "HTTP-Referer": "https://vectornet.io",
+                "X-Title": "VectorNet Agentic Platform"
             }
 
             payload = {

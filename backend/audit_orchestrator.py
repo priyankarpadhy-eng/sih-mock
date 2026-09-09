@@ -50,7 +50,7 @@ class AuditOrchestrator:
                     return f.read()
             except Exception:
                 pass
-        return "You are Sentinel-Net AI Security Compliance Auditor for NIST, CIS, DISA STIG, and ISO 27001."
+        return "You are VectorNet AI Security Compliance Auditor for NIST, CIS, DISA STIG, and ISO 27001."
 
     def resolve_skill_file(self, vendor: str) -> Optional[str]:
         v_clean = vendor.lower().strip()

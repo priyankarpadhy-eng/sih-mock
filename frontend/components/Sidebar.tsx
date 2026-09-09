@@ -148,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
             </div>
             <div>
-              <h1 className="font-bold text-sm text-white tracking-tight">SENTINEL</h1>
+              <h1 className="font-bold text-sm text-white tracking-tight">VECTORNET</h1>
               <p className="text-[10px] text-[#8B949E] font-mono">SIH 2026 Defense Engine</p>
             </div>
           </div>

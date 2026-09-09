@@ -100,7 +100,7 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `sentinel_audit_${detectedVendor.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+      a.download = `vectornet_audit_${detectedVendor.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

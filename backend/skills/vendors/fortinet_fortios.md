@@ -1,66 +1,88 @@
 ---
-skill_id: vendor_fortinet_fortios
-skill_name: Fortinet FortiOS Security & Compliance Skill
-category: vendor
-vendor: Fortinet
-os_version: FortiOS 6.x - 7.x
+name: fortinet-audit
+description: Parse and audit Fortinet FortiGate logs (native key=value syslog or CEF format)
 ---
 
-# FORTINET FORTIOS AUDIT PROFILE
+# Fortinet FortiGate Log Audit Skill
 
-## 1. LOG FORMAT & SYSLOG DIALECT
-Fortinet key-value structured syslog format:
-- Structure: `date=YYYY-MM-DD time=HH:MM:SS devname="FG-TACTICAL" devid="FG100E..." type="traffic|event" subtype="system|admin" level="notice|warning|alert" logid="01000..." msg="..."`
-- Auth Events: `subtype="admin" action="login" status="failed"`
-- Privilege Changes: `msg="Administrator 'admin' changed config for 'system global'"`
+## How to recognize this format
 
-## 2. KNOWN-BENIGN NOISY LOGS (SUPPRESS)
-- `msg="FortiGuard update completed successfully"` (Automatic definition pull)
-- `msg="DHCP lease IP 192.168.1.150 assigned to client"` (Routine local addressing)
-- `subtype="ha" msg="Virtual cluster synchronization in sync"` (Cluster heartbeat)
-- `msg="NTP server 10.0.0.1 synchronized"` (Normal clock tracking)
+**Native format** — space-separated `key=value` pairs, always includes `date=`,
+`time=`, `logid=`, `type=`, `subtype=`:
 
-## 3. VENDOR-SPECIFIC ATTACK SIGNATURES & MISCONFIG PATTERNS
-- **HTTP / Telnet Admin Access Active**: `set allowaccess ping https ssh http telnet` on external interface -> Flag as NIST-SC-8 FAIL
-- **Admin Timeout Missing or Excessive**: `set admintimeout 0` or missing under `config system global` -> Flag as NIST-AC-12 FAIL
-- **Pre-login Disclaimer Disabled**: `set pre-login-banner disable` -> Flag as DISA-STIG-002 FAIL
-- **Default Port Utilization**: Admin port left on standard 443/80 without port offset or trusted host restriction.
-- **Weak Cipher Suites**: `set strong-crypto disable` in system global.
-
-## 4. SAMPLE ANNOTATED LOG & CONFIG SNIPPETS
-```fortios
-config system global
-    set hostname "FGT-TACTICAL-01"
-    set admintimeout 0                  # [FAIL: NIST-AC-12 Session timeout disabled]
-    set pre-login-banner disable        # [FAIL: DISA-STIG-002 Legal banner missing]
-    set strong-crypto disable           # [FAIL: NIST-IA-5 Weak crypto enabled]
-end
-
-config system interface
-    edit "wan1"
-        set mode static
-        set allowaccess ping http telnet # [FAIL: NIST-SC-8 Cleartext web and telnet on WAN]
-    next
-end
+```
+date=2018-12-27 time=11:07:55 logid="0000000013" type="traffic" subtype="forward" level="notice" ...
 ```
 
-## 5. HARDENING & ROLLBACK PLAYBOOKS
-```fortios
-# Hardening Sequence
-config system global
-    set admintimeout 10
-    set pre-login-banner enable
-    set strong-crypto enable
-end
-config system interface
-    edit "wan1"
-        set allowaccess ping https ssh
-    next
-end
+**CEF format** (when `config log syslogd setting; set format cef` is enabled)
+— has a `CEF:` marker and Fortinet prefixes non-standard fields with `FTNTFGT`:
 
-# Rollback Sequence
-config system global
-    set admintimeout 0
-    set pre-login-banner disable
-end
 ```
+Dec 27 11:07:55 FGT-A-LOG CEF: 0|Fortinet|Fortigate|v6.0.3|00013|traffic:forward close|3|deviceExternalId=FGT5HD3915800610 FTNTFGTlogid=0000000013 cat=traffic:forward FTNTFGTsubtype=forward FTNTFGTlevel=notice src=10.120.152.189 spt=54320 dst=40.113.178.33 dpt=443
+```
+
+The CEF header format is: `CEF:0|Fortinet|Fortigate|<version>|<logid>|<type:subtype>|<severity>|<extension key=value pairs>`
+
+## Key fields (native format)
+
+| Field | Meaning |
+|---|---|
+| `logid` | Numeric ID classifying the log message cause (e.g. traffic, auth failure) — stable across versions, group on this |
+| `type` | Top-level category: `traffic`, `event`, `utm`, `virus`, `webfilter`, etc. |
+| `subtype` | Sub-category within type, e.g. `forward`, `local`, `multicast` under `traffic` |
+| `level` | Native severity string: `emergency, alert, critical, error, warning, notice, information, debug` |
+| `srcip`/`srcport`, `dstip`/`dstport` | Connection endpoints |
+| `action` | What FortiGate did: `accept`, `deny`, `close`, `timeout`, `block` |
+| `policyid`/`policyname` | Which firewall policy matched |
+| `service` | Named service/app the traffic matched |
+| `sentbyte`/`rcvdbyte` | Byte counts — useful for exfil/beaconing detection |
+
+## CEF field mapping quirks (important for parsing)
+
+- Fields not part of the standard CEF dictionary get an `FTNTFGT` prefix
+  (e.g. `FTNTFGTlevel`, `FTNTFGTsubtype`, `FTNTFGTpolicyname`). Standard CEF
+  fields keep their normal names (`src`, `dst`, `spt`, `dpt`, `act`).
+  Known bug: in some FortiOS builds, `action` incorrectly maps to `act`
+  when it should stay as a native-style field — if `act` values look garbled
+  or missing, check for this known mapping issue (fixed in FortiOS 7.4.10 /
+  7.6.5 / 8.0.0).
+- The CEF `SignatureId` field = last 5 digits of the native `logid`.
+- The CEF `Name` field is built from `type:subtype + [eventtype] + [action] + [status]`.
+- `cat` in CEF = `type:subtype` from native format.
+
+## Severity mapping (native `level` -> global tier)
+
+| FortiGate level | -> Global tier |
+|---|---|
+| emergency, alert, critical | Critical |
+| error | High |
+| warning | Medium/High |
+| notice | Medium |
+| information | Low |
+| debug | Informational |
+
+## High-value type:subtype combinations to watch for
+
+| type:subtype | Meaning | Audit relevance |
+|---|---|---|
+| `traffic:forward` with `action=deny` | Blocked traffic through policy | Cluster by srcip for scan detection, same as ACL denies on other vendors |
+| `event:vpn` | VPN negotiation events | Look for repeated `negotiate` failures = brute force or misconfigured peer |
+| `utm:webfilter` with `ftgd_blk` | Web filter category block | Repeated blocks to same category from one host = possible policy violation or malware callback |
+| `utm:virus` | AV engine detection | Any occurrence should be Critical/High regardless of other fields |
+| `event:system` | Admin login, config change, HA events | Check for admin logins outside business hours, config changes without change-ticket context |
+| `traffic:local` | Traffic destined to the FortiGate itself | Management-plane access attempts — treat with higher priority than forwarded traffic |
+
+## Audit heuristics specific to FortiGate
+
+- **Policy ID drift**: if the same src/dst pair suddenly matches a different
+  `policyid` than historically, a rule was likely reordered or changed —
+  flag as a config-change indicator even without an explicit event log.
+- **`ftgd_blk` repeated to same category**: 5+ blocks to the same webfilter
+  category from one internal host in a short window suggests malware
+  beaconing or a compromised host repeatedly trying a C2 domain category.
+- **Byte-count symmetry**: near-identical `sentbyte`/`rcvdbyte` values at
+  regular intervals from an internal host = classic beacon signature, flag
+  as Medium/High even if `action=accept`.
+- **FTNTFGT-prefixed fields present but expected standard CEF field missing**:
+  indicates a parsing/mapping issue on the FortiGate's CEF output — note as
+  a hygiene issue rather than silently dropping the field.

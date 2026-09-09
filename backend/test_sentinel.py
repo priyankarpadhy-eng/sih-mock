@@ -9,7 +9,7 @@ from backend.remediation_generator import RemediationGenerator
 from backend.ai_trainer_vector import VectorStoreEngine
 from backend.rbac_audit import rbac_audit_engine, Role
 
-class TestSentinelNetProblemStatement26155(unittest.TestCase):
+class TestVectorNetProblemStatement26155(unittest.TestCase):
 
     def setUp(self):
         self.cucme_raw = SAMPLE_CONFIGS["cisco_cucme"]["raw"]

@@ -77,10 +77,10 @@ export interface TeamUser {
 }
 
 export const DEFAULT_TEAM_USERS: TeamUser[] = [
-  { uid: 'FIREBASE_UID_SUPERADMIN_01', name: 'Priyankar Padhy', email: 'priyankar@sentinel.net', role: 'SUPER_ADMIN', team: 'SecOps Lead', avatar: 'PP', color: 'bg-indigo-600 text-white' },
-  { uid: 'FIREBASE_UID_OPERATOR_03', name: 'Lead Network Operator', email: 'operator@sentinel.net', role: 'NETWORK_OPERATOR', team: 'NetOps Tier-3', avatar: 'NO', color: 'bg-sky-600 text-white' },
-  { uid: 'FIREBASE_UID_AUDITOR_02', name: 'Senior Cyber Auditor', email: 'auditor@sentinel.net', role: 'SECURITY_AUDITOR', team: 'Compliance Team', avatar: 'CA', color: 'bg-emerald-600 text-white' },
-  { uid: 'FIREBASE_UID_SECOPS_04', name: 'SecOps Specialist', email: 'secops@sentinel.net', role: 'SECURITY_AUDITOR', team: 'IR Team', avatar: 'SO', color: 'bg-amber-600 text-white' }
+  { uid: 'FIREBASE_UID_SUPERADMIN_01', name: 'Priyankar Padhy', email: 'priyankar@vectornet.io', role: 'SUPER_ADMIN', team: 'SecOps Lead', avatar: 'PP', color: 'bg-indigo-600 text-white' },
+  { uid: 'FIREBASE_UID_OPERATOR_03', name: 'Lead Network Operator', email: 'operator@vectornet.io', role: 'NETWORK_OPERATOR', team: 'NetOps Tier-3', avatar: 'NO', color: 'bg-sky-600 text-white' },
+  { uid: 'FIREBASE_UID_AUDITOR_02', name: 'Senior Cyber Auditor', email: 'auditor@vectornet.io', role: 'SECURITY_AUDITOR', team: 'Compliance Team', avatar: 'CA', color: 'bg-emerald-600 text-white' },
+  { uid: 'FIREBASE_UID_SECOPS_04', name: 'SecOps Specialist', email: 'secops@vectornet.io', role: 'SECURITY_AUDITOR', team: 'IR Team', avatar: 'SO', color: 'bg-amber-600 text-white' }
 ];
 
 const IMPORTANCE_CONFIG = {

@@ -12,7 +12,7 @@ from backend.skills_loader import skills_engine
 
 class ComplianceEngine:
     """
-    Multi-Framework Agentic Audit Evaluator & Remediation Engine for Sentinel-Net.
+    Multi-Framework Agentic Audit Evaluator & Remediation Engine for VectorNet.
     Evaluates Security Baseline Models dynamically against .md Agentic Skill Profiles
     (NIST SP 800-53, CIS Benchmarks, DISA STIGs, ISO 27001).
     """

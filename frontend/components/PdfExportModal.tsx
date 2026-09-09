@@ -31,7 +31,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({ rawConfig, hostn
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `sentinel_audit_${hostname.toLowerCase()}.pdf`;
+      a.download = `vectornet_audit_${hostname.toLowerCase()}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
