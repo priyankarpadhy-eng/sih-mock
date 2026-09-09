@@ -48,10 +48,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const email = activeUser?.email || 'priyankar@sentinel.net';
   const initial = displayName.charAt(0) || 'P';
 
-  // Role-based navigation filtering
+  // Role-based navigation filtering: Ingestion at top, Overview just below it
   const navItems = [
-    { id: 'overview' as NavTab, label: 'Overview', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'] },
     { id: 'ingestion' as NavTab, label: 'Ingestion', icon: UploadCloud, roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR'] },
+    { id: 'overview' as NavTab, label: 'Overview', icon: LayoutDashboard, roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'] },
     { id: 'tasks' as NavTab, label: 'Tasks (Kanban)', icon: CheckSquare, roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'] },
     { id: 'skills' as NavTab, label: 'Agentic Skills', icon: Sparkles, roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'] },
     { id: 'inventory' as NavTab, label: 'Inventory', icon: Server, roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'] },

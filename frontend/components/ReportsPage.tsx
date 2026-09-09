@@ -17,16 +17,21 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [pdfKey, setPdfKey] = useState(0);
 
-  const pdfUrl = `http://localhost:8000/api/export-pdf?download=false&v=${pdfKey}`;
-  const downloadUrl = `http://localhost:8000/api/export-pdf?download=true`;
+  const pdfUrl = `/api/export-pdf?download=false&v=${pdfKey}`;
+  const downloadUrl = `/api/export-pdf?download=true`;
 
   const handleDownloadDirect = async () => {
     setIsExporting(true);
     try {
-      const response = await fetch('http://localhost:8000/api/export-pdf', {
+      const response = await fetch('/api/export-pdf', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ raw_config: rawConfig, download: 'true' }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          raw_config: rawConfig,
+          compliance_score: complianceScore,
+          device_metadata: { hostname, vendor },
+          download: true,
+        }),
       });
 
       if (!response.ok) throw new Error('PDF export failed');
@@ -49,7 +54,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
   };
 
   const handleOpenNewTab = () => {
-    window.open(`http://localhost:8000/api/export-pdf?download=false`, '_blank');
+    window.open(`/api/export-pdf?download=false`, '_blank');
   };
 
   return (

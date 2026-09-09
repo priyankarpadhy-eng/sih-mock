@@ -13,10 +13,14 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({ rawConfig, hostn
   const handleDownloadPdf = async () => {
     setIsExporting(true);
     try {
-      const response = await fetch('http://localhost:8000/api/export-pdf', {
+      const response = await fetch('/api/export-pdf', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ raw_config: rawConfig }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          raw_config: rawConfig,
+          device_metadata: { hostname, vendor },
+          download: true,
+        }),
       });
 
       if (!response.ok) {

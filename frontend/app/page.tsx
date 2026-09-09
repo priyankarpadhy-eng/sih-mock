@@ -289,7 +289,7 @@ const DEFAULT_LOGS = [
 ];
 
 export default function AppContainer() {
-  const [activeTab, setActiveTab] = useState<NavTab>('overview');
+  const [activeTab, setActiveTab] = useState<NavTab>('ingestion');
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('DEV-CSCO-01');
   const [assets, setAssets] = useState<any[]>(DEFAULT_ASSETS);
   const [logs, setLogs] = useState<any[]>(DEFAULT_LOGS);

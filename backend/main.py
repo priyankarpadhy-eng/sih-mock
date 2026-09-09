@@ -463,8 +463,18 @@ async def query_ai(
 
     response_text = f"Analyzed database telemetry and hardware specifications for {detected_vendor} ({sbm.device_metadata.hostname})."
     if query.strip():
-        response_text += f" Found {len(matched_logs)} matching log events for query '{query}'."
-    if audit_summary:
+        if ai_engine.api_keys:
+            ai_res = ai_engine.query_with_failover(
+                prompt=f"Device: {detected_vendor} ({sbm.device_metadata.hostname})\nCompliance Score: {audit_summary.compliance_score}%\nViolations: {audit_summary.failed_checks}\nConfig Snippet:\n{config_text[:1200]}\n\nUser Question: {query}\n\nProvide technical compliance analysis referencing NIST SP 800-53, CIS, and DISA STIG controls.",
+                system_instruction="You are Sentinel-Net AI Security Auditor specialized in multi-vendor enterprise network compliance."
+            )
+            if ai_res.get("success"):
+                response_text = ai_res.get("content", response_text)
+            else:
+                response_text += f" Found {len(matched_logs)} matching log events for query '{query}'."
+        else:
+            response_text += f" Found {len(matched_logs)} matching log events for query '{query}'."
+    if audit_summary and not ai_engine.api_keys:
         response_text += f" Configuration evaluation score is {audit_summary.compliance_score}% with {audit_summary.failed_checks} compliance violations detected (NIST AC-12: FAIL, CIS 1.1.2: FAIL, DISA IA-5: FAIL)."
 
     return {
