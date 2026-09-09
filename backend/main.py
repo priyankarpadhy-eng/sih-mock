@@ -28,6 +28,7 @@ from backend.ai_llm_engine import ai_engine
 from backend.task_router import (
     TaskEngine, TokenVerifyRequest, SkillUpdateRequest, AIConfigUpdateRequest, TaskAssignRequest, TaskCommentRequest, TaskCreateRequest, AuthLoginRequest, AuthSignUpRequest
 )
+from backend.audit_orchestrator import audit_orchestrator
 
 app = FastAPI(
     title="Sentinel-Net Agentic Compliance & Workflow Engine API",
@@ -464,9 +465,14 @@ async def query_ai(
     response_text = f"Analyzed database telemetry and hardware specifications for {detected_vendor} ({sbm.device_metadata.hostname})."
     if query.strip():
         if ai_engine.api_keys:
+            system_inst, user_prompt, _ = audit_orchestrator.build_prompt(
+                raw_text=config_text[:2000],
+                vendor=detected_vendor,
+                user_query=query
+            )
             ai_res = ai_engine.query_with_failover(
-                prompt=f"Device: {detected_vendor} ({sbm.device_metadata.hostname})\nCompliance Score: {audit_summary.compliance_score}%\nViolations: {audit_summary.failed_checks}\nConfig Snippet:\n{config_text[:1200]}\n\nUser Question: {query}\n\nProvide technical compliance analysis referencing NIST SP 800-53, CIS, and DISA STIG controls.",
-                system_instruction="You are Sentinel-Net AI Security Auditor specialized in multi-vendor enterprise network compliance."
+                prompt=user_prompt,
+                system_instruction=system_inst
             )
             if ai_res.get("success"):
                 response_text = ai_res.get("content", response_text)
