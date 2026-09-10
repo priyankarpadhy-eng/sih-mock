@@ -21,8 +21,10 @@ import {
   Sliders,
   RotateCcw,
   Code,
+  Filter,
 } from 'lucide-react';
 import { NavTab } from '../layout/Sidebar';
+import { DEMO_SAMPLES, DemoSample } from '../../lib/demo_samples';
 
 interface AuditFinding {
   rule_id: string;
@@ -121,6 +123,53 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   const [drawerActiveTab, setDrawerActiveTab] = useState<'raw' | 'normalized'>('raw');
   const [isNormalizing, setIsNormalizing] = useState(false);
   const [copiedSchema, setCopiedSchema] = useState(false);
+  const [sampleVendorFilter, setSampleVendorFilter] = useState<'ALL' | 'Cisco' | 'Palo Alto' | 'Juniper' | 'Fortinet' | 'Multi-Vendor'>('ALL');
+  const [sampleStatusFilter, setSampleStatusFilter] = useState<'ALL' | 'CLEAN' | 'VULNERABLE'>('ALL');
+  const [activeSampleId, setActiveSampleId] = useState<string | null>(null);
+
+  const handleLoadDemoSample = async (sample: DemoSample) => {
+    setActiveSampleId(sample.id);
+    onConfigChange(sample.rawConfig);
+    setIngestMeta({
+      source: 'PRESET',
+      label: `${sample.vendor} (${sample.statusType === 'CLEAN' ? 'No Error' : 'Errors Found'})`,
+    });
+    setAiResponseText(null);
+    setAiMeta(null);
+    setNormalizedSchema(null);
+    setIsProcessing(true);
+
+    try {
+      const evalRes = await fetch('http://localhost:8000/api/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ raw_config: sample.rawConfig }),
+      });
+      if (evalRes.ok) {
+        const evalData = await evalRes.json();
+        setDynamicAuditResult(evalData);
+        setShowAuditDetails(true);
+      }
+    } catch (err) {
+      console.error("Evaluation error:", err);
+      setShowAuditDetails(true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const filteredSamples = DEMO_SAMPLES.filter((sample) => {
+    if (sampleVendorFilter !== 'ALL' && sample.vendor !== sampleVendorFilter) {
+      return false;
+    }
+    if (sampleStatusFilter === 'CLEAN' && sample.statusType !== 'CLEAN') {
+      return false;
+    }
+    if (sampleStatusFilter === 'VULNERABLE' && sample.statusType !== 'VULNERABLE' && sample.statusType !== 'COMBO') {
+      return false;
+    }
+    return true;
+  });
 
   const handleFetchNormalizedSchema = async () => {
     if (!rawConfig.trim()) return;
@@ -676,19 +725,27 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           {/* Embedded Preset Selector Strip */}
           {showPresetPicker && (
             <div className="mt-3 pt-3 border-t border-[#F1F5F9] flex flex-wrap gap-1.5">
-              {['cisco_cucme', 'cisco_ios', 'palo_alto', 'juniper_junos', 'fortinet_fortios', 'sonic_whitebox', 'aws_sg'].map((pid) => (
+              {DEMO_SAMPLES.map((sample) => (
                 <button
-                  key={pid}
+                  key={sample.id}
                   type="button"
                   onClick={() => {
-                    onLoadPreset && onLoadPreset(pid);
+                    handleLoadDemoSample(sample);
                     setShowPresetPicker(false);
-                    onEvaluate();
-                    setShowAuditDetails(true);
                   }}
-                  className="px-2.5 py-1 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg text-[11px] text-[#334155] font-medium transition-colors"
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors border cursor-pointer ${
+                    sample.statusType === 'CLEAN'
+                      ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+                      : sample.statusType === 'VULNERABLE'
+                      ? 'bg-rose-50 hover:bg-rose-100 text-rose-800 border-rose-200'
+                      : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200'
+                  }`}
+                  title={`${sample.vendor}: ${sample.description}`}
                 >
-                  {pid.replace('_', ' ').toUpperCase()}
+                  <span className="font-semibold">{sample.vendor}</span>
+                  <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-white/70">
+                    {sample.statusType === 'CLEAN' ? 'No Error' : `${sample.violationsCount} Errors`}
+                  </span>
                 </button>
               ))}
             </div>
@@ -762,7 +819,61 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
         {/* ========================================================================= */}
         {showAuditDetails && (
           <div className="w-full max-w-[780px] mt-6 space-y-5">
-            
+
+            {/* Quick Demo Sample Switcher Strip */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+                  <Sliders className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Interactive Sample Switcher</span>
+                  <span className="text-[11px] font-normal text-slate-500 font-sans hidden sm:inline">
+                    &bull; Compare Error vs No-Error compliance results
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAuditDetails(false)}
+                  className="text-[11px] font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                >
+                  &larr; Back to Ingestion Lab
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                {DEMO_SAMPLES.map((sample) => {
+                  const isActive = activeSampleId === sample.id;
+                  const isClean = sample.statusType === 'CLEAN';
+                  return (
+                    <button
+                      key={sample.id}
+                      type="button"
+                      onClick={() => handleLoadDemoSample(sample)}
+                      disabled={isProcessing}
+                      className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs transition-all cursor-pointer border ${
+                        isActive
+                          ? isClean
+                            ? 'bg-emerald-50 border-emerald-400 text-emerald-900 font-bold shadow-2xs ring-1 ring-emerald-300'
+                            : 'bg-rose-50 border-rose-400 text-rose-900 font-bold shadow-2xs ring-1 ring-rose-300'
+                          : isClean
+                            ? 'bg-slate-50 hover:bg-emerald-50/60 border-slate-200 text-slate-700 hover:border-emerald-300'
+                            : 'bg-slate-50 hover:bg-rose-50/60 border-slate-200 text-slate-700 hover:border-rose-300'
+                      }`}
+                      title={`${sample.vendor}: ${sample.name} - ${sample.badgeText}`}
+                    >
+                      <span className="font-semibold">{sample.vendor}</span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                        isClean
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold'
+                          : 'bg-rose-100 text-rose-800 border border-rose-200 font-bold'
+                      }`}>
+                        {isClean ? 'No Error' : `${sample.violationsCount} Errors`}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Executive Scorecard & Action Row */}
             <div className="bg-white border border-[#CBD5E1] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -1009,37 +1120,156 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           </div>
         )}
 
-        {/* 3 Prompt / Preset Cards in 3-Column Grid (shown when not yet audited) */}
+        {/* Sample Configurations Test Lab (Error vs No Error Scenarios) */}
         {!showAuditDetails && (
-          <div className="w-full max-w-[780px] grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-            {PRESET_CARDS.map((card) => {
-              const IconComponent = card.icon;
-              return (
+          <div className="w-full max-w-[780px] mt-6 space-y-3">
+            {/* Lab Section Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1">
+              <div>
+                <h2 className="text-sm font-bold text-[#0F172A] flex items-center gap-1.5">
+                  <Sliders className="w-4 h-4 text-slate-700" />
+                  Sample Test Lab &bull; Error vs No-Error Presets
+                </h2>
+                <p className="text-xs text-[#64748B] mt-0.5">
+                  Click any sample to audit against NIST, CIS, and DISA STIG controls. Badges clearly indicate known errors vs clean states.
+                </p>
+              </div>
+
+              {/* Status Filter Toggle */}
+              <div className="inline-flex items-center gap-1 p-1 bg-slate-100 rounded-xl self-start sm:self-auto border border-slate-200">
                 <button
-                  key={card.id}
                   type="button"
-                  onClick={() => {
-                    onLoadPreset && onLoadPreset(card.id);
-                    setIngestMeta({ source: 'PRESET', label: card.title });
-                    onEvaluate();
-                    setShowAuditDetails(true);
-                  }}
-                  className="text-left bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] p-4 rounded-2xl shadow-xs transition-all hover:translate-y-[-1px] group flex flex-col justify-between cursor-pointer"
+                  onClick={() => setSampleStatusFilter('ALL')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    sampleStatusFilter === 'ALL'
+                      ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                 >
-                  <div>
-                    <div className="w-7 h-7 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center text-[#0F172A] mb-3 group-hover:border-amber-300 transition-colors">
-                      <IconComponent className="w-3.5 h-3.5 text-[#0F172A]" />
-                    </div>
-                    <h3 className="text-xs font-semibold text-[#0F172A] mb-1">
-                      {card.title}
-                    </h3>
-                    <p className="text-[11px] text-[#64748B] leading-relaxed">
-                      {card.description}
-                    </p>
-                  </div>
+                  All States
                 </button>
-              );
-            })}
+                <button
+                  type="button"
+                  onClick={() => setSampleStatusFilter('CLEAN')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    sampleStatusFilter === 'CLEAN'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs font-semibold'
+                      : 'text-slate-600 hover:text-emerald-700'
+                  }`}
+                >
+                  No Error
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSampleStatusFilter('VULNERABLE')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    sampleStatusFilter === 'VULNERABLE'
+                      ? 'bg-rose-50 text-rose-800 border border-rose-200 shadow-2xs font-semibold'
+                      : 'text-slate-600 hover:text-rose-700'
+                  }`}
+                >
+                  Errors Found
+                </button>
+              </div>
+            </div>
+
+            {/* Vendor Filter Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+              {(['ALL', 'Cisco', 'Palo Alto', 'Juniper', 'Fortinet', 'Multi-Vendor'] as const).map((vendor) => {
+                const isSelected = sampleVendorFilter === vendor;
+                const count = vendor === 'ALL' 
+                  ? DEMO_SAMPLES.length 
+                  : DEMO_SAMPLES.filter(s => s.vendor === vendor).length;
+                return (
+                  <button
+                    key={vendor}
+                    type="button"
+                    onClick={() => setSampleVendorFilter(vendor)}
+                    className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
+                      isSelected
+                        ? 'bg-[#0F172A] text-white border-[#0F172A] font-semibold shadow-2xs'
+                        : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    {vendor === 'ALL' ? 'All Vendors' : vendor} ({count})
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {filteredSamples.map((sample) => {
+                const isClean = sample.statusType === 'CLEAN';
+                const isCombo = sample.statusType === 'COMBO';
+                const isCurrent = activeSampleId === sample.id;
+
+                const vendorBadgeColor =
+                  sample.vendor === 'Cisco' ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : sample.vendor === 'Palo Alto' ? 'bg-orange-50 text-orange-700 border-orange-200'
+                  : sample.vendor === 'Juniper' ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  : sample.vendor === 'Fortinet' ? 'bg-purple-50 text-purple-700 border-purple-200'
+                  : 'bg-slate-100 text-slate-800 border-slate-300';
+
+                return (
+                  <div
+                    key={sample.id}
+                    onClick={() => handleLoadDemoSample(sample)}
+                    className={`bg-white border rounded-2xl p-4 shadow-2xs transition-all hover:translate-y-[-1px] flex flex-col justify-between cursor-pointer group select-none ${
+                      isCurrent
+                        ? 'border-blue-400 ring-2 ring-blue-100'
+                        : 'border-[#E2E8F0] hover:border-[#CBD5E1] hover:shadow-xs'
+                    }`}
+                  >
+                    <div>
+                      {/* Top Row: Vendor Tag + Error / No-Error Status Badge */}
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border ${vendorBadgeColor}`}>
+                          {sample.vendor}
+                        </span>
+
+                        {/* Status badge with clear error / no error text */}
+                        {isClean ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                            No Error &bull; Clean
+                          </span>
+                        ) : isCombo ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                            <Sliders className="w-3 h-3 text-amber-700 shrink-0" />
+                            Mixed &bull; {sample.violationsCount} Errors
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                            <AlertTriangle className="w-3 h-3 text-rose-600 shrink-0" />
+                            Errors Found &bull; {sample.violationsCount} Violations
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Sample Title */}
+                      <h3 className="text-xs font-semibold text-[#0F172A] group-hover:text-blue-600 transition-colors flex items-center justify-between">
+                        <span>{sample.name}</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                      </h3>
+
+                      {/* Description */}
+                      <p className="text-[11px] text-[#64748B] leading-relaxed mt-1 line-clamp-2">
+                        {sample.description}
+                      </p>
+                    </div>
+
+                    {/* Bottom Metadata & Quick Audit Action */}
+                    <div className="flex items-center justify-between pt-3 mt-3 border-t border-[#F1F5F9] text-[10px] font-mono text-slate-500">
+                      <span>{sample.rawConfig.split('\n').length} lines</span>
+                      <span className="font-semibold text-blue-600 group-hover:underline">
+                        Audit Configuration &rarr;
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
