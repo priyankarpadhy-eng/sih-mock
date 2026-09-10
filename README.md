@@ -147,7 +147,21 @@ docker compose down
 
 ---
 
-## 🏗️ High-Level System Architecture
+## 🏗️ System Architecture & Execution Flow
+
+### A. Concise 5-Stage Pipeline Flow (Slide & Executive View)
+
+```mermaid
+flowchart LR
+    A["1. INGESTION<br/>• Configs & Syslog<br/>• Secret Redaction"] --> B["2. NORMALIZATION<br/>• Universal Schema (SBM)<br/>• Line-Span Evidence"]
+    B --> C["3. DETERMINISTIC AUDIT<br/>• CIS, NIST, STIG, ISO<br/>• 5-State Offline Rules"]
+    C --> D["4. HYBRID AI ROUTER<br/>• Multi-LLM Failover<br/>• Ground-Truth Validator"]
+    D --> E["5. ACTIONABLE OUTPUTS<br/>• Next.js TOC Dashboard<br/>• Defense PDF & Team Tasks"]
+```
+
+---
+
+### B. Detailed Subsystem Architecture (Engineering View)
 
 ```mermaid
 flowchart TD
