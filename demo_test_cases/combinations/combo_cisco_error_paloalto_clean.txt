@@ -1,0 +1,32 @@
+! ==============================================================================
+! COMBINATION TEST CASE: CISCO (VULNERABLE) + PALO ALTO (COMPLIANT)
+! Uploaded together in a single multi-device audit stream
+! ==============================================================================
+
+! --- DEVICE 1: CISCO IOS (NON-COMPLIANT / CONTAINS VIOLATIONS) ---
+version 15.1
+hostname BRANCH-RTR-VULN
+service password-encryption
+enable password 7 0822455D0A16
+ip domain-name legacy.local
+ip ssh version 1
+ip http server
+snmp-server community public RO
+line con 0
+ exec-timeout 0 0
+line vty 0 4
+ exec-timeout 0 0
+ transport input telnet ssh
+ login local
+end
+
+# --- DEVICE 2: PALO ALTO NETWORKS (100% COMPLIANT / ZERO VIOLATIONS) ---
+set deviceconfig system hostname PAN-FW-CLEAN
+set deviceconfig system service disable-telnet yes
+set deviceconfig system service disable-http yes
+set deviceconfig system idle-timeout 10
+set deviceconfig system login-banner "AUTHORIZED ACCESS ONLY. All activities are monitored and logged."
+set shared log-settings syslog PROD-SYSLOG server 10.0.0.50 transport UDP port 514 format BSD
+set mgt-config users secadmin phash $6$rounds=5000$strongsalt$9K7mER7vX3Y80x1g0f7abcde12345
+set mgt-config password-complexity minimum-length 14
+set mgt-config password-complexity enabled yes

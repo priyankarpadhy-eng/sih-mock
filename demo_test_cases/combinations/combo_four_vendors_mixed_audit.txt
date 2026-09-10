@@ -1,0 +1,46 @@
+! ==============================================================================
+! COMBINATION TEST CASE: 4-VENDOR HETEROGENEOUS ENTERPRISE AUDIT STREAM
+! Contains: Cisco (Error) + Palo Alto (Clean) + Juniper (Clean) + Fortinet (Error)
+! ==============================================================================
+
+! === 1. CISCO IOS (NON-COMPLIANT) ===
+hostname BRANCH-CISCO-VULN
+enable password 7 0822455D0A16
+ip ssh version 1
+snmp-server community public RO
+line vty 0 4
+ exec-timeout 0 0
+ transport input telnet ssh
+end
+
+# === 2. PALO ALTO PAN-OS (100% COMPLIANT) ===
+set deviceconfig system hostname PERIMETER-PAN-CLEAN
+set deviceconfig system service disable-telnet yes
+set deviceconfig system service disable-http yes
+set deviceconfig system idle-timeout 10
+set deviceconfig system login-banner "AUTHORIZED USE ONLY"
+
+# === 3. JUNIPER JUNOS (100% COMPLIANT) ===
+system {
+    host-name CORE-JUNIPER-CLEAN;
+    login {
+        message "AUTHORIZED ACCESS ONLY";
+        idle-timeout 10;
+    }
+    services {
+        ssh {
+            protocol-version v2;
+        }
+    }
+}
+
+# === 4. FORTINET FORTIOS (NON-COMPLIANT) ===
+config system global
+    set hostname "EDGE-FORTINET-VULN"
+    set admintimeout 0
+end
+config system interface
+    edit "port1"
+        set allowaccess telnet http
+    next
+end

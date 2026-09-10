@@ -1,0 +1,26 @@
+# ==============================================================================
+# PALO ALTO NETWORKS (PAN-OS) — 100% HARDENED & COMPLIANT BENCHMARK
+# Meets NIST SP 800-53, CIS Benchmark, and DISA STIG guidelines
+# ==============================================================================
+set deviceconfig system hostname PAN-FW-CLEAN
+set deviceconfig system ip-address 10.0.0.1 netmask 255.255.255.0
+set deviceconfig system default-gateway 10.0.0.254
+set deviceconfig system dns-setting servers primary 1.1.1.1
+set deviceconfig system timezone UTC
+
+# Management Service Hardening
+set deviceconfig system service disable-telnet yes
+set deviceconfig system service disable-http yes
+set deviceconfig system service disable-snmpv1-v2c yes
+set deviceconfig system ssh-version 2
+set deviceconfig system idle-timeout 10
+
+# Warning Banner & Auditing
+set deviceconfig system login-banner "AUTHORIZED ACCESS ONLY. All activities are monitored and logged."
+set shared log-settings syslog PROD-SYSLOG server 10.0.0.50 transport UDP port 514 format BSD
+
+# Administrative Security
+set mgt-config users secadmin phash $6$rounds=5000$strongsalt$9K7mER7vX3Y80x1g0f7abcde12345
+set mgt-config users secadmin permissions role-based superuser yes
+set mgt-config password-complexity minimum-length 14
+set mgt-config password-complexity enabled yes

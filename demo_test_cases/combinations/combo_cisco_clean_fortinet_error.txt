@@ -1,0 +1,35 @@
+! ==============================================================================
+! COMBINATION TEST CASE: CISCO (COMPLIANT) + FORTINET (VULNERABLE)
+! Uploaded together in a single multi-device audit stream
+! ==============================================================================
+
+! --- DEVICE 1: CISCO IOS (100% COMPLIANT / ZERO VIOLATIONS) ---
+version 15.6
+hostname CORE-RTR-CLEAN
+enable secret 9 $9$x9K7mER7vX3Y80x1g0f7abcde12345
+ip ssh version 2
+no ip http server
+ip http secure-server
+banner motd ^C AUTHORIZED ACCESS ONLY ^C
+line vty 0 15
+ exec-timeout 10 0
+ transport input ssh
+end
+
+# --- DEVICE 2: FORTINET FORTIOS (NON-COMPLIANT / CONTAINS VIOLATIONS) ---
+config system global
+    set hostname "FGT-SEC-VULN"
+    set admintimeout 0
+    set pre_login_banner disable
+end
+config system interface
+    edit "port1"
+        set allowaccess telnet http
+    next
+end
+config system snmp community
+    edit 1
+        set name "public"
+        set status enable
+    next
+end

@@ -1,0 +1,19 @@
+# ==============================================================================
+# PALO ALTO NETWORKS (PAN-OS) — VULNERABLE CONFIGURATION (WITH VIOLATIONS)
+# Contains: Cleartext HTTP/Telnet, infinite timeout, weak admin settings
+# ==============================================================================
+set deviceconfig system hostname PAN-FW-VULN
+set deviceconfig system ip-address 192.168.1.5 netmask 255.255.255.0
+
+# Insecure Service Settings (Violates CIS 1.1 / NIST SC-8)
+set deviceconfig system service disable-telnet no
+set deviceconfig system service disable-http no
+set deviceconfig system idle-timeout 0
+
+# Insecure SNMP Community
+set deviceconfig system snmp-setting version v2c
+set deviceconfig system snmp-setting community public
+
+# Weak User Authentication & Missing Banner
+set mgt-config users admin password plainadmin123
+set mgt-config users admin permissions role-based superuser yes

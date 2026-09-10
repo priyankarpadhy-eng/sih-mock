@@ -113,26 +113,47 @@ class ConfigNormalizer:
                 if "https" in tokens:
                     https_management = True
 
-            # SSH Version (Cisco / Juniper / Generic)
-            if "ip ssh version 2" in line_l or "ssh protocol-version v2" in line_l or "ssh v2" in line_l or "set system services ssh" in line_l:
+            # SSH Version (Cisco / Juniper / Palo Alto / Fortinet / Generic)
+            if (
+                "ip ssh version 2" in line_l
+                or "protocol-version v2" in line_l
+                or "ssh protocol-version v2" in line_l
+                or "ssh-version 2" in line_l
+                or "set system services ssh" in line_l
+                or "set deviceconfig system ssh" in line_l
+                or "ssh {" in line_l
+                or "set allowaccess ssh" in line_l
+                or "allowaccess ssh" in line_l
+            ):
                 ssh_version = 2
                 ssh_enabled = True
                 evidence_spans["ssh_version"] = {"line_start": line_no, "line_end": line_no, "text": line, "confidence": "HIGH"}
-            elif "ip ssh version 1" in line_l:
+            elif "ip ssh version 1" in line_l or "protocol-version v1" in line_l:
                 ssh_version = 1
                 ssh_enabled = True
                 evidence_spans["ssh_version"] = {"line_start": line_no, "line_end": line_no, "text": line, "confidence": "HIGH"}
 
-            # Telnet Permitted Check (Cisco / Juniper / Palo Alto)
-            if "transport input telnet" in line_l or "transport input all" in line_l or "set system services telnet" in line_l or "disable-telnet no" in line_l:
+            # Telnet Permitted Check (Cisco / Juniper / Palo Alto / Fortinet)
+            if (
+                "transport input telnet" in line_l
+                or "transport input all" in line_l
+                or "set system services telnet" in line_l
+                or "services { telnet" in line_l
+                or "disable-telnet no" in line_l
+                or ("allowaccess" in line_l and "telnet" in line_l)
+            ):
                 telnet_enabled = True
                 evidence_spans["telnet_enabled"] = {"line_start": line_no, "line_end": line_no, "text": line, "confidence": "HIGH"}
-            elif ("transport input ssh" in line_l and "telnet" not in line_l) or "disable-telnet yes" in line_l:
+            elif (
+                ("transport input ssh" in line_l and "telnet" not in line_l)
+                or "disable-telnet yes" in line_l
+                or ("allowaccess" in line_l and "ssh" in line_l and "telnet" not in line_l)
+            ):
                 telnet_enabled = False
                 evidence_spans["telnet_enabled"] = {"line_start": line_no, "line_end": line_no, "text": line, "confidence": "HIGH"}
 
             # Password Encryption Hashing Checks
-            if "password 7" in line_l or "secret 7" in line_l or "service password-encryption" in line_l:
+            if ("password 7" in line_l or "secret 7" in line_l or "service password-encryption" in line_l) and not line_l.strip().startswith("no "):
                 if "type_7" not in password_encryption_types:
                     password_encryption_types.append("type_7")
                     evidence_spans["password_encryption_types"] = {"line_start": line_no, "line_end": line_no, "text": line, "confidence": "HIGH"}
