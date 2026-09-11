@@ -22,9 +22,11 @@ import {
   RotateCcw,
   Code,
   Filter,
+  FlaskConical,
 } from 'lucide-react';
 import { NavTab } from '../layout/Sidebar';
 import { DEMO_SAMPLES, DemoSample } from '../../lib/demo_samples';
+import { evaluateConfiguration } from '../../lib/compliance_evaluator';
 
 interface AuditFinding {
   rule_id: string;
@@ -126,6 +128,38 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   const [sampleVendorFilter, setSampleVendorFilter] = useState<'ALL' | 'Cisco' | 'Palo Alto' | 'Juniper' | 'Fortinet' | 'Multi-Vendor'>('ALL');
   const [sampleStatusFilter, setSampleStatusFilter] = useState<'ALL' | 'CLEAN' | 'VULNERABLE'>('ALL');
   const [activeSampleId, setActiveSampleId] = useState<string | null>(null);
+  const [showSampleModal, setShowSampleModal] = useState(false);
+
+  // Universal evaluation: runs immediate client evaluation so results are never blank,
+  // then syncs with /api/evaluate or local backend if online.
+  const runUniversalEvaluation = async (configText: string, label?: string) => {
+    if (!configText || !configText.trim()) return;
+    setIsProcessing(true);
+
+    // 1. Instant deterministic client evaluation (guarantees results on Vercel or offline)
+    const localResult = evaluateConfiguration(configText);
+    setDynamicAuditResult(localResult);
+    setShowAuditDetails(true);
+
+    // 2. Query Next.js API /api/evaluate or local backend for any extra telemetry
+    try {
+      const res = await fetch('/api/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ raw_config: configText }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.findings && data.findings.length > 0) {
+          setDynamicAuditResult(data);
+        }
+      }
+    } catch (err) {
+      console.warn("Backend evaluation fetch skipped, using client engine:", err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleLoadDemoSample = async (sample: DemoSample) => {
     setActiveSampleId(sample.id);
@@ -137,25 +171,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
     setAiResponseText(null);
     setAiMeta(null);
     setNormalizedSchema(null);
-    setIsProcessing(true);
-
-    try {
-      const evalRes = await fetch('http://localhost:8000/api/evaluate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ raw_config: sample.rawConfig }),
-      });
-      if (evalRes.ok) {
-        const evalData = await evalRes.json();
-        setDynamicAuditResult(evalData);
-        setShowAuditDetails(true);
-      }
-    } catch (err) {
-      console.error("Evaluation error:", err);
-      setShowAuditDetails(true);
-    } finally {
-      setIsProcessing(false);
-    }
+    setShowSampleModal(false);
+    await runUniversalEvaluation(sample.rawConfig);
   };
 
   const filteredSamples = DEMO_SAMPLES.filter((sample) => {
@@ -244,6 +261,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             onConfigChange(content);
             setIngestMeta({ source: 'FILE', label: file.name });
             setAiResponseText(null);
+            runUniversalEvaluation(content, file.name);
           }
         };
         reader.readAsText(file);
@@ -261,6 +279,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
               onConfigChange(combined);
               setIngestMeta({ source: 'FILE', label: `${files.length} files` });
               setAiResponseText(null);
+              runUniversalEvaluation(combined, `${files.length} files`);
             }
           };
           r.readAsText(f);
@@ -373,22 +392,9 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
     setAiResponseText(null);
     setAiMeta(null);
 
-    // 1. Dynamic compliance evaluation on exact uploaded config (instant update)
-    try {
-      if (activeConfig.trim()) {
-        const evalRes = await fetch('http://localhost:8000/api/evaluate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ raw_config: activeConfig }),
-        });
-        if (evalRes.ok) {
-          const evalData = await evalRes.json();
-          setDynamicAuditResult(evalData);
-          setShowAuditDetails(true);
-        }
-      }
-    } catch {
-      // Continue to AI query
+    // 1. Dynamic compliance evaluation on exact uploaded config (instant update, never blank)
+    if (activeConfig.trim()) {
+      await runUniversalEvaluation(activeConfig);
     }
 
     // 2. Query Local Air-Gapped Ollama AI (qwen3:4b @ port 11434) with Universal Schema Normalization
@@ -564,9 +570,30 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
         )}
 
         {/* Primary Centered Heading */}
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0F172A] text-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0F172A] text-center mb-3">
           {showAuditDetails ? 'Security Compliance Audit Results' : 'Let’s start a smart conversation'}
         </h1>
+
+        {/* Quick Samples Launch Banner */}
+        {!showAuditDetails && (
+          <div className="mb-5 flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setShowSampleModal(true)}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 shadow-2xs transition-all cursor-pointer select-none"
+            >
+              <FlaskConical className="w-3.5 h-3.5 text-amber-500" />
+              <span>Explore Multi-Vendor Samples</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">
+                0 Errors
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-bold">
+                8 Violations
+              </span>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+          </div>
+        )}
 
         {/* Main Floating Input Card */}
         <div className="w-full max-w-[780px] bg-white border border-[#E2E8F0] rounded-[24px] shadow-xs p-4 transition-all focus-within:border-[#CBD5E1] focus-within:shadow-md">
@@ -659,15 +686,29 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             {/* Actions Toolbar Row */}
             <div className="flex items-center justify-between pt-1">
               
-              {/* Left Action Buttons: File Upload ONLY */}
+              {/* Left Action Buttons: File Upload & Dedicated Sample Button */}
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors"
+                  className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer"
                   title="Upload config file (.cfg, .conf, .json, .xml, .txt)"
                 >
                   <Paperclip className="w-4 h-4" />
+                </button>
+
+                {/* Dedicated Samples Icon Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowSampleModal(true)}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-all shadow-2xs cursor-pointer select-none"
+                  title="Open Multi-Vendor Samples (Clean vs Flawed Error Presets)"
+                >
+                  <FlaskConical className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Samples</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-slate-700 border border-slate-200 font-bold">
+                    Error / Clean
+                  </span>
                 </button>
               </div>
 
@@ -1448,6 +1489,134 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Interactive Samples Modal Window */}
+      {showSampleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-none p-4 overflow-y-auto">
+          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+                  <FlaskConical className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Multi-Vendor Samples (Error vs Clean Presets)</h3>
+                  <p className="text-xs text-slate-500">Pick any sample configuration to load and immediately test audit compliance.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSampleModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Filters */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-1.5 overflow-x-auto">
+                {(['ALL', 'Cisco', 'Palo Alto', 'Juniper', 'Fortinet', 'Multi-Vendor'] as const).map((vendor) => (
+                  <button
+                    key={vendor}
+                    type="button"
+                    onClick={() => setSampleVendorFilter(vendor)}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition-all border cursor-pointer ${
+                      sampleVendorFilter === vendor
+                        ? 'bg-slate-900 text-white border-slate-900 font-semibold shadow-2xs'
+                        : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200'
+                    }`}
+                  >
+                    {vendor}
+                  </button>
+                ))}
+              </div>
+
+              <div className="inline-flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setSampleStatusFilter('ALL')}
+                  className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                    sampleStatusFilter === 'ALL' ? 'bg-white shadow-2xs font-bold text-slate-900' : 'text-slate-600'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSampleStatusFilter('CLEAN')}
+                  className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                    sampleStatusFilter === 'CLEAN' ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200' : 'text-slate-600'
+                  }`}
+                >
+                  No Error
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSampleStatusFilter('VULNERABLE')}
+                  className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                    sampleStatusFilter === 'VULNERABLE' ? 'bg-rose-50 text-rose-800 font-bold border border-rose-200' : 'text-slate-600'
+                  }`}
+                >
+                  Errors
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 overflow-y-auto pr-1 flex-1">
+              {filteredSamples.map((sample) => {
+                const isClean = sample.statusType === 'CLEAN';
+                const isCombo = sample.statusType === 'COMBO';
+                return (
+                  <div
+                    key={sample.id}
+                    onClick={() => handleLoadDemoSample(sample)}
+                    className="p-3 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl transition-all cursor-pointer group flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <span className="text-[10px] font-mono font-bold uppercase text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                          {sample.vendor}
+                        </span>
+                        {isClean ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            No Error &bull; Clean
+                          </span>
+                        ) : isCombo ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                            <Sliders className="w-3 h-3 text-amber-700" />
+                            Mixed &bull; {sample.violationsCount} Violations
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                            <AlertTriangle className="w-3 h-3 text-rose-600" />
+                            Errors &bull; {sample.violationsCount} Violations
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-xs font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                        {sample.name}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5">
+                        {sample.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-100 text-[10px] font-mono text-slate-400">
+                      <span>{sample.rawConfig.split('\n').length} lines</span>
+                      <span className="font-semibold text-blue-600 group-hover:underline">
+                        Audit Sample &rarr;
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
