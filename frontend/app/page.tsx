@@ -5,8 +5,6 @@ import {
   Sidebar,
   OverviewPage,
   IngestionPage,
-  InventoryPage,
-  TelemetryPage,
   AuditorPage,
   WorkbenchPage,
   RemediationPage,
@@ -475,32 +473,6 @@ export default function AppContainer() {
           <SkillsManagementPage user={currentUser} />
         )}
 
-        {activeTab === 'inventory' && (
-          <InventoryPage
-            assets={assets}
-            onSelectDevice={(id) => {
-              setSelectedDeviceId(id);
-              const matched = assets.find(a => a.device_id === id);
-              if (matched) {
-                if (id === 'DEV-PAN-01') handleLoadSample('palo_alto');
-                else if (id === 'DEV-JUN-01') handleLoadSample('juniper_junos');
-                else if (id === 'DEV-FGT-01') handleLoadSample('fortinet_fortios');
-                else handleLoadSample('cisco_ios');
-              }
-            }}
-            onNavigate={setActiveTab}
-          />
-        )}
-
-        {activeTab === 'telemetry' && (
-          <TelemetryPage
-            logs={logs}
-            selectedDeviceId={selectedDeviceId}
-            onSelectDevice={setSelectedDeviceId}
-            onNavigate={setActiveTab}
-            onVerifyAndAudit={handleEvaluate}
-          />
-        )}
 
         {activeTab === 'workbench' && (
           <WorkbenchPage

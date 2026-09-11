@@ -15,8 +15,6 @@ export { AuditorPage, AuditorPage as AuditorView } from './views/AuditorView';
 export { ReportsPage, ReportsPage as ReportsView } from './views/ReportsView';
 export { TaskWorkspacePage, TaskWorkspacePage as TasksView } from './views/TasksView';
 export { SkillsManagementPage, SkillsManagementPage as SkillsView } from './views/SkillsView';
-export { InventoryPage, InventoryPage as InventoryView } from './views/InventoryView';
-export { TelemetryPage, TelemetryPage as TelemetryView } from './views/TelemetryView';
 export { RemediationPage, RemediationPage as RemediationView } from './views/RemediationView';
 export { WorkbenchPage, WorkbenchPage as WorkbenchView } from './views/WorkbenchView';
 

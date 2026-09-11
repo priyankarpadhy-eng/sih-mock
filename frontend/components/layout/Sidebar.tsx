@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   UploadCloud,
-  Server,
-  Activity,
   ShieldCheck,
   Cpu,
   Terminal,
@@ -15,7 +13,7 @@ import {
 } from 'lucide-react';
 import { UserProfile } from '../modals/AuthModal';
 
-export type NavTab = 'overview' | 'ingestion' | 'inventory' | 'telemetry' | 'auditor' | 'workbench' | 'remediation' | 'tasks' | 'skills' | 'reports';
+export type NavTab = 'overview' | 'ingestion' | 'auditor' | 'workbench' | 'remediation' | 'tasks' | 'skills' | 'reports';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -102,22 +100,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       iconColor: 'text-pink-600',
       badgeBg: 'bg-pink-50 border-pink-200',
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'],
-    },
-    {
-      id: 'inventory' as NavTab,
-      label: 'Inventory',
-      icon: Server,
-      iconColor: 'text-blue-600',
-      badgeBg: 'bg-blue-50 border-blue-200',
-      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
-    },
-    {
-      id: 'telemetry' as NavTab,
-      label: 'Telemetry',
-      icon: Activity,
-      iconColor: 'text-emerald-600',
-      badgeBg: 'bg-emerald-50 border-emerald-200',
-      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
     },
     {
       id: 'workbench' as NavTab,
