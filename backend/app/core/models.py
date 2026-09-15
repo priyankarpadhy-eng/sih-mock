@@ -174,6 +174,23 @@ class AuditFinding(BaseModel):
     rollback_cli: Optional[str] = None
 
 
+class BlockchainAuditRecord(BaseModel):
+    """Verifiable on-chain audit record for immutable non-repudiation."""
+    tx_hash: str
+    block_number: int
+    contract_address: str
+    config_hash: str
+    findings_merkle_root: str
+    compliance_score: float
+    hostname: str
+    vendor: str
+    auditor_address: str
+    timestamp: str
+    status: str = "CONFIRMED"
+    network: str = "Polygon Amoy Testnet (EVM)"
+    explorer_url: str
+
+
 class ComplianceSummary(BaseModel):
     """Aggregate posture evaluation result across all controls."""
     total_checks: int
@@ -187,6 +204,7 @@ class ComplianceSummary(BaseModel):
     sbm: SecurityBaselineModel
     telemetry_logs_evaluated: int = 0
     rule_pack_version: str = "2026.1-OSCAL"
+    blockchain_record: Optional[BlockchainAuditRecord] = None
 
 
 class VectorMappingRequest(BaseModel):

@@ -1,0 +1,35 @@
+[
+  {
+    "block_number": 0,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "previous_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "merkle_root": "0x498a4e3fa3ad766b1a238640c499878d384501a357fbbde06ddfd9e0d16d0be2",
+    "tx_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "records": []
+  },
+  {
+    "block_number": 48291041,
+    "timestamp": "2026-09-14T01:13:33.730526+00:00",
+    "previous_hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "merkle_root": "0x508287faeb4bff9e328ae0c75567f39ce93c1ded270bfdf1fa99b2c488480c6f",
+    "tx_hash": "0x6c803e004dfb19cc4b8941bb9d8c75094667de46f41ae80f81c264746c37a399",
+    "records": [
+      {
+        "tx_hash": "0x6c803e004dfb19cc4b8941bb9d8c75094667de46f41ae80f81c264746c37a399",
+        "block_number": 48291041,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xabc1234500000000000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x508287faeb4bff9e328ae0c75567f39ce93c1ded270bfdf1fa99b2c488480c6f",
+        "compliance_score": 95.0,
+        "hostname": "test-gw",
+        "vendor": "Cisco",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-14T01:13:33.730526+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x6c803e004dfb19cc4b8941bb9d8c75094667de46f41ae80f81c264746c37a399"
+      }
+    ]
+  }
+]

@@ -73,6 +73,22 @@ export interface SecurityBaselineModel {
   unmapped_cli_commands?: string[];
 }
 
+export interface BlockchainAuditRecord {
+  tx_hash: string;
+  block_number: number;
+  contract_address: string;
+  config_hash: string;
+  findings_merkle_root: string;
+  compliance_score: number;
+  hostname: string;
+  vendor: string;
+  auditor_address: string;
+  timestamp: string;
+  status: string;
+  network: string;
+  explorer_url: string;
+}
+
 export interface ComplianceSummary {
   total_checks: number;
   passed_checks: number;
@@ -85,6 +101,7 @@ export interface ComplianceSummary {
   sbm: SecurityBaselineModel;
   telemetry_logs_evaluated: number;
   rule_pack_version: string;
+  blockchain_record?: BlockchainAuditRecord;
 }
 
 export interface DeviceAsset {

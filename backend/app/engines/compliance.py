@@ -17,8 +17,6 @@ from backend.app.core.models import (
     UnifiedJsonLog,
 )
 from backend.app.engines.remediation import RemediationGenerator
-from backend.app.services.skills_service import skills_engine
-
 
 class ComplianceEngine:
     """
@@ -33,6 +31,7 @@ class ComplianceEngine:
         baseline: SecurityBaselineModel,
         telemetry_logs: Optional[List[UnifiedJsonLog]] = None
     ) -> ComplianceSummary:
+        from backend.app.services.skills_service import skills_engine
         logs = telemetry_logs or []
         
         # Dynamic evaluation via Agentic .md Skills Engine
@@ -70,6 +69,22 @@ class ComplianceEngine:
         verifiable_checks = total_checks - not_applicable_checks
         compliance_score = round((passed_checks / verifiable_checks) * 100.0, 1) if verifiable_checks > 0 else 0.0
 
+        # Anchor onto immutable Blockchain Ledger
+        bc_record = None
+        try:
+            from backend.app.services.blockchain_service import blockchain_service
+            findings_dicts = [f.model_dump() for f in skill_findings]
+            config_hash = baseline.source_hash or "0x0"
+            bc_record = blockchain_service.commit_audit(
+                config_hash=config_hash,
+                findings=findings_dicts,
+                compliance_score=compliance_score,
+                hostname=baseline.device_metadata.hostname,
+                vendor=baseline.device_metadata.vendor
+            )
+        except Exception:
+            pass
+
         return ComplianceSummary(
             total_checks=total_checks,
             passed_checks=passed_checks,
@@ -81,7 +96,8 @@ class ComplianceEngine:
             findings=skill_findings,
             sbm=baseline,
             telemetry_logs_evaluated=len(logs),
-            rule_pack_version="2026.1-OSCAL"
+            rule_pack_version="2026.1-OSCAL",
+            blockchain_record=bc_record
         )
 
 

@@ -156,3 +156,18 @@ def generate_remediation(rule_id: Optional[str] = None, vendor: str = "Cisco Sys
         resource_affected=f"remediation/{vendor}"
     )
     return {"target_vendor": vendor, "rule_id": rule_id, "remediation_cli": script}
+
+
+@router.get("/api/v1/blockchain/verify")
+@router.post("/api/v1/blockchain/verify")
+def verify_blockchain_record(config_hash: str):
+    """Verifies on-chain cryptographic integrity of a configuration and its audit certificate."""
+    from backend.app.services.blockchain_service import blockchain_service
+    return blockchain_service.verify_config_integrity(config_hash)
+
+
+@router.get("/api/v1/blockchain/records")
+def get_blockchain_records():
+    """Returns all committed blocks and cryptographic audit certificates."""
+    from backend.app.services.blockchain_service import blockchain_service
+    return blockchain_service._read_ledger()
