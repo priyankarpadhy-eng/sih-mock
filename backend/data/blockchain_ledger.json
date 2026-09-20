@@ -31,5 +31,405 @@
         "explorer_url": "https://amoy.polygonscan.com/tx/0x6c803e004dfb19cc4b8941bb9d8c75094667de46f41ae80f81c264746c37a399"
       }
     ]
+  },
+  {
+    "block_number": 48291042,
+    "timestamp": "2026-09-20T05:14:57.375692+00:00",
+    "previous_hash": "0x6c803e004dfb19cc4b8941bb9d8c75094667de46f41ae80f81c264746c37a399",
+    "merkle_root": "0x625bb9e8e564691774e3c807a6cdeb4809f7097654493e6ebf15e9086dcfa057",
+    "tx_hash": "0xcc7614bcc8b82be6bfdd2e6750c0e9ac5cf1428a9781951af5a13207bd7b7f60",
+    "records": [
+      {
+        "tx_hash": "0xcc7614bcc8b82be6bfdd2e6750c0e9ac5cf1428a9781951af5a13207bd7b7f60",
+        "block_number": 48291042,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x69904e199c608d03000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x625bb9e8e564691774e3c807a6cdeb4809f7097654493e6ebf15e9086dcfa057",
+        "compliance_score": 71.4,
+        "hostname": "CORE-RTR-CLEAN",
+        "vendor": "Cisco Systems",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.375692+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0xcc7614bcc8b82be6bfdd2e6750c0e9ac5cf1428a9781951af5a13207bd7b7f60"
+      }
+    ]
+  },
+  {
+    "block_number": 48291043,
+    "timestamp": "2026-09-20T05:14:57.387020+00:00",
+    "previous_hash": "0xcc7614bcc8b82be6bfdd2e6750c0e9ac5cf1428a9781951af5a13207bd7b7f60",
+    "merkle_root": "0x05b3ae7c08a5a6b6682cb4747c2002916fbdd81e3ddcedc0b3ef394c54a0208d",
+    "tx_hash": "0xd576d380c4e109da5c520b0f59bec3b6bd05677f12ffbe262b8f687c20d565bd",
+    "records": [
+      {
+        "tx_hash": "0xd576d380c4e109da5c520b0f59bec3b6bd05677f12ffbe262b8f687c20d565bd",
+        "block_number": 48291043,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xabe89b72a4b19155000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x05b3ae7c08a5a6b6682cb4747c2002916fbdd81e3ddcedc0b3ef394c54a0208d",
+        "compliance_score": 57.1,
+        "hostname": "PAN-FW-CLEAN",
+        "vendor": "Palo Alto Networks",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.387020+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0xd576d380c4e109da5c520b0f59bec3b6bd05677f12ffbe262b8f687c20d565bd"
+      }
+    ]
+  },
+  {
+    "block_number": 48291044,
+    "timestamp": "2026-09-20T05:14:57.399611+00:00",
+    "previous_hash": "0xd576d380c4e109da5c520b0f59bec3b6bd05677f12ffbe262b8f687c20d565bd",
+    "merkle_root": "0xac2d5064bcc1c6c5a61b0b3ce2765934e331b0c7f35c073a1de6db5a16838081",
+    "tx_hash": "0xcf2603ad4d1e8e5af091618e24d45fa769e23752497d81851d43fbdd8d053d23",
+    "records": [
+      {
+        "tx_hash": "0xcf2603ad4d1e8e5af091618e24d45fa769e23752497d81851d43fbdd8d053d23",
+        "block_number": 48291044,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x6fd2fa1e353aab54000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0xac2d5064bcc1c6c5a61b0b3ce2765934e331b0c7f35c073a1de6db5a16838081",
+        "compliance_score": 57.1,
+        "hostname": "SRX-SEC-CLEAN",
+        "vendor": "Juniper Networks",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.399611+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0xcf2603ad4d1e8e5af091618e24d45fa769e23752497d81851d43fbdd8d053d23"
+      }
+    ]
+  },
+  {
+    "block_number": 48291045,
+    "timestamp": "2026-09-20T05:14:57.410557+00:00",
+    "previous_hash": "0xcf2603ad4d1e8e5af091618e24d45fa769e23752497d81851d43fbdd8d053d23",
+    "merkle_root": "0x21b0736a1217285184ab3c8d617fe74e7a77e27330e73a12344cbcda63ed6d69",
+    "tx_hash": "0x2682527e1a2fd36e719fe3c984ff35182f8c7f25d01fa317fc070ad17ef31aaf",
+    "records": [
+      {
+        "tx_hash": "0x2682527e1a2fd36e719fe3c984ff35182f8c7f25d01fa317fc070ad17ef31aaf",
+        "block_number": 48291045,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xc49d411046cd5fb7000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x21b0736a1217285184ab3c8d617fe74e7a77e27330e73a12344cbcda63ed6d69",
+        "compliance_score": 80.0,
+        "hostname": "FGT-SEC-CLEAN",
+        "vendor": "Fortinet",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.410557+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x2682527e1a2fd36e719fe3c984ff35182f8c7f25d01fa317fc070ad17ef31aaf"
+      }
+    ]
+  },
+  {
+    "block_number": 48291046,
+    "timestamp": "2026-09-20T05:14:57.421600+00:00",
+    "previous_hash": "0x2682527e1a2fd36e719fe3c984ff35182f8c7f25d01fa317fc070ad17ef31aaf",
+    "merkle_root": "0x6a88731db551d124095537b5028199ab05ae86d142470846d3f379015b27e4fd",
+    "tx_hash": "0x21fef6077660fbb3a1d0dab316405e57c6f16a5dc047b300839a5409d41c69e0",
+    "records": [
+      {
+        "tx_hash": "0x21fef6077660fbb3a1d0dab316405e57c6f16a5dc047b300839a5409d41c69e0",
+        "block_number": 48291046,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x55f14da836832a6e000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x6a88731db551d124095537b5028199ab05ae86d142470846d3f379015b27e4fd",
+        "compliance_score": 0.0,
+        "hostname": "BRANCH-RTR-VULN",
+        "vendor": "Cisco Systems",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.421600+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x21fef6077660fbb3a1d0dab316405e57c6f16a5dc047b300839a5409d41c69e0"
+      }
+    ]
+  },
+  {
+    "block_number": 48291047,
+    "timestamp": "2026-09-20T05:14:57.432481+00:00",
+    "previous_hash": "0x21fef6077660fbb3a1d0dab316405e57c6f16a5dc047b300839a5409d41c69e0",
+    "merkle_root": "0x6a8ae0fa191a19ca1b017133050227679a167dd36798db1bf8ab8570ab0e2394",
+    "tx_hash": "0xcf3c08ed448ce6148a789f933c469933a63246fb5faf5d33b9eff365e5603b11",
+    "records": [
+      {
+        "tx_hash": "0xcf3c08ed448ce6148a789f933c469933a63246fb5faf5d33b9eff365e5603b11",
+        "block_number": 48291047,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xc7915688584ad3a6000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x6a8ae0fa191a19ca1b017133050227679a167dd36798db1bf8ab8570ab0e2394",
+        "compliance_score": 0.0,
+        "hostname": "PAN-FW-VULN",
+        "vendor": "Palo Alto Networks",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.432481+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0xcf3c08ed448ce6148a789f933c469933a63246fb5faf5d33b9eff365e5603b11"
+      }
+    ]
+  },
+  {
+    "block_number": 48291048,
+    "timestamp": "2026-09-20T05:14:57.444561+00:00",
+    "previous_hash": "0xcf3c08ed448ce6148a789f933c469933a63246fb5faf5d33b9eff365e5603b11",
+    "merkle_root": "0x4cb8bb52e0c67660ccb90dc93ceb8feb86cd79a0f015afb00ec78fd93e7126af",
+    "tx_hash": "0x99ffbf7ed25cf74b1dfa7d038564aab6aa072a8071d4986650960bc778868604",
+    "records": [
+      {
+        "tx_hash": "0x99ffbf7ed25cf74b1dfa7d038564aab6aa072a8071d4986650960bc778868604",
+        "block_number": 48291048,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xd30320dfa9f76372000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x4cb8bb52e0c67660ccb90dc93ceb8feb86cd79a0f015afb00ec78fd93e7126af",
+        "compliance_score": 28.6,
+        "hostname": "SRX-SEC-VULN",
+        "vendor": "Juniper Networks",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.444561+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x99ffbf7ed25cf74b1dfa7d038564aab6aa072a8071d4986650960bc778868604"
+      }
+    ]
+  },
+  {
+    "block_number": 48291049,
+    "timestamp": "2026-09-20T05:14:57.458535+00:00",
+    "previous_hash": "0x99ffbf7ed25cf74b1dfa7d038564aab6aa072a8071d4986650960bc778868604",
+    "merkle_root": "0x98eb0628e9d351ad036785f314430512da630f09e66f3f3bd5b4b887d8a9a516",
+    "tx_hash": "0xc680046c22bab24c0fb905741241ffccc9e1df4f6afc138cbde5e0476974305c",
+    "records": [
+      {
+        "tx_hash": "0xc680046c22bab24c0fb905741241ffccc9e1df4f6afc138cbde5e0476974305c",
+        "block_number": 48291049,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x4b5dcb38f514c2db000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x98eb0628e9d351ad036785f314430512da630f09e66f3f3bd5b4b887d8a9a516",
+        "compliance_score": 6.7,
+        "hostname": "FGT-SEC-VULN",
+        "vendor": "Fortinet",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.458535+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0xc680046c22bab24c0fb905741241ffccc9e1df4f6afc138cbde5e0476974305c"
+      }
+    ]
+  },
+  {
+    "block_number": 48291050,
+    "timestamp": "2026-09-20T05:14:57.472502+00:00",
+    "previous_hash": "0xc680046c22bab24c0fb905741241ffccc9e1df4f6afc138cbde5e0476974305c",
+    "merkle_root": "0xc89f2b9bf761a73c8add42a01de86b25ad6b602168f68899521aeaa43c5a4ddc",
+    "tx_hash": "0xa511739602b2b6c13b6eeb23133c629abb23f7a3a3b13a6cf3a879f54dd26125",
+    "records": [
+      {
+        "tx_hash": "0xa511739602b2b6c13b6eeb23133c629abb23f7a3a3b13a6cf3a879f54dd26125",
+        "block_number": 48291050,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x035744e7c722f106000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0xc89f2b9bf761a73c8add42a01de86b25ad6b602168f68899521aeaa43c5a4ddc",
+        "compliance_score": 35.7,
+        "hostname": "BRANCH-RTR-VULN",
+        "vendor": "Palo Alto Networks",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.472502+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0xa511739602b2b6c13b6eeb23133c629abb23f7a3a3b13a6cf3a879f54dd26125"
+      }
+    ]
+  },
+  {
+    "block_number": 48291051,
+    "timestamp": "2026-09-20T05:14:57.484732+00:00",
+    "previous_hash": "0xa511739602b2b6c13b6eeb23133c629abb23f7a3a3b13a6cf3a879f54dd26125",
+    "merkle_root": "0xf6b5bd052bc8516ce5a9198f00f075d4a6aa0911ac04797f85bd6680f532a15b",
+    "tx_hash": "0x2e5d86fe7c6a09eb1fab62bb728836c18eb3ab1ef3d21f389d9f43220673c868",
+    "records": [
+      {
+        "tx_hash": "0x2e5d86fe7c6a09eb1fab62bb728836c18eb3ab1ef3d21f389d9f43220673c868",
+        "block_number": 48291051,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x30a803a8eed97b04000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0xf6b5bd052bc8516ce5a9198f00f075d4a6aa0911ac04797f85bd6680f532a15b",
+        "compliance_score": 13.3,
+        "hostname": "CORE-RTR-CLEAN",
+        "vendor": "Fortinet",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.484732+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x2e5d86fe7c6a09eb1fab62bb728836c18eb3ab1ef3d21f389d9f43220673c868"
+      }
+    ]
+  },
+  {
+    "block_number": 48291052,
+    "timestamp": "2026-09-20T05:14:57.497386+00:00",
+    "previous_hash": "0x2e5d86fe7c6a09eb1fab62bb728836c18eb3ab1ef3d21f389d9f43220673c868",
+    "merkle_root": "0x539f715a10627c47e6eff174c4693f881283dcf3e6b450458d414adbac8c93b0",
+    "tx_hash": "0x36d30648b4a8e22c906afe1e4b576db0985f511cdb7fb8ae80770755c6b2905c",
+    "records": [
+      {
+        "tx_hash": "0x36d30648b4a8e22c906afe1e4b576db0985f511cdb7fb8ae80770755c6b2905c",
+        "block_number": 48291052,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x598e4514560fcdfd000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x539f715a10627c47e6eff174c4693f881283dcf3e6b450458d414adbac8c93b0",
+        "compliance_score": 6.7,
+        "hostname": "BRANCH-CISCO-VULN",
+        "vendor": "Fortinet",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:14:57.497386+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x36d30648b4a8e22c906afe1e4b576db0985f511cdb7fb8ae80770755c6b2905c"
+      }
+    ]
+  },
+  {
+    "block_number": 48291053,
+    "timestamp": "2026-09-20T05:21:20.698536+00:00",
+    "previous_hash": "0x36d30648b4a8e22c906afe1e4b576db0985f511cdb7fb8ae80770755c6b2905c",
+    "merkle_root": "0x625bb9e8e564691774e3c807a6cdeb4809f7097654493e6ebf15e9086dcfa057",
+    "tx_hash": "0x2514b5a01d698b9265cc88b7a94a070894f1c5abcbe9fa320f194821c6e51721",
+    "records": [
+      {
+        "tx_hash": "0x2514b5a01d698b9265cc88b7a94a070894f1c5abcbe9fa320f194821c6e51721",
+        "block_number": 48291053,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xa6538c6544b6ff30000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x625bb9e8e564691774e3c807a6cdeb4809f7097654493e6ebf15e9086dcfa057",
+        "compliance_score": 71.4,
+        "hostname": "CORE-RTR-CLEAN",
+        "vendor": "Cisco Systems",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:21:20.698536+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x2514b5a01d698b9265cc88b7a94a070894f1c5abcbe9fa320f194821c6e51721"
+      }
+    ]
+  },
+  {
+    "block_number": 48291054,
+    "timestamp": "2026-09-20T05:21:44.261364+00:00",
+    "previous_hash": "0x2514b5a01d698b9265cc88b7a94a070894f1c5abcbe9fa320f194821c6e51721",
+    "merkle_root": "0x6a88731db551d124095537b5028199ab05ae86d142470846d3f379015b27e4fd",
+    "tx_hash": "0x0761e0b67485e1fd1d3fdeab9d1386f4fe47597706e61ee4779b92d5fdd5aa26",
+    "records": [
+      {
+        "tx_hash": "0x0761e0b67485e1fd1d3fdeab9d1386f4fe47597706e61ee4779b92d5fdd5aa26",
+        "block_number": 48291054,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x4529c4633d99bc55000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x6a88731db551d124095537b5028199ab05ae86d142470846d3f379015b27e4fd",
+        "compliance_score": 0.0,
+        "hostname": "BRANCH-RTR-VULN",
+        "vendor": "Cisco Systems",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:21:44.261364+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x0761e0b67485e1fd1d3fdeab9d1386f4fe47597706e61ee4779b92d5fdd5aa26"
+      }
+    ]
+  },
+  {
+    "block_number": 48291055,
+    "timestamp": "2026-09-20T05:21:45.588202+00:00",
+    "previous_hash": "0x0761e0b67485e1fd1d3fdeab9d1386f4fe47597706e61ee4779b92d5fdd5aa26",
+    "merkle_root": "0x05b3ae7c08a5a6b6682cb4747c2002916fbdd81e3ddcedc0b3ef394c54a0208d",
+    "tx_hash": "0xbe477d8113511cdcd8e5a4afae10f02e102d5fcfba8ffd55a182f545795a6acd",
+    "records": [
+      {
+        "tx_hash": "0xbe477d8113511cdcd8e5a4afae10f02e102d5fcfba8ffd55a182f545795a6acd",
+        "block_number": 48291055,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xf3bf3e02763b5fe3000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x05b3ae7c08a5a6b6682cb4747c2002916fbdd81e3ddcedc0b3ef394c54a0208d",
+        "compliance_score": 57.1,
+        "hostname": "PAN-FW-CLEAN",
+        "vendor": "Palo Alto Networks",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:21:45.588202+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0xbe477d8113511cdcd8e5a4afae10f02e102d5fcfba8ffd55a182f545795a6acd"
+      }
+    ]
+  },
+  {
+    "block_number": 48291056,
+    "timestamp": "2026-09-20T05:21:47.491411+00:00",
+    "previous_hash": "0xbe477d8113511cdcd8e5a4afae10f02e102d5fcfba8ffd55a182f545795a6acd",
+    "merkle_root": "0x6a8ae0fa191a19ca1b017133050227679a167dd36798db1bf8ab8570ab0e2394",
+    "tx_hash": "0x8984d64fd666b72ff0764b723892823f189aa4ec633dc6e47bf22bf5fd7d7845",
+    "records": [
+      {
+        "tx_hash": "0x8984d64fd666b72ff0764b723892823f189aa4ec633dc6e47bf22bf5fd7d7845",
+        "block_number": 48291056,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xb4f6cb4afada2396000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x6a8ae0fa191a19ca1b017133050227679a167dd36798db1bf8ab8570ab0e2394",
+        "compliance_score": 0.0,
+        "hostname": "PAN-FW-VULN",
+        "vendor": "Palo Alto Networks",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:21:47.491411+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x8984d64fd666b72ff0764b723892823f189aa4ec633dc6e47bf22bf5fd7d7845"
+      }
+    ]
+  },
+  {
+    "block_number": 48291057,
+    "timestamp": "2026-09-20T05:32:38.814459+00:00",
+    "previous_hash": "0x8984d64fd666b72ff0764b723892823f189aa4ec633dc6e47bf22bf5fd7d7845",
+    "merkle_root": "0x625bb9e8e564691774e3c807a6cdeb4809f7097654493e6ebf15e9086dcfa057",
+    "tx_hash": "0x0ad3eff2fc4531825dec08a0555cf4b5034454ae288a4fdd306cf2d4e8c23d9a",
+    "records": [
+      {
+        "tx_hash": "0x0ad3eff2fc4531825dec08a0555cf4b5034454ae288a4fdd306cf2d4e8c23d9a",
+        "block_number": 48291057,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xa6538c6544b6ff30000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x625bb9e8e564691774e3c807a6cdeb4809f7097654493e6ebf15e9086dcfa057",
+        "compliance_score": 71.4,
+        "hostname": "CORE-RTR-CLEAN",
+        "vendor": "Cisco Systems",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:32:38.814459+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x0ad3eff2fc4531825dec08a0555cf4b5034454ae288a4fdd306cf2d4e8c23d9a"
+      }
+    ]
   }
 ]

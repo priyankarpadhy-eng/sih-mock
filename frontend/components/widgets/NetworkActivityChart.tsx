@@ -71,17 +71,17 @@ export const NetworkActivityChart: React.FC = () => {
         <div className="relative h-56 flex items-end">
           
           {/* Y-Axis Guidelines */}
-          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pl-8">
+          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 pl-4 sm:pl-8">
             {yTicks.map((tick, idx) => (
               <div key={idx} className="w-full flex items-center gap-2">
-                <span className="text-[10px] font-mono text-[#94A3B8] w-6 text-right shrink-0">{tick}</span>
+                <span className="text-[10px] font-mono text-[#94A3B8] w-5 sm:w-6 text-right shrink-0">{tick}</span>
                 <div className="w-full border-b border-dashed border-[#F1F5F9]" />
               </div>
             ))}
           </div>
 
           {/* Bars Container */}
-          <div className="relative w-full h-full flex items-end justify-between gap-2.5 pl-10 pr-2 pb-6 z-10">
+          <div className="relative w-full h-full flex items-end justify-between gap-1 sm:gap-2.5 pl-7 sm:pl-10 pr-2 pb-6 z-10">
             {TIME_SERIES_DATA.map((pt, idx) => {
               const total = pt.safe + pt.confirmed + pt.flagged;
               const barHeightPct = Math.min((total / maxTotal) * 100, 100);
@@ -156,9 +156,11 @@ export const NetworkActivityChart: React.FC = () => {
         </div>
 
         {/* X-Axis Time Labels */}
-        <div className="flex justify-between pl-10 pr-2 pt-1 border-t border-[#E2E8F0] text-[10px] font-mono text-[#64748B]">
+        <div className="flex justify-between pl-7 sm:pl-10 pr-2 pt-1 border-t border-[#E2E8F0] text-[10px] font-mono text-[#64748B]">
           {TIME_SERIES_DATA.map((pt, idx) => (
-            <span key={idx} className="flex-1 text-center font-medium">{pt.time}</span>
+            <span key={idx} className={`flex-1 text-center font-medium ${idx % 2 !== 0 ? 'hidden sm:inline-block' : 'inline-block'}`}>
+              {pt.time}
+            </span>
           ))}
         </div>
       </div>

@@ -22,7 +22,8 @@ export type NavTab =
   | 'remediation' 
   | 'reports' 
   | 'tasks' 
-  | 'skills';
+  | 'skills'
+  | 'settings';
 
 export type ComplianceStatus = 'PASS' | 'FAIL' | 'WARNING' | 'UNKNOWN' | 'NOT_APPLICABLE' | 'ERROR';
 export type SeverityLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';

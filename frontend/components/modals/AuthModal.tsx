@@ -21,8 +21,8 @@ interface AuthModalProps {
 const DEMO_USERS: UserProfile[] = [
   {
     uid: 'FIREBASE_UID_SUPERADMIN_01',
-    email: 'priyankar@vectornet.io',
-    display_name: 'Priyankar Padhy',
+    email: 'secops.lead@vectornet.local',
+    display_name: 'Super Administrator',
     role: 'SUPER_ADMIN',
     team_id: 'TEAM_VECTOR_DEFENSE'
   },

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ArrowRight, ShieldCheck, AlertTriangle, ShieldAlert, Cpu, Terminal, Play } from 'lucide-react';
+import { Search, ArrowRight, ShieldCheck, AlertTriangle, ShieldAlert, Cpu, Terminal, Play, Zap, Settings } from 'lucide-react';
 import { NetworkActivityChart } from '../widgets/NetworkActivityChart';
 import { NavTab } from '../layout/Sidebar';
 
@@ -103,6 +103,100 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
 
       {/* Network Activity Time Series Graph (Green=Safe, Red=Confirmed, Black=Flagged) */}
       <NetworkActivityChart />
+
+      {/* Automated Task Routing & Junior Engineer Workload Matrix */}
+      <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+              <Zap className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-slate-900 font-heading">Automated Task Assignment & Engineer Routing Matrix</h2>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  POLICY ENGINE ACTIVE
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Violations discovered in vendor configurations are automatically triaged and assigned to designated junior engineers.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => onNavigate('settings')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors self-start sm:self-auto cursor-pointer"
+          >
+            <Settings className="w-3.5 h-3.5 text-slate-500" />
+            <span>Configure Routing Rules</span>
+            <ArrowRight className="w-3 h-3 text-slate-400" />
+          </button>
+        </div>
+
+        {/* 4 Vendor Routing Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded uppercase">
+                Cisco Systems
+              </span>
+              <span className="text-[10px] text-slate-500">SLA 4h</span>
+            </div>
+            <div className="font-semibold text-slate-900 font-sans text-xs">Junior NetOps Specialist</div>
+            <div className="text-[11px] text-slate-500 truncate">netops.junior@vectornet.local</div>
+            <div className="pt-1.5 border-t border-slate-200 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Auto-Remediation:</span>
+              <span className="text-emerald-600 font-bold">Enabled</span>
+            </div>
+          </div>
+
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded uppercase">
+                Palo Alto
+              </span>
+              <span className="text-[10px] text-rose-600 font-bold">SLA 2h</span>
+            </div>
+            <div className="font-semibold text-slate-900 font-sans text-xs">Perimeter Security Analyst</div>
+            <div className="text-[11px] text-slate-500 truncate">firewall.palo@vectornet.local</div>
+            <div className="pt-1.5 border-t border-slate-200 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Auto-Remediation:</span>
+              <span className="text-emerald-600 font-bold">Enabled</span>
+            </div>
+          </div>
+
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded uppercase">
+                Fortinet FortiOS
+              </span>
+              <span className="text-[10px] text-slate-500">SLA 4h</span>
+            </div>
+            <div className="font-semibold text-slate-900 font-sans text-xs">SecOps Incident Responder</div>
+            <div className="text-[11px] text-slate-500 truncate">secops.forti@vectornet.local</div>
+            <div className="pt-1.5 border-t border-slate-200 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Auto-Remediation:</span>
+              <span className="text-emerald-600 font-bold">Enabled</span>
+            </div>
+          </div>
+
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded uppercase">
+                Juniper JunOS
+              </span>
+              <span className="text-[10px] text-slate-500">SLA 6h</span>
+            </div>
+            <div className="font-semibold text-slate-900 font-sans text-xs">Infrastructure Routing Engineer</div>
+            <div className="text-[11px] text-slate-500 truncate">routing.juniper@vectornet.local</div>
+            <div className="pt-1.5 border-t border-slate-200 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Auto-Remediation:</span>
+              <span className="text-emerald-600 font-bold">Enabled</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Monitored Assets Table (Reference Image 1) */}
       <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-sm space-y-4">

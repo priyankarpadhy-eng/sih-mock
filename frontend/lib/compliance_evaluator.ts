@@ -434,10 +434,10 @@ export function evaluateConfiguration(rawConfig: string): EvaluationResult {
   } else {
     findings.push({
       rule_id: 'CIS-2.1.1',
-      framework: 'CIS Benchmark / NIST SP 800-53',
-      control_ref: 'Control AU-12',
-      title: 'Centralized Remote Syslog Forwarding',
-      description: 'Audit telemetry is not forwarded to a central SIEM server, risking log loss in breach events.',
+      framework: 'CIS / NIST / CERT-In 2022',
+      control_ref: 'Control AU-12 & CERT-In Dir 2(a)',
+      title: 'Centralized Remote Syslog Forwarding (180-Day Retention)',
+      description: 'Audit telemetry is not forwarded to a central SIEM server, violating CERT-In 180-day retention directive.',
       severity: 'HIGH',
       status: 'FAIL',
       observed_value: 'No remote syslog destination configured',
@@ -504,6 +504,43 @@ export function evaluateConfiguration(rawConfig: string): EvaluationResult {
       status: 'PASS',
       observed_value: 'Cleartext HTTP disabled or HTTPS TLS enforced',
       required_value: 'HTTPS with TLS 1.3 only; HTTP server disabled',
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // RULE 9: CERT-In 2022 / NIST-AU-8 - Time Synchronization (NPL / NIC NTP)
+  // --------------------------------------------------------------------------
+  const hasNtp = lowerText.includes('ntp server') || lowerText.includes('set ntp') || lowerText.includes('system ntp');
+  if (hasNtp) {
+    findings.push({
+      rule_id: 'CERT-IN-NTP-01',
+      framework: 'CERT-In Directives 2022 / NIST AU-8',
+      control_ref: 'Directive 2(b)',
+      title: 'Mandatory NTP Time Synchronization',
+      description: 'System clocks are synchronized to secure NTP time sources as mandated by CERT-In security directives.',
+      severity: 'MEDIUM',
+      status: 'PASS',
+      observed_value: 'NTP server synchronization active',
+      required_value: 'NTP synchronized to NPL / NIC designated time servers'
+    });
+  } else {
+    findings.push({
+      rule_id: 'CERT-IN-NTP-01',
+      framework: 'CERT-In Directives 2022 / NIST AU-8',
+      control_ref: 'Directive 2(b)',
+      title: 'Mandatory NTP Time Synchronization',
+      description: 'System clocks are not synchronized to authorized NTP servers, violating CERT-In Cyber Security Directions 2022.',
+      severity: 'MEDIUM',
+      status: 'FAIL',
+      observed_value: 'No NTP server configured',
+      required_value: 'NTP synchronized to NPL / NIC designated time servers',
+      remediation_cli: {
+        proposal_status: 'PROPOSED_AUTOMATED_FIX',
+        script: vendor.includes('Cisco')
+          ? 'configure terminal\nntp server 10.0.0.1 prefer\nntp authenticate\nend'
+          : 'set system ntp server 10.0.0.1 prefer\ncommit',
+        rollback: 'no ntp server 10.0.0.1'
+      }
     });
   }
 

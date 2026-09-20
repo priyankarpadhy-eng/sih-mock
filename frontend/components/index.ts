@@ -17,6 +17,7 @@ export { TaskWorkspacePage, TaskWorkspacePage as TasksView } from './views/Tasks
 export { SkillsManagementPage, SkillsManagementPage as SkillsView } from './views/SkillsView';
 export { RemediationPage, RemediationPage as RemediationView } from './views/RemediationView';
 export { WorkbenchPage, WorkbenchPage as WorkbenchView } from './views/WorkbenchView';
+export { SettingsPage, SettingsPage as SettingsView } from './views/SettingsView';
 
 // Modals
 export { AuthModal } from './modals/AuthModal';

@@ -11,6 +11,7 @@ import {
   ReportsPage,
   TaskWorkspacePage,
   SkillsManagementPage,
+  SettingsPage,
   AuthModal,
 } from '../components';
 import type { NavTab, UserProfile } from '../lib/types';
@@ -338,29 +339,94 @@ export default function AppContainer() {
     setDetectedVendor(vendor);
   };
 
+  const autoDispatchTasks = async (data: any, vendorStr: string) => {
+    if (typeof window === 'undefined' || !data || !data.findings) return;
+    try {
+      const configStr = localStorage.getItem('vectornet_auto_task_config');
+      const autoConfig = configStr ? JSON.parse(configStr) : { engineEnabled: true };
+      if (!autoConfig.engineEnabled) return;
+
+      const failedFindings = data.findings.filter((f: any) => f.status === 'FAIL' || f.status === 'WARNING');
+      if (failedFindings.length === 0) return;
+
+      const vendorLower = vendorStr.toLowerCase();
+      let assignedEngineerUid = 'FIREBASE_UID_OPERATOR_03';
+      let vendorKey = 'cisco';
+      if (vendorLower.includes('palo')) {
+        vendorKey = 'palo_alto';
+        assignedEngineerUid = 'FIREBASE_UID_SECOPS_04';
+      } else if (vendorLower.includes('forti')) {
+        vendorKey = 'fortinet';
+        assignedEngineerUid = 'FIREBASE_UID_AUDITOR_02';
+      } else if (vendorLower.includes('juniper')) {
+        vendorKey = 'juniper';
+        assignedEngineerUid = 'FIREBASE_UID_OPERATOR_03';
+      }
+
+      for (const f of failedFindings.slice(0, 3)) {
+        const fixScript = f.remediation_cli?.script || f.remediation_cli?.remediation_cli || 'configure terminal\n! specific fix command applied\nend';
+        await fetch('http://localhost:8000/api/v1/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `[Auto-Assigned] ${f.title}`,
+            device_id: `DEV-${data.hostname || data.sbm?.device_metadata?.hostname || 'TAC-NODE-01'}`,
+            device_hostname: data.hostname || data.sbm?.device_metadata?.hostname || 'TAC-NODE-01',
+            vendor: vendorKey,
+            priority: f.severity === 'CRITICAL' ? 'CRITICAL' : 'HIGH',
+            assignee_uid: assignedEngineerUid,
+            reporter_uid: 'FIREBASE_UID_SUPERADMIN_01',
+            rule_id: f.rule_id,
+            raw_value: `Auto-dispatched via Policy Routing Engine: ${f.observed_value}`,
+            remediation_script: fixScript,
+          }),
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Auto dispatch skipped:', e);
+    }
+  };
+
   const handleEvaluate = async (cfgToEvaluate?: string) => {
     const targetConfig = cfgToEvaluate || rawConfig;
     if (!targetConfig.trim()) return;
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/evaluate', {
+      const response = await fetch('/api/evaluate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ raw_config: targetConfig }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ raw_text: targetConfig }),
       });
       if (response.ok) {
         const data = await response.json();
         setAuditResult(data);
-        if (data.sbm?.device_metadata?.vendor) {
-          setDetectedVendor(data.sbm.device_metadata.vendor);
+        const resolvedVendor = data.sbm?.device_metadata?.vendor || detectedVendor;
+        if (resolvedVendor) {
+          setDetectedVendor(resolvedVendor);
         }
+        autoDispatchTasks(data, resolvedVendor);
         return data;
       }
-    } catch (err) {
-      console.error("Evaluation error:", err);
+    } catch {
+      // Offline fallback
     } finally {
       setIsLoading(false);
+    }
+
+    // Client-side fallback evaluator ensures zero-blank screens
+    try {
+      const { evaluateConfiguration } = await import('../lib/compliance_evaluator');
+      const localResult = evaluateConfiguration(targetConfig);
+      setAuditResult(localResult);
+      const resolvedVendor = localResult.detected_vendor || detectedVendor;
+      if (resolvedVendor) {
+        setDetectedVendor(resolvedVendor);
+      }
+      autoDispatchTasks(localResult, resolvedVendor);
+      return localResult;
+    } catch (e) {
+      console.error("Local evaluation fallback error:", e);
     }
   };
 
@@ -425,7 +491,7 @@ export default function AppContainer() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto w-full min-w-0">
+      <main className="flex-1 pt-16 md:pt-6 p-4 md:p-6 lg:p-8 overflow-y-auto w-full min-w-0">
         {activeTab === 'overview' && (
           <OverviewPage
             auditResult={auditResult}
@@ -442,7 +508,7 @@ export default function AppContainer() {
           />
         )}
 
-        {(activeTab === 'ingestion' || activeTab === 'auditor') && (
+        {activeTab === 'ingestion' && (
           <IngestionPage
             rawConfig={rawConfig}
             onConfigChange={(newCfg) => {
@@ -465,6 +531,23 @@ export default function AppContainer() {
           />
         )}
 
+        {activeTab === 'auditor' && (
+          <AuditorPage
+            rawConfig={rawConfig}
+            onConfigChange={(newCfg) => {
+              setRawConfig(newCfg);
+              detectVendorLocally(newCfg);
+              if (newCfg.trim()) handleEvaluate(newCfg);
+            }}
+            detectedVendor={detectedVendor}
+            onEvaluate={() => handleEvaluate(rawConfig)}
+            onLoadSample={handleLoadSample}
+            isLoading={isLoading}
+            auditResult={auditResult}
+            onNavigate={setActiveTab}
+          />
+        )}
+
         {activeTab === 'tasks' && (
           <TaskWorkspacePage onNavigate={setActiveTab} />
         )}
@@ -472,7 +555,6 @@ export default function AppContainer() {
         {activeTab === 'skills' && (
           <SkillsManagementPage user={currentUser} />
         )}
-
 
         {activeTab === 'workbench' && (
           <WorkbenchPage
@@ -486,6 +568,13 @@ export default function AppContainer() {
           <RemediationPage
             findings={auditResult?.findings || []}
             vendor={detectedVendor}
+            rawConfig={rawConfig}
+            onConfigChange={(newCfg) => {
+              setRawConfig(newCfg);
+              detectVendorLocally(newCfg);
+            }}
+            onEvaluate={handleEvaluate}
+            onNavigate={setActiveTab}
           />
         )}
 
@@ -495,6 +584,13 @@ export default function AppContainer() {
             hostname={hostname}
             vendor={detectedVendor}
             complianceScore={complianceScore}
+          />
+        )}
+
+        {activeTab === 'settings' && (
+          <SettingsPage
+            user={currentUser}
+            onNavigate={setActiveTab}
           />
         )}
       </main>

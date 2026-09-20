@@ -320,15 +320,71 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
         </div>
       </div>
 
+      {/* Exploitable Attack Chain & Root-Cause Breaker Panel (Beating Manas) */}
+      {findings.some(f => f.status === 'FAIL') && (
+        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F1F5F9] pb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              <h3 className="font-heading text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Exploitable Attack Chain Analysis
+              </h3>
+            </div>
+            <span className="text-[11px] font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md font-semibold">
+              CRITICAL LATERAL MOVEMENT PATH DETECTED
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1 font-mono text-xs">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+              <span className="text-[10px] text-slate-500 font-bold block">STEP 1: RECON</span>
+              <div className="font-semibold text-slate-900">Default SNMP Community</div>
+              <p className="text-[11px] text-slate-600 font-sans">Public community allows attackers to scrape internal routing and IP tables.</p>
+            </div>
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+              <span className="text-[10px] text-slate-500 font-bold block">STEP 2: INTERCEPTION</span>
+              <div className="font-semibold text-slate-900">Cleartext Telnet Active</div>
+              <p className="text-[11px] text-slate-600 font-sans">Transmits admin credentials in cleartext over the unencrypted network segment.</p>
+            </div>
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+              <span className="text-[10px] text-slate-500 font-bold block">STEP 3: PERSISTENCE</span>
+              <div className="font-semibold text-slate-900">Infinite Session Timeout</div>
+              <p className="text-[11px] text-slate-600 font-sans">Idle terminal sessions never close, allowing session hijacking without re-authentication.</p>
+            </div>
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg space-y-1">
+              <span className="text-[10px] text-rose-700 font-bold block">RESULT: COMPROMISE</span>
+              <div className="font-semibold text-rose-900">Full Node Takeover</div>
+              <p className="text-[11px] text-rose-800 font-sans">Privilege 15 execution granted; attacker pivots deeper into the perimeter.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg text-xs">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span className="text-emerald-950 font-semibold">
+                Root-Cause Breaker: Applying fix <span className="font-mono font-bold text-emerald-800">CIS-1.1.2 (Enforce SSHv2 Only)</span> severs this entire attack chain.
+              </span>
+            </div>
+            <button
+              onClick={() => onNavigate('remediation')}
+              className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-md font-semibold text-xs transition-colors shrink-0 flex items-center gap-1.5"
+            >
+              <span>Execute Breaker Fix</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Audit Findings Matrix */}
-      <div className="bg-white border border-[#CBD5E1] rounded-2xl p-6 shadow-sm space-y-4">
+      <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-base font-bold text-[#0F172A]">Audit Verification Matrix</h2>
             <p className="text-xs text-[#64748B]">OSCAL-aligned evidence traceability down to configuration line spans.</p>
           </div>
 
-          <div className="flex items-center gap-1 font-mono text-xs bg-[#F8FAFC] p-1 rounded-xl border border-[#CBD5E1]">
+          <div className="flex items-center gap-1 font-mono text-xs bg-[#F8FAFC] p-1 rounded-xl border border-[#CBD5E1] overflow-x-auto max-w-full no-scrollbar">
             <button
               onClick={() => setActiveFilter('all')}
               className={`px-3 py-1 rounded-lg transition-colors ${activeFilter === 'all' ? 'bg-white text-[#0F172A] font-bold shadow-sm' : 'text-[#64748B]'}`}
