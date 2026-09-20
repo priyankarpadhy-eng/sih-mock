@@ -146,8 +146,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Header */}
         <div className="flex items-center justify-between px-1.5 py-1 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-4 h-4 text-orange-600" />
             </div>
             <div>
               <h1 className="font-bold text-sm text-slate-900 tracking-tight">VECTORNET</h1>
@@ -177,12 +177,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-[10px]">
-            <span className="font-mono font-bold px-2 py-0.5 rounded text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="font-mono font-bold px-2 py-0.5 rounded text-[9px] bg-orange-50 text-orange-800 border border-orange-200">
               {userRole}
             </span>
             <button
               onClick={onOpenAuthModal}
-              className="text-emerald-700 hover:underline font-mono font-semibold flex items-center gap-1 transition-colors"
+              className="text-orange-700 hover:underline font-mono font-semibold flex items-center gap-1 transition-colors"
             >
               <LogOut className="w-3 h-3" />
               Switch
@@ -205,14 +205,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium cursor-pointer transition-all duration-150 ease-out text-left ${
                   isActive
-                    ? 'bg-emerald-50/80 text-emerald-950 font-semibold border border-emerald-200/80'
+                    ? 'bg-orange-50/90 text-orange-950 font-semibold border border-orange-200 shadow-2xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
                 } active:scale-[0.98]`}
               >
-                <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-emerald-600' : 'text-slate-500 group-hover:text-slate-700'}`} />
+                <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-orange-600' : 'text-slate-500 group-hover:text-slate-700'}`} />
                 <span className="truncate tracking-tight flex-1">{item.label}</span>
                 {isActive && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-600 shrink-0" />
                 )}
               </button>
             );
@@ -267,8 +267,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile Top Navigation Bar (< md) */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-slate-200 z-30 px-4 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <div className="w-7 h-7 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center">
+            <ShieldCheck className="w-4 h-4 text-orange-600" />
           </div>
           <div>
             <span className="font-heading font-bold text-xs text-slate-900">VECTORNET</span>

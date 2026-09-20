@@ -288,7 +288,7 @@ export const TaskWorkspacePage: React.FC<TaskWorkspacePageProps> = ({ onNavigate
         body: JSON.stringify({
           task_id: selectedTask.task_id,
           author_uid: 'FIREBASE_UID_SUPERADMIN_01',
-          author_name: 'Priyankar Padhy',
+          author_name: 'Super Administrator',
           text: commentText.trim()
         }),
       });
@@ -357,8 +357,8 @@ export const TaskWorkspacePage: React.FC<TaskWorkspacePageProps> = ({ onNavigate
       {/* Sleek Toolbar Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E2E8F0]">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#0F172A] text-white rounded-xl shadow-xs">
-            <CheckSquare className="w-5 h-5 text-[#10B981]" />
+          <div className="p-2 bg-orange-50 border border-orange-200 text-orange-600 rounded-xl shadow-xs">
+            <CheckSquare className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -380,7 +380,7 @@ export const TaskWorkspacePage: React.FC<TaskWorkspacePageProps> = ({ onNavigate
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white border border-[#CBD5E1] pl-7 pr-2.5 py-1 rounded-lg text-xs font-mono outline-none focus:border-[#0EA5E9] w-36 sm:w-44 shadow-2xs"
+              className="bg-white border border-[#CBD5E1] pl-7 pr-2.5 py-1 rounded-lg text-xs font-mono outline-none focus:border-orange-500 w-36 sm:w-44 shadow-2xs"
             />
           </div>
 
@@ -418,10 +418,10 @@ export const TaskWorkspacePage: React.FC<TaskWorkspacePageProps> = ({ onNavigate
           {/* Create Task Button */}
           <button
             onClick={() => setShowCreateModal(true)}
-            className="px-3 py-1 bg-[#0F172A] hover:bg-[#1E293B] text-white font-mono text-xs font-bold rounded-lg flex items-center gap-1 shadow-xs transition-all cursor-pointer"
+            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-medium text-xs font-sans rounded-lg flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5 text-[#10B981]" />
-            New Task
+            <Plus className="w-3.5 h-3.5 text-white" />
+            <span>New Task</span>
           </button>
         </div>
       </div>

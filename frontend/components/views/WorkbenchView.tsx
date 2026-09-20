@@ -221,7 +221,7 @@ export const WorkbenchPage: React.FC<WorkbenchPageProps> = ({
               <Sliders className="w-4 h-4 text-[#0F172A]" />
               <h2 className="text-sm font-bold text-[#0F172A]">2. Low-code security mapping</h2>
             </div>
-            <span className="text-[11px] font-mono text-[#10B981] font-bold">{vendor}</span>
+            <span className="text-[11px] font-mono text-orange-600 font-bold">{vendor}</span>
           </div>
 
           <div>
@@ -258,7 +258,7 @@ export const WorkbenchPage: React.FC<WorkbenchPageProps> = ({
           <button
             onClick={handleCommitRule}
             disabled={isSubmitting || !activeSnippet}
-            className="w-full py-3 bg-[#0F172A] hover:bg-[#1E293B] text-white font-semibold text-xs rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? (
               <>

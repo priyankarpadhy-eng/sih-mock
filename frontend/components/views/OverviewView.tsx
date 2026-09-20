@@ -108,13 +108,13 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
       <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600">
               <Zap className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-slate-900 font-heading">Automated Task Assignment & Engineer Routing Matrix</h2>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-orange-50 text-orange-800 border border-orange-200">
                   POLICY ENGINE ACTIVE
                 </span>
               </div>

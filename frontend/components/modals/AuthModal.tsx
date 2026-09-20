@@ -162,7 +162,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <User className="w-4 h-4 text-[#64748B]" />
                 <input
                   type="text"
-                  placeholder="Priyankar Padhy"
+                  placeholder="Lead SecOps Engineer"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="bg-transparent text-xs text-[#0F172A] outline-none w-full font-sans"
@@ -177,7 +177,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <Mail className="w-4 h-4 text-[#64748B]" />
               <input
                 type="email"
-                placeholder="priyankar@vectornet.io"
+                placeholder="secops@vectornet.io"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-transparent text-xs text-[#0F172A] outline-none w-full font-mono"

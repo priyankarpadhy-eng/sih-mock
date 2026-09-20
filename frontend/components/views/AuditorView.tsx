@@ -174,7 +174,7 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
         
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-white border border-[#CBD5E1] rounded-2xl p-6 text-center shadow-sm space-y-3">
-            <Upload className="w-6 h-6 text-[#10B981] mx-auto" />
+            <Upload className="w-6 h-6 text-orange-500 mx-auto" />
             <div>
               <label htmlFor="cfg-file-input" className="cursor-pointer text-xs font-bold text-[#0F172A] hover:underline block">
                 Upload raw config file
@@ -193,7 +193,7 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
           <div className="bg-white border border-[#CBD5E1] p-3.5 rounded-xl shadow-sm space-y-2 font-mono text-xs">
             <div className="flex items-center justify-between">
               <span className="text-[#64748B]">VENDOR</span>
-              <span className="text-[#10B981] font-bold">{detectedVendor}</span>
+              <span className="text-orange-600 font-bold">{detectedVendor}</span>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-[#F1F5F9]">
               <span className="text-[#64748B]">ENGINE</span>
@@ -205,7 +205,7 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
             <button
               onClick={onEvaluate}
               disabled={isLoading || !rawConfig.trim()}
-              className="w-full py-2.5 bg-[#0F172A] hover:bg-[#1E293B] text-white font-semibold font-mono text-xs rounded-xl shadow-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-semibold font-mono text-xs rounded-xl shadow-xs transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {isLoading ? 'ANALYZING CONFIG...' : 'RUN COMPLIANCE AUDIT'}
             </button>

@@ -196,7 +196,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
             onClick={handleSaveSettings}
             className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
           >
-            <Save className="w-3.5 h-3.5 text-emerald-400" />
+            <Save className="w-3.5 h-3.5 text-orange-400" />
             <span>Save Configuration</span>
           </button>
         </div>
@@ -223,7 +223,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
           <div className="flex items-start sm:items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
               config.engineEnabled
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                ? 'bg-orange-50 border-orange-200 text-orange-600'
                 : 'bg-slate-100 border-slate-200 text-slate-400'
             }`}>
               <Zap className="w-5 h-5" />
@@ -233,7 +233,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
                 <h2 className="text-sm font-bold text-slate-900">Automated Violation-to-Task Dispatch</h2>
                 <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
                   config.engineEnabled
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    ? 'bg-orange-50 text-orange-800 border-orange-200'
                     : 'bg-slate-100 text-slate-600 border-slate-300'
                 }`}>
                   {config.engineEnabled ? 'SYSTEM ACTIVE' : 'SYSTEM DISABLED'}
@@ -250,7 +250,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
             onClick={handleToggleEngine}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
               config.engineEnabled
-                ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-xs'
                 : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
             }`}
           >
@@ -265,7 +265,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
               type="checkbox"
               checked={config.autoAttachCliFix}
               onChange={(e) => setConfig({ ...config, autoAttachCliFix: e.target.checked })}
-              className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500"
+              className="mt-0.5 rounded text-orange-600 focus:ring-orange-500"
             />
             <div>
               <span className="font-semibold text-slate-800 block">Attach CLI Fix Script</span>
@@ -278,7 +278,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
               type="checkbox"
               checked={config.autoAttachRollback}
               onChange={(e) => setConfig({ ...config, autoAttachRollback: e.target.checked })}
-              className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500"
+              className="mt-0.5 rounded text-orange-600 focus:ring-orange-500"
             />
             <div>
               <span className="font-semibold text-slate-800 block">Attach Safety Rollback</span>
@@ -291,7 +291,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
               type="checkbox"
               checked={config.tagCertInDirectives}
               onChange={(e) => setConfig({ ...config, tagCertInDirectives: e.target.checked })}
-              className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500"
+              className="mt-0.5 rounded text-orange-600 focus:ring-orange-500"
             />
             <div>
               <span className="font-semibold text-slate-800 block">Tag CERT-In 2022</span>
@@ -304,7 +304,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
               type="checkbox"
               checked={config.autoDryRunVerification}
               onChange={(e) => setConfig({ ...config, autoDryRunVerification: e.target.checked })}
-              className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500"
+              className="mt-0.5 rounded text-orange-600 focus:ring-orange-500"
             />
             <div>
               <span className="font-semibold text-slate-800 block">Dry-Run Simulation</span>
@@ -319,7 +319,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div>
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <UserCheck className="w-4 h-4 text-emerald-600" />
+              <UserCheck className="w-4 h-4 text-orange-600" />
               Vendor-to-Engineer Assignment Rules
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -436,7 +436,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
                   onChange={(e) => setConfig({ ...config, notifyJiraWebhook: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600"></div>
               </label>
             </div>
             <input
@@ -459,7 +459,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
                   onChange={(e) => setConfig({ ...config, notifyTeamsWebhook: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600"></div>
               </label>
             </div>
             <input

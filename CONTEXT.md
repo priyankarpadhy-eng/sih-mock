@@ -193,7 +193,27 @@ npm run dev
 
 ## 7. Changelog & Revision History
 
-### Version 2.2.0 (2026-09-15) — Current Update
+### Version 2.3.0 (2026-09-20) — Current Update
+- **Primary Orange Theme Unification:**
+  - Shifted application primary brand color to Orange (`#EA580C` / `#F97316`) across all views: desktop and mobile navigation, active states, buttons, badges, and headers.
+  - Preserved semantic status coloring strictly for security outcomes: Pass (`#059669` emerald), Fail (`#EF4444` rose), Warning (`#D97706` amber), and Info (`#0284C7` sky).
+  - Defined CSS custom properties in `:root` (`--brand-primary: #EA580C;`, `--brand-hover: #C2410C;`, `--brand-light: #FFF7ED;`, `--brand-border: #FED7AA;`).
+- **De-cluttered Ingestion Experience:**
+  - Replaced crowded preset cards with a clean, responsive Scenario Dropdown selector that loads scenarios directly without layout clutter.
+  - Added structured header with target device metadata and instant scenario switcher to the audit report view.
+- **Auto-Task Routing & Engineer Assignment System:**
+  - Added new `SettingsView` with a comprehensive vendor-to-engineer assignment matrix.
+  - Enables Super Admins to configure which junior engineer receives tickets based on vendor family (Cisco, Palo Alto, Juniper, Fortinet, Arista, AWS).
+  - Toggles automated injection of syntax-validated CLI fix scripts and rollback commands into tickets.
+  - Added simulated dispatch test button and downstream webhook toggles (Jira Cloud & MS Teams).
+- **Hardened Position Roles:**
+  - Removed all hardcoded personal names across the application, standardizing on role titles ("Super Administrator", "Lead SecOps Engineer", "Junior NetOps Specialist").
+- **Mobile Responsive Layout:**
+  - Added a dedicated mobile navigation header with hamburger slide-over drawer and mobile-optimized padding.
+
+---
+
+### Version 2.2.0 (2026-09-15) — Previous Update
 - **Created `CONTEXT.md`:** Added universal development and architecture guide for team AI IDE agents.
 - **Implemented Blockchain Audit Ledger:**
   - Created `contracts/NetworkAuditLedger.sol` (Solidity smart contract for on-chain audit certificates).
@@ -205,7 +225,7 @@ npm run dev
 
 ---
 
-### Version 2.1.0 (2026-09-14) — Previous Update
+### Version 2.1.0 (2026-09-14)
 - **Removed Inventory & Telemetry Tabs:** Cleaned up sidebar navigation and UI to strictly focus on core compliance auditing and remediation.
 - **Added Demo Samples Modal:** Added dedicated `FlaskConical` Samples button and modal with 10 multi-vendor test configs (Cisco, Palo Alto, Junos, FortiOS, combos).
 - **Status Badges on Samples:** Added instant status indicators (`Clean • 0 Errors` vs `Errors Found • X Violations`) so evaluators immediately know expected test outcomes.

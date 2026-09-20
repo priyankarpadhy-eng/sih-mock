@@ -134,7 +134,7 @@ export const RemediationPage: React.FC<RemediationPageProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <div className="font-mono text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 font-bold">
+          <div className="font-mono text-xs text-orange-800 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200 font-bold">
             VENDOR: {vendor || 'Cisco Systems'}
           </div>
 
@@ -142,7 +142,7 @@ export const RemediationPage: React.FC<RemediationPageProps> = ({
             <button
               onClick={handleSimulatePatch}
               disabled={isSimulating || violations.length === 0}
-              className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors w-full sm:w-auto cursor-pointer"
+              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition-colors w-full sm:w-auto cursor-pointer"
             >
               <Play className="w-3.5 h-3.5 fill-white" />
               <span>{isSimulating ? 'SIMULATING RE-AUDIT...' : 'SIMULATE PATCH (DRY-RUN)'}</span>
@@ -227,8 +227,8 @@ export const RemediationPage: React.FC<RemediationPageProps> = ({
                 {/* Proposed Fix Script */}
                 <div className="bg-slate-50 border border-slate-200 p-4 rounded-lg space-y-2 font-mono text-xs">
                   <div className="flex items-center justify-between text-slate-900">
-                    <div className="flex items-center gap-2 font-bold text-emerald-800">
-                      <Terminal className="w-4 h-4 text-emerald-600" />
+                    <div className="flex items-center gap-2 font-bold text-slate-800">
+                      <Terminal className="w-4 h-4 text-orange-600" />
                       <span>PROPOSED REMEDIATION SYNTAX</span>
                     </div>
                     <button

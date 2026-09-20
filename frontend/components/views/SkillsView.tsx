@@ -221,8 +221,8 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
         <div>
           <div className="flex items-center gap-2">
             {isSuperAdmin ? (
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="px-2.5 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-800 text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-orange-600" />
                 SUPER ADMIN RBAC ENFORCED
               </span>
             ) : (
@@ -264,7 +264,7 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
                 : 'text-[#64748B] hover:text-[#0F172A]'
             }`}
           >
-            <Key className="w-3.5 h-3.5 text-[#10B981]" />
+            <Key className="w-3.5 h-3.5 text-orange-500" />
             OpenRouter AI Key Pool ({aiConfig?.total_keys || 0})
           </button>
         </div>
@@ -411,9 +411,9 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
             <button
               onClick={handleTestFailover}
               disabled={isTestingPool}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-mono text-xs font-bold rounded-xl flex items-center gap-2 transition-all shrink-0 cursor-pointer shadow-sm"
+              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-mono text-xs font-bold rounded-xl flex items-center gap-2 transition-all shrink-0 cursor-pointer shadow-sm"
             >
-              <Sparkles className="w-4 h-4 text-slate-950" />
+              <Sparkles className="w-4 h-4 text-white" />
               {isTestingPool ? 'QUERYING LOCAL AI...' : 'TEST LOCAL AI INFERENCE'}
             </button>
           </div>
@@ -423,7 +423,7 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
             {/* Left: Free AI Models & Key Pool Overview */}
             <div className="bg-white border border-[#CBD5E1] rounded-2xl p-5 space-y-4 shadow-xs">
             <h3 className="text-xs font-bold text-[#0F172A] font-mono uppercase tracking-wider border-b border-[#E2E8F0] pb-2 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-[#10B981]" />
+              <Zap className="w-4 h-4 text-orange-500" />
               Top Recommended Free AI Models
             </h3>
 
@@ -436,13 +436,13 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
                     onClick={() => isSuperAdmin && setSelectedModel(m.id)}
                     className={`p-3 rounded-xl border text-xs cursor-pointer transition-all ${
                       isSelected
-                        ? 'border-[#10B981] bg-emerald-50/60 shadow-xs ring-1 ring-emerald-300'
+                        ? 'border-orange-500 bg-orange-50/60 shadow-xs ring-1 ring-orange-300'
                         : 'border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#0EA5E9]'
                     }`}
                   >
                     <div className="flex items-center justify-between font-mono font-bold text-[#0F172A]">
                       <span>{m.name}</span>
-                      {isSelected && <span className="text-[9px] bg-emerald-600 text-white px-2 py-0.5 rounded font-bold uppercase">ACTIVE</span>}
+                      {isSelected && <span className="text-[9px] bg-orange-600 text-white px-2 py-0.5 rounded font-bold uppercase">ACTIVE</span>}
                     </div>
                     <p className="text-[11px] text-[#475569] mt-1">{m.description}</p>
                     <div className="text-[9px] font-mono text-[#64748B] mt-1 truncate">{m.id}</div>

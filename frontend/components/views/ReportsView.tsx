@@ -88,9 +88,9 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
           <button
             onClick={handleDownloadDirect}
             disabled={isExporting}
-            className="px-5 py-2.5 bg-[#0F172A] hover:bg-[#1E293B] text-white font-mono text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
+            className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-mono text-xs font-semibold rounded-xl shadow-xs transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
           >
-            <Download className="w-4 h-4 text-[#10B981]" />
+            <Download className="w-4 h-4 text-white" />
             {isExporting ? 'DOWNLOADING PDF...' : 'DOWNLOAD PDF (.PDF)'}
           </button>
         </div>
@@ -100,7 +100,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
       <div className="bg-white border border-[#CBD5E1] rounded-xl p-2 shadow-sm space-y-2">
         <div className="flex items-center justify-between px-3 py-1.5 bg-[#F8FAFC] border-b border-[#E2E8F0] rounded-t-lg text-xs font-mono text-[#475569]">
           <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-[#10B981]" />
+            <FileText className="w-4 h-4 text-orange-500" />
             <span className="font-bold text-[#0F172A]">DOCUMENT PREVIEW:</span>
             <span>vectornet_verification_sheet_{(hostname || 'cucme').toLowerCase()}.pdf</span>
           </div>

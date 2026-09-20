@@ -10,8 +10,10 @@
   --text-primary: #0F172A;
   --text-secondary: #475569;
   --text-muted: #64748B;
-  --brand-primary: #059669;
-  --brand-hover: #047857;
+  --brand-primary: #EA580C;
+  --brand-hover: #C2410C;
+  --brand-light: #FFF7ED;
+  --brand-border: #FED7AA;
   --status-pass: #059669;
   --status-fail: #E11D48;
   --status-warn: #D97706;

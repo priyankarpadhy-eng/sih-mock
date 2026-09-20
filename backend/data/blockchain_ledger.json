@@ -431,5 +431,30 @@
         "explorer_url": "https://amoy.polygonscan.com/tx/0x0ad3eff2fc4531825dec08a0555cf4b5034454ae288a4fdd306cf2d4e8c23d9a"
       }
     ]
+  },
+  {
+    "block_number": 48291058,
+    "timestamp": "2026-09-20T05:54:46.934742+00:00",
+    "previous_hash": "0x0ad3eff2fc4531825dec08a0555cf4b5034454ae288a4fdd306cf2d4e8c23d9a",
+    "merkle_root": "0x6a88731db551d124095537b5028199ab05ae86d142470846d3f379015b27e4fd",
+    "tx_hash": "0x449206a6fbeed07727eb03861706528f448a434bb58938919c1cc2098a68e724",
+    "records": [
+      {
+        "tx_hash": "0x449206a6fbeed07727eb03861706528f448a434bb58938919c1cc2098a68e724",
+        "block_number": 48291058,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x4529c4633d99bc55000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x6a88731db551d124095537b5028199ab05ae86d142470846d3f379015b27e4fd",
+        "compliance_score": 0.0,
+        "hostname": "BRANCH-RTR-VULN",
+        "vendor": "Cisco Systems",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-20T05:54:46.934742+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x449206a6fbeed07727eb03861706528f448a434bb58938919c1cc2098a68e724"
+      }
+    ]
   }
 ]
