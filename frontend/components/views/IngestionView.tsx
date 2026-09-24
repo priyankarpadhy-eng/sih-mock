@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Download,
   ChevronRight,
+  ChevronDown,
   HelpCircle,
   Languages,
   X,
@@ -151,7 +152,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
     total_checks?: number;
   }>({});
 
-  // Drag & drop state
+  const [isPipelineDetailsOpen, setIsPipelineDetailsOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
   // AI API Key Management
@@ -962,19 +963,83 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           </div>
         </div>
 
-        {/* Animated Multi-Step Execution Pipeline */}
+        {/* Animated Reasoning & Execution Pipeline (Claude/ChatGPT Style) */}
         {pipelineStage !== 'idle' && (
-          <div className="w-full max-w-[780px] mt-4 bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-xs transition-all">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <Activity className={`w-4 h-4 ${pipelineStage === 'completed' ? 'text-emerald-600' : 'text-[#EA580C] animate-pulse'}`} />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
-                  {pipelineStage === 'completed' ? 'Audit & Verification Complete' : 'Executing Multi-Vendor Pipeline'}
-                </h3>
+          <div className="w-full max-w-[780px] mt-4 bg-white border border-[#E2E8F0] rounded-2xl shadow-xs overflow-hidden transition-all">
+            {/* Main Interactive Header Bar (Claude/ChatGPT Single Line Status) */}
+            <div
+              onClick={() => setIsPipelineDetailsOpen(!isPipelineDetailsOpen)}
+              className="flex items-center justify-between p-3 sm:px-4 cursor-pointer hover:bg-slate-50/70 transition-colors select-none"
+            >
+              {/* Left: Dynamic Live Action Status */}
+              <div className="flex items-center gap-2.5 min-w-0 pr-3">
+                {pipelineStage === 'completed' ? (
+                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <Loader2 className="w-4 h-4 text-[#EA580C] animate-spin shrink-0" />
+                )}
+
+                <div className="flex items-center gap-2 truncate">
+                  <span className="text-xs font-semibold text-slate-900 font-mono tracking-tight truncate">
+                    {pipelineStage === 'detecting_vendor' && 'Detecting vendors...'}
+                    {pipelineStage === 'detecting_hardware' && (
+                      <>
+                        <span className="text-emerald-700">Vendors identified: {pipelineData.vendor || 'Cisco Systems'}</span>
+                        <span className="text-slate-400 font-normal mx-1">&bull;</span>
+                        <span className="text-slate-700">Detecting hardware & telemetry...</span>
+                      </>
+                    )}
+                    {pipelineStage === 'normalizing' && (
+                      <>
+                        <span className="text-emerald-700">Hardware identified: {pipelineData.hardware || 'Network Gateway'}</span>
+                        <span className="text-slate-400 font-normal mx-1">&bull;</span>
+                        <span className="text-slate-700">Normalising configuration...</span>
+                      </>
+                    )}
+                    {pipelineStage === 'compliance' && (
+                      <>
+                        <span className="text-emerald-700">Normalising complete</span>
+                        <span className="text-slate-400 font-normal mx-1">&bull;</span>
+                        <span className="text-slate-700">Compliance checking against NIST & CIS...</span>
+                      </>
+                    )}
+                    {pipelineStage === 'ai' && (
+                      <>
+                        <span className="text-emerald-700">Compliance check successful ({pipelineData.violations_count ?? 0} violations)</span>
+                        <span className="text-slate-400 font-normal mx-1">&bull;</span>
+                        <span className="text-slate-700">Synthesizing AI reasoning...</span>
+                      </>
+                    )}
+                    {pipelineStage === 'completed' && (
+                      <>
+                        <span className="text-emerald-700 font-bold">Audit & verification complete</span>
+                        <span className="text-slate-400 font-normal mx-1">&bull;</span>
+                        <span className="text-slate-700 font-medium">
+                          {pipelineData.vendor || 'Multi-Vendor'} ({pipelineData.hardware || 'Gateway'}) &bull; Score: {pipelineData.score ?? 0}%
+                        </span>
+                      </>
+                    )}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
-                <span>{pipelineStage === 'completed' ? '100%' : pipelineStage === 'ai' ? '85%' : pipelineStage === 'compliance' ? '70%' : pipelineStage === 'normalizing' ? '45%' : pipelineStage === 'detecting_hardware' ? '25%' : '10%'}</span>
-                <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+
+              {/* Right: Progress % + Orange Bar + Expand/Collapse Button */}
+              <div className="flex items-center gap-3 shrink-0 font-mono text-xs text-slate-500">
+                <span className="text-[11px] font-semibold text-slate-700">
+                  {pipelineStage === 'completed'
+                    ? '100%'
+                    : pipelineStage === 'ai'
+                    ? '85%'
+                    : pipelineStage === 'compliance'
+                    ? '70%'
+                    : pipelineStage === 'normalizing'
+                    ? '45%'
+                    : pipelineStage === 'detecting_hardware'
+                    ? '25%'
+                    : '10%'}
+                </span>
+
+                <div className="w-16 sm:w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-[#EA580C] transition-all duration-300"
                     style={{
@@ -993,135 +1058,141 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                     }}
                   />
                 </div>
+
+                {/* Claude/ChatGPT Expand Accordion Chevron */}
+                <div className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-700 transition-colors">
+                  <span className="hidden sm:inline font-sans text-[11px]">
+                    {isPipelineDetailsOpen ? 'Hide' : 'Details'}
+                  </span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      isPipelineDetailsOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Sequential Pipeline Steps */}
-            <div className="space-y-2.5 font-mono text-xs">
-              {/* Step 1: Detect Vendor */}
-              <div className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 bg-slate-50/50">
-                {pipelineStage === 'detecting_vendor' ? (
-                  <Loader2 className="w-4 h-4 text-[#EA580C] animate-spin shrink-0" />
-                ) : (
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                )}
-                <div className="flex-1 flex flex-wrap items-center justify-between gap-1">
-                  <span className="text-slate-700">
-                    {pipelineStage === 'detecting_vendor' ? 'Detecting vendors...' : 'Vendors identified:'}
-                  </span>
+            {/* Optional Collapsible Step Trace Details (Shown on Click like Claude's Thought Process) */}
+            {isPipelineDetailsOpen && (
+              <div className="border-t border-slate-100 bg-slate-50/50 p-4 space-y-2 text-xs font-mono">
+                {/* Step 1: Vendors */}
+                <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center gap-2">
+                    {pipelineStage === 'detecting_vendor' ? (
+                      <Loader2 className="w-3.5 h-3.5 text-[#EA580C] animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    )}
+                    <span>
+                      {pipelineStage === 'detecting_vendor' ? 'Detecting vendors...' : 'Vendors identified'}
+                    </span>
+                  </div>
                   {pipelineStage !== 'detecting_vendor' && (
-                    <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                    <span className="font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
                       {pipelineData.vendor || 'Cisco Systems'}
                     </span>
                   )}
                 </div>
-              </div>
 
-              {/* Step 2: Detect Hardware & Telemetry */}
-              <div className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 bg-slate-50/50">
-                {pipelineStage === 'detecting_vendor' ? (
-                  <div className="w-4 h-4 rounded-full border border-slate-300 shrink-0" />
-                ) : pipelineStage === 'detecting_hardware' ? (
-                  <Loader2 className="w-4 h-4 text-[#EA580C] animate-spin shrink-0" />
-                ) : (
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                )}
-                <div className="flex-1 flex flex-wrap items-center justify-between gap-1">
-                  <span className="text-slate-700">
-                    {pipelineStage === 'detecting_vendor'
-                      ? 'Detecting hardware...'
-                      : pipelineStage === 'detecting_hardware'
-                      ? 'Detecting hardware & telemetry...'
-                      : 'Hardware identified:'}
-                  </span>
+                {/* Step 2: Hardware */}
+                <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center gap-2">
+                    {pipelineStage === 'detecting_vendor' ? (
+                      <span className="w-3.5 h-3.5 rounded-full border border-slate-300" />
+                    ) : pipelineStage === 'detecting_hardware' ? (
+                      <Loader2 className="w-3.5 h-3.5 text-[#EA580C] animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    )}
+                    <span>
+                      {pipelineStage === 'detecting_vendor'
+                        ? 'Detecting hardware...'
+                        : pipelineStage === 'detecting_hardware'
+                        ? 'Detecting hardware & telemetry...'
+                        : 'Hardware identified'}
+                    </span>
+                  </div>
                   {pipelineStage !== 'detecting_vendor' && pipelineStage !== 'detecting_hardware' && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                        {pipelineData.hardware || 'Enterprise Switch / Router'}
-                      </span>
-                      {pipelineData.hardware_faults && pipelineData.hardware_faults.length > 0 && (
-                        <span className="text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-[10px] font-semibold">
-                          {pipelineData.hardware_faults.length} Fault(s)
-                        </span>
-                      )}
-                    </div>
+                    <span className="font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                      {pipelineData.hardware || 'Enterprise Device'}
+                    </span>
                   )}
                 </div>
-              </div>
 
-              {/* Step 3: Normalizing Configuration */}
-              <div className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 bg-slate-50/50">
-                {pipelineStage === 'detecting_vendor' || pipelineStage === 'detecting_hardware' ? (
-                  <div className="w-4 h-4 rounded-full border border-slate-300 shrink-0" />
-                ) : pipelineStage === 'normalizing' ? (
-                  <Loader2 className="w-4 h-4 text-[#EA580C] animate-spin shrink-0" />
-                ) : (
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                )}
-                <div className="flex-1 flex flex-wrap items-center justify-between gap-1">
-                  <span className="text-slate-700">
-                    {pipelineStage === 'normalizing'
-                      ? 'Normalising configuration...'
-                      : pipelineStage === 'compliance' || pipelineStage === 'ai' || pipelineStage === 'completed'
-                      ? 'Normalising complete:'
-                      : 'Normalising...'}
-                  </span>
+                {/* Step 3: Normalising */}
+                <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center gap-2">
+                    {pipelineStage === 'detecting_vendor' || pipelineStage === 'detecting_hardware' ? (
+                      <span className="w-3.5 h-3.5 rounded-full border border-slate-300" />
+                    ) : pipelineStage === 'normalizing' ? (
+                      <Loader2 className="w-3.5 h-3.5 text-[#EA580C] animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    )}
+                    <span>
+                      {pipelineStage === 'normalizing'
+                        ? 'Normalising configuration...'
+                        : 'Normalising complete'}
+                    </span>
+                  </div>
                   {(pipelineStage === 'compliance' || pipelineStage === 'ai' || pipelineStage === 'completed') && (
-                    <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                      {pipelineData.controls_count || 18} baseline controls mapped to OSCAL
+                    <span className="font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                      {pipelineData.controls_count || 18} controls mapped
                     </span>
                   )}
                 </div>
-              </div>
 
-              {/* Step 4: Compliance Checking */}
-              <div className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 bg-slate-50/50">
-                {pipelineStage === 'compliance' ? (
-                  <Loader2 className="w-4 h-4 text-[#EA580C] animate-spin shrink-0" />
-                ) : pipelineStage === 'ai' || pipelineStage === 'completed' ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                ) : (
-                  <div className="w-4 h-4 rounded-full border border-slate-300 shrink-0" />
-                )}
-                <div className="flex-1 flex flex-wrap items-center justify-between gap-1">
-                  <span className="text-slate-700">
-                    {pipelineStage === 'compliance'
-                      ? 'Compliance checking...'
-                      : pipelineStage === 'ai' || pipelineStage === 'completed'
-                      ? 'Compliance check successful:'
-                      : 'Compliance checking...'}
-                  </span>
+                {/* Step 4: Compliance */}
+                <div className="flex items-center justify-between text-slate-600">
+                  <div className="flex items-center gap-2">
+                    {pipelineStage === 'compliance' ? (
+                      <Loader2 className="w-3.5 h-3.5 text-[#EA580C] animate-spin" />
+                    ) : pipelineStage === 'ai' || pipelineStage === 'completed' ? (
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                    ) : (
+                      <span className="w-3.5 h-3.5 rounded-full border border-slate-300" />
+                    )}
+                    <span>
+                      {pipelineStage === 'compliance'
+                        ? 'Compliance checking...'
+                        : 'Compliance check successful'}
+                    </span>
+                  </div>
                   {(pipelineStage === 'ai' || pipelineStage === 'completed') && (
-                    <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                      {pipelineData.violations_count ?? 0} violations flagged &bull; Score: {pipelineData.score ?? 0}%
+                    <span className="font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                      {pipelineData.violations_count ?? 0} violations &bull; {pipelineData.score ?? 0}%
                     </span>
                   )}
                 </div>
-              </div>
 
-              {/* Step 5: AI Reasoning (Conditional if query provided) */}
-              {(pipelineStage === 'ai' || (pipelineStage === 'completed' && aiResponseText)) && (
-                <div className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 bg-slate-50/50">
-                  {pipelineStage === 'ai' ? (
-                    <Loader2 className="w-4 h-4 text-[#EA580C] animate-spin shrink-0" />
-                  ) : (
-                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                  )}
-                  <div className="flex-1 flex flex-wrap items-center justify-between gap-1">
-                    <span className="text-slate-700">
-                      {pipelineStage === 'ai' ? 'Synthesizing AI reasoning & answers...' : 'AI analysis complete:'}
-                    </span>
+                {/* Step 5: AI (if prompt provided) */}
+                {(pipelineStage === 'ai' || (pipelineStage === 'completed' && aiResponseText)) && (
+                  <div className="flex items-center justify-between text-slate-600">
+                    <div className="flex items-center gap-2">
+                      {pipelineStage === 'ai' ? (
+                        <Loader2 className="w-3.5 h-3.5 text-[#EA580C] animate-spin" />
+                      ) : (
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      )}
+                      <span>
+                        {pipelineStage === 'ai'
+                          ? 'Synthesizing AI reasoning...'
+                          : 'AI analysis complete'}
+                      </span>
+                    </div>
                     {pipelineStage === 'completed' && (
-                      <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                        {aiMeta?.model || 'qwen3:4b'} Verified
+                      <span className="font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                        {aiMeta?.model || 'qwen3:4b'}
                       </span>
                     )}
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         )}
+
 
         {/* AI Query Response Bubble */}
         {aiResponseText && (
