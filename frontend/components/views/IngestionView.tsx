@@ -127,6 +127,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   const [openRouterApiKey, setOpenRouterApiKey] = useState('');
   const [activeAiModel, setActiveAiModel] = useState('nvidia/nemotron-3.5-lightning:free');
   const [keySaveMessage, setKeySaveMessage] = useState<string | null>(null);
+  const [isSavingKey, setIsSavingKey] = useState(false);
+  const [isSavedKey, setIsSavedKey] = useState(false);
   const [isTestingKey, setIsTestingKey] = useState(false);
   const [keyTestFeedback, setKeyTestFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -143,26 +145,60 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   }, []);
 
   const handleSaveApiKey = async () => {
-    try {
-      localStorage.setItem('vectornet_openrouter_key', openRouterApiKey.trim());
-      localStorage.setItem('vectornet_ai_model', activeAiModel);
+    setIsSavingKey(true);
+    setIsSavedKey(false);
+    setKeySaveMessage(null);
 
-      // Persist to backend server if reachable
+    const trimmedKey = (openRouterApiKey || '').trim();
+
+    try {
+      if (typeof window !== 'undefined') {
+        if (trimmedKey) {
+          localStorage.setItem('vectornet_openrouter_key', trimmedKey);
+        } else {
+          localStorage.removeItem('vectornet_openrouter_key');
+        }
+        localStorage.setItem('vectornet_ai_model', activeAiModel);
+      }
+
+      // Persist to backend server if reachable with 2s timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+
       await fetch('http://localhost:8000/api/v1/ai/configure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          api_keys: openRouterApiKey.trim() ? [openRouterApiKey.trim()] : [],
+          api_keys: trimmedKey ? [trimmedKey] : [],
           active_model: activeAiModel,
-          user_role: 'SUPER_ADMIN'
-        })
+          user_role: 'SUPER_ADMIN',
+          user_uid: 'FIREBASE_UID_SUPERADMIN_01',
+          user_email: 'admin@vectornet.io'
+        }),
+        signal: controller.signal
       }).catch(() => {});
+      clearTimeout(timeoutId);
 
-      setKeySaveMessage('API key configured & active for cloud reasoning.');
-      setTimeout(() => setKeySaveMessage(null), 3000);
-    } catch {
-      setKeySaveMessage('Key saved locally.');
-      setTimeout(() => setKeySaveMessage(null), 3000);
+      setIsSavingKey(false);
+      setIsSavedKey(true);
+      setKeySaveMessage(trimmedKey ? 'API key saved & active for reasoning.' : 'Key cleared. Running in local failover mode.');
+
+      // Automatically close modal after brief visual confirmation
+      setTimeout(() => {
+        setShowApiKeyModal(false);
+        setIsSavedKey(false);
+        setKeySaveMessage(null);
+      }, 700);
+    } catch (err) {
+      console.error('Error saving API key:', err);
+      setIsSavingKey(false);
+      setIsSavedKey(true);
+      setKeySaveMessage('Key saved locally in browser.');
+      setTimeout(() => {
+        setShowApiKeyModal(false);
+        setIsSavedKey(false);
+        setKeySaveMessage(null);
+      }, 700);
     }
   };
 
@@ -1702,9 +1738,26 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                 <button
                   type="button"
                   onClick={handleSaveApiKey}
-                  className="px-4 py-1.5 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] text-white font-semibold shadow-xs transition-colors cursor-pointer"
+                  disabled={isSavingKey}
+                  className={`px-5 py-2 rounded-xl text-white font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-75 ${
+                    isSavedKey
+                      ? 'bg-emerald-600 hover:bg-emerald-700'
+                      : 'bg-[#EA580C] hover:bg-[#C2410C]'
+                  }`}
                 >
-                  Save & Apply
+                  {isSavingKey ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : isSavedKey ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Saved & Applied!</span>
+                    </>
+                  ) : (
+                    <span>Save & Apply</span>
+                  )}
                 </button>
               </div>
             </div>

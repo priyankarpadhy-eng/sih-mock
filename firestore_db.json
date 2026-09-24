@@ -9297,6 +9297,116 @@
   ],
   "audit_logs": [
     {
+      "log_id": "LOG-FBEFD5",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:35:58Z"
+    },
+    {
+      "log_id": "LOG-F79F2D",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:27:43Z"
+    },
+    {
+      "log_id": "LOG-835316",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:27:43Z"
+    },
+    {
+      "log_id": "LOG-A6BB3C",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:27:41Z"
+    },
+    {
+      "log_id": "LOG-6F124E",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:27:27Z"
+    },
+    {
+      "log_id": "LOG-0E2561",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:27:02Z"
+    },
+    {
+      "log_id": "LOG-21D554",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:27:00Z"
+    },
+    {
+      "log_id": "LOG-D8F2F9",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:26:55Z"
+    },
+    {
+      "log_id": "LOG-B7ACFB",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:26:55Z"
+    },
+    {
+      "log_id": "LOG-7A54B1",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:26:53Z"
+    },
+    {
+      "log_id": "LOG-7ABD83",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:26:43Z"
+    },
+    {
       "log_id": "LOG-16F537",
       "user_uid": "SYSTEM_AUTOMATED_ENGINE",
       "user_email": "engine@vectornet.io",
