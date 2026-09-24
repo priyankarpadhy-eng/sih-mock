@@ -19,10 +19,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
   onSelectDevice,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const score = auditResult?.compliance_score || 0;
-  const total = auditResult?.total_checks || 7;
-  const passed = auditResult?.passed_checks || 0;
-  const failed = auditResult?.failed_checks || 0;
+  const score = auditResult?.compliance_score !== undefined
+    ? Math.round(auditResult.compliance_score)
+    : (assets.length > 0 ? Math.round(assets.reduce((sum, a) => sum + (a.compliance_score || 0), 0) / assets.length) : 0);
+  const failed = auditResult?.findings?.filter((f: any) => f.status === 'FAIL' || f.status === 'WARNING').length || 0;
 
   const filteredAssets = assets.filter(a => 
     a.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -52,16 +52,18 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div className="bg-white border border-[#E2E8F0] p-5 rounded-2xl shadow-sm space-y-2">
           <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider font-bold">HARDWARE MONITORED</span>
           <div className="text-3xl font-bold font-mono text-[#0F172A]">{assets.length}</div>
-          <p className="text-xs text-[#64748B]">4 active monitoring nodes</p>
+          <p className="text-xs text-[#64748B]">{assets.length === 1 ? '1 active monitoring node' : `${assets.length} active monitoring nodes`}</p>
         </div>
 
         <div className="bg-white border border-[#E2E8F0] p-5 rounded-2xl shadow-sm space-y-2">
           <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider font-bold">AVG. COMPLIANCE SCORE</span>
           <div className="text-3xl font-bold font-mono text-[#0F172A] flex items-center justify-between">
             <span>{score}%</span>
-            <span className="text-xs font-semibold px-2 py-0.5 bg-[#10B981]/10 text-[#10B981] rounded border border-[#10B981]/20">
-              +5% last scan
-            </span>
+            {assets.length > 0 && (
+              <span className="text-xs font-semibold px-2 py-0.5 bg-[#10B981]/10 text-[#10B981] rounded border border-[#10B981]/20">
+                Live Audit
+              </span>
+            )}
           </div>
           <p className="text-xs text-[#64748B]">NIST / CIS / STIG / ISO 27001</p>
         </div>
@@ -69,12 +71,12 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div className="bg-white border border-[#E2E8F0] p-5 rounded-2xl shadow-sm space-y-2">
           <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider font-bold">ACTIVE SECURITY ISSUES</span>
           <div className="text-3xl font-bold font-mono text-[#EF4444]">{failed}</div>
-          <p className="text-xs text-[#64748B]">Across all network nodes</p>
+          <p className="text-xs text-[#64748B]">Across monitored nodes</p>
         </div>
 
         <div className="bg-white border border-[#E2E8F0] p-5 rounded-2xl shadow-sm space-y-2">
           <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider font-bold">AUDITS COMPLETED</span>
-          <div className="text-3xl font-bold font-mono text-[#0F172A]">12</div>
+          <div className="text-3xl font-bold font-mono text-[#0F172A]">{assets.length}</div>
           <p className="text-xs text-[#64748B]">Automated real-time scans</p>
         </div>
 
@@ -228,58 +230,85 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {filteredAssets.map((item) => (
-                <tr key={item.device_id} className="text-[#0F172A] hover:bg-[#F8FAFC] transition-colors">
-                  <td className="py-4">
-                    <div className="font-bold font-sans text-sm">{item.hostname}</div>
-                    <div className="text-[11px] text-[#64748B] font-mono">{item.vendor} &bull; {item.ip_address}</div>
-                  </td>
-                  <td className="py-4">
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-xs ${getScoreCircleColor(item.compliance_score)}`}>
-                      {Math.round(item.compliance_score)}
-                    </div>
-                  </td>
-                  <td className="py-4">
-                    <span className="text-[#10B981] font-bold">PASS</span>
-                  </td>
-                  <td className="py-4">
-                    <span className={item.compliance_score >= 70 ? "text-[#10B981] font-bold" : "text-[#EF4444] font-bold"}>
-                      {item.compliance_score >= 70 ? "PASS" : "FAIL"}
-                    </span>
-                  </td>
-                  <td className="py-4">
-                    <span className="text-[#10B981] font-bold">PASS</span>
-                  </td>
-                  <td className="py-4">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {item.compliance_score < 50 && (
-                        <span className="px-2 py-0.5 bg-[#EF4444]/10 text-[#EF4444] rounded border border-[#EF4444]/20 text-[10px]">
-                          2 Critical
-                        </span>
-                      )}
-                      {item.compliance_score < 70 && (
-                        <span className="px-2 py-0.5 bg-[#F59E0B]/10 text-[#F59E0B] rounded border border-[#F59E0B]/20 text-[10px]">
-                          4 High
-                        </span>
-                      )}
-                      <span className="px-2 py-0.5 bg-[#F1F5F9] text-[#475569] rounded border border-[#E2E8F0] text-[10px]">
-                        1 Medium
+              {filteredAssets.length > 0 ? (
+                filteredAssets.map((item) => (
+                  <tr key={item.device_id} className="text-[#0F172A] hover:bg-[#F8FAFC] transition-colors">
+                    <td className="py-4">
+                      <div className="font-bold font-sans text-sm">{item.hostname}</div>
+                      <div className="text-[11px] text-[#64748B] font-mono">{item.vendor} &bull; {item.ip_address}</div>
+                    </td>
+                    <td className="py-4">
+                      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-xs ${getScoreCircleColor(item.compliance_score)}`}>
+                        {Math.round(item.compliance_score)}
+                      </div>
+                    </td>
+                    <td className="py-4">
+                      <span className={item.compliance_score >= 80 ? "text-[#10B981] font-bold" : "text-[#EF4444] font-bold"}>
+                        {item.compliance_score >= 80 ? "PASS" : "FAIL"}
                       </span>
+                    </td>
+                    <td className="py-4">
+                      <span className={item.compliance_score >= 70 ? "text-[#10B981] font-bold" : "text-[#EF4444] font-bold"}>
+                        {item.compliance_score >= 70 ? "PASS" : "FAIL"}
+                      </span>
+                    </td>
+                    <td className="py-4">
+                      <span className={item.compliance_score >= 75 ? "text-[#10B981] font-bold" : "text-[#EF4444] font-bold"}>
+                        {item.compliance_score >= 75 ? "PASS" : "FAIL"}
+                      </span>
+                    </td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {item.compliance_score < 60 && (
+                          <span className="px-2 py-0.5 bg-[#EF4444]/10 text-[#EF4444] rounded border border-[#EF4444]/20 text-[10px]">
+                            Critical Issues
+                          </span>
+                        )}
+                        {item.compliance_score >= 60 && item.compliance_score < 90 && (
+                          <span className="px-2 py-0.5 bg-[#F59E0B]/10 text-[#F59E0B] rounded border border-[#F59E0B]/20 text-[10px]">
+                            Warnings Found
+                          </span>
+                        )}
+                        {item.compliance_score >= 90 && (
+                          <span className="px-2 py-0.5 bg-[#10B981]/10 text-[#10B981] rounded border border-[#10B981]/20 text-[10px]">
+                            Optimal
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 text-right">
+                      <button
+                        onClick={() => {
+                          onSelectDevice(item.device_id);
+                          onNavigate('auditor');
+                        }}
+                        className="px-3 py-1.5 bg-[#0F172A] hover:bg-[#1E293B] text-white rounded-lg font-mono text-xs transition-colors"
+                      >
+                        Inspect
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-2 text-[#64748B]">
+                      <Cpu className="w-8 h-8 text-[#94A3B8]" />
+                      <div className="font-semibold text-sm text-[#0F172A]">No Monitored Network Devices Yet</div>
+                      <p className="text-xs max-w-sm">
+                        Paste or upload a network configuration in the Ingestion tab to run continuous security compliance auditing.
+                      </p>
+                      <button
+                        onClick={() => onNavigate('ingestion')}
+                        className="mt-2 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold font-mono flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <span>Go to Ingestion</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                  </td>
-                  <td className="py-4 text-right">
-                    <button
-                      onClick={() => {
-                        onSelectDevice(item.device_id);
-                        onNavigate('auditor');
-                      }}
-                      className="px-3 py-1.5 bg-[#0F172A] hover:bg-[#1E293B] text-white rounded-lg font-mono text-xs transition-colors"
-                    >
-                      Audit
-                    </button>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

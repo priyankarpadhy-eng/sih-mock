@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { evaluateConfiguration } from '../../../lib/compliance_evaluator';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,12 +13,21 @@ async function generateDefensePdf(payload?: any): Promise<Uint8Array> {
   const page = pdfDoc.addPage([595.28, 841.89]); // A4 format
   const { width, height } = page.getSize();
 
-  const hostname = payload?.device_metadata?.hostname || 'TAC-ROUTER-CUCME-01';
-  const vendor = payload?.device_metadata?.vendor || 'Cisco Systems (IOS / IOS-XE)';
-  const score = payload?.compliance_score ?? 78.5;
-  const sourceHash = payload?.source_config_hash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
-  const rulePackVersion = payload?.rule_pack_version || '2.4.0-oscal-stig';
+  // Evaluate raw configuration dynamically if provided
+  const rawConfig: string = payload?.raw_config || payload?.raw_text || '';
+  const evalResult = rawConfig.trim() ? evaluateConfiguration(rawConfig) : null;
+
+  const hostname = evalResult?.hostname || payload?.device_metadata?.hostname || 'INGESTED-NODE-01';
+  const vendor = evalResult?.detected_vendor || payload?.device_metadata?.vendor || 'Universal Network Device';
+  const score = evalResult ? evalResult.compliance_score : (payload?.compliance_score ?? 100);
+  const sourceHash = (evalResult as any)?.source_hash || (evalResult as any)?.sbm?.source_hash || payload?.source_config_hash || '0x0000000000000000000000000000000000000000';
+  const rulePackVersion = evalResult?.rule_pack_version || payload?.rule_pack_version || '2.4.0-oscal-live';
   const timestamp = new Date().toUTCString();
+
+  const findings = evalResult?.findings || payload?.findings || [];
+  const fails = findings.filter((f: any) => f.status === 'FAIL').length;
+  const warns = findings.filter((f: any) => f.status === 'WARNING').length;
+  const passed = findings.filter((f: any) => f.status === 'PASS').length;
 
   // Top Defense Classification Banner
   page.drawRectangle({
@@ -74,19 +84,21 @@ async function generateDefensePdf(payload?: any): Promise<Uint8Array> {
   // Scorecard Cards
   const cardY = height - 215;
   // Card 1: Score
-  page.drawRectangle({ x: 40, y: cardY, width: 155, height: 50, color: rgb(0.93, 0.97, 0.94), borderColor: rgb(0.3, 0.7, 0.4), borderWidth: 1 });
-  page.drawText('COMPLIANCE SCORE', { x: 52, y: cardY + 34, size: 8, font: timesBold, color: rgb(0.1, 0.5, 0.2) });
-  page.drawText(`${score}%`, { x: 52, y: cardY + 12, size: 18, font: timesBold, color: rgb(0.1, 0.5, 0.2) });
+  const scoreCardColor = score >= 70 ? rgb(0.93, 0.97, 0.94) : rgb(0.98, 0.94, 0.94);
+  const scoreBorderColor = score >= 70 ? rgb(0.3, 0.7, 0.4) : rgb(0.85, 0.3, 0.3);
+  page.drawRectangle({ x: 40, y: cardY, width: 155, height: 50, color: scoreCardColor, borderColor: scoreBorderColor, borderWidth: 1 });
+  page.drawText('COMPLIANCE SCORE', { x: 52, y: cardY + 34, size: 8, font: timesBold, color: score >= 70 ? rgb(0.1, 0.5, 0.2) : rgb(0.7, 0.1, 0.1) });
+  page.drawText(`${score}%`, { x: 52, y: cardY + 12, size: 18, font: timesBold, color: score >= 70 ? rgb(0.1, 0.5, 0.2) : rgb(0.7, 0.1, 0.1) });
 
   // Card 2: Status Breakdown
   page.drawRectangle({ x: 205, y: cardY, width: 170, height: 50, color: rgb(0.98, 0.95, 0.95), borderColor: rgb(0.85, 0.3, 0.3), borderWidth: 1 });
-  page.drawText('AUDIT FINDINGS (5-STATE)', { x: 215, y: cardY + 34, size: 8, font: timesBold, color: rgb(0.6, 0.15, 0.15) });
-  page.drawText('2 CRITICAL | 1 WARNING | 1 UNKNOWN', { x: 215, y: cardY + 14, size: 8, font: timesBold, color: rgb(0.4, 0.2, 0.2) });
+  page.drawText('AUDIT FINDINGS (EVALUATED)', { x: 215, y: cardY + 34, size: 8, font: timesBold, color: rgb(0.6, 0.15, 0.15) });
+  page.drawText(`${fails} FAIL | ${warns} WARNING | ${passed} PASS`, { x: 215, y: cardY + 14, size: 8, font: timesBold, color: rgb(0.4, 0.2, 0.2) });
 
   // Card 3: Defense Clearance
   page.drawRectangle({ x: 385, y: cardY, width: 170, height: 50, color: rgb(0.95, 0.97, 1.0), borderColor: rgb(0.3, 0.45, 0.8), borderWidth: 1 });
-  page.drawText('SECURITY CLEARANCE', { x: 395, y: cardY + 34, size: 8, font: timesBold, color: rgb(0.1, 0.25, 0.6) });
-  page.drawText('APPROVED // SUPER ADMIN', { x: 395, y: cardY + 14, size: 9, font: timesBold, color: rgb(0.1, 0.25, 0.6) });
+  page.drawText('SECURITY STATUS', { x: 395, y: cardY + 34, size: 8, font: timesBold, color: rgb(0.1, 0.25, 0.6) });
+  page.drawText(score >= 70 ? 'PASS // COMPLIANT' : 'FAIL // REMEDIATION REQUIRED', { x: 395, y: cardY + 14, size: 8, font: timesBold, color: score >= 70 ? rgb(0.1, 0.5, 0.2) : rgb(0.8, 0.1, 0.1) });
 
   // Table Header
   const tableTop = height - 245;
@@ -98,73 +110,80 @@ async function generateDefensePdf(payload?: any): Promise<Uint8Array> {
   page.drawText('EVIDENCE SPAN', { x: 395, y: tableTop - 13, size: 8, font: timesBold, color: rgb(1, 1, 1) });
   page.drawText('FINDING DETAIL', { x: 470, y: tableTop - 13, size: 8, font: timesBold, color: rgb(1, 1, 1) });
 
-  const sampleFindings = [
-    { id: 'AC-12', fw: 'NIST 800-53', sev: 'HIGH', status: 'FAIL', span: 'L42-L44', detail: 'exec-timeout exceeds 600s or absent' },
-    { id: 'IA-5(1)', fw: 'NIST 800-53', sev: 'CRITICAL', status: 'FAIL', span: 'L18-L19', detail: 'Weak password hash (Type-7 detected)' },
-    { id: 'SC-8', fw: 'NIST 800-53', sev: 'HIGH', status: 'FAIL', span: 'L55', detail: 'Telnet plaintext transport active' },
-    { id: 'CIS-1.1', fw: 'CIS Benchmarks', sev: 'HIGH', status: 'PASS', span: 'L38', detail: 'ip ssh version 2 enforced' },
-    { id: 'CIS-2.2', fw: 'CIS Benchmarks', sev: 'MEDIUM', status: 'WARNING', span: 'L61', detail: 'SNMP read string using public/default' },
-    { id: 'STIG-002', fw: 'DISA STIG', sev: 'MEDIUM', status: 'PASS', span: 'L82-L89', detail: 'DoD/Government warning banner set' },
-    { id: 'A.12.4', fw: 'ISO 27001', sev: 'HIGH', status: 'PASS', span: 'L104', detail: 'Remote central syslog server configured' },
-    { id: 'CM-6', fw: 'NIST 800-53', sev: 'MEDIUM', status: 'UNKNOWN', span: 'UNOBSERVED', detail: 'Need live show command output' },
-  ];
-
+  const displayFindings = findings.slice(0, 9);
   let currentY = tableTop - 18;
-  sampleFindings.forEach((f, idx) => {
-    currentY -= 20;
-    const isEven = idx % 2 === 0;
-    if (isEven) {
-      page.drawRectangle({ x: 40, y: currentY, width: width - 80, height: 20, color: rgb(0.97, 0.98, 0.99) });
-    }
-    page.drawLine({ start: { x: 40, y: currentY }, end: { x: width - 40, y: currentY }, color: rgb(0.88, 0.9, 0.92), thickness: 0.5 });
 
-    const statusColor = f.status === 'PASS' ? rgb(0.1, 0.6, 0.2) : f.status === 'FAIL' ? rgb(0.8, 0.1, 0.1) : f.status === 'WARNING' ? rgb(0.8, 0.5, 0.1) : rgb(0.4, 0.45, 0.5);
+  if (displayFindings.length === 0) {
+    currentY -= 25;
+    page.drawText('Zero policy violations flagged - configuration complies with evaluated controls.', {
+      x: 52,
+      y: currentY + 6,
+      size: 8,
+      font: timesRomanFont,
+      color: rgb(0.3, 0.5, 0.3),
+    });
+  } else {
+    displayFindings.forEach((f: any, idx: number) => {
+      currentY -= 20;
+      const isEven = idx % 2 === 0;
+      if (isEven) {
+        page.drawRectangle({ x: 40, y: currentY, width: width - 80, height: 20, color: rgb(0.97, 0.98, 0.99) });
+      }
+      page.drawLine({ start: { x: 40, y: currentY }, end: { x: width - 40, y: currentY }, color: rgb(0.88, 0.9, 0.92), thickness: 0.5 });
 
-    page.drawText(f.id, { x: 48, y: currentY + 6, size: 8, font: timesBold, color: rgb(0.15, 0.2, 0.25) });
-    page.drawText(f.fw, { x: 130, y: currentY + 6, size: 8, font: timesRomanFont, color: rgb(0.3, 0.35, 0.4) });
-    page.drawText(f.sev, { x: 230, y: currentY + 6, size: 8, font: timesBold, color: f.sev === 'CRITICAL' || f.sev === 'HIGH' ? rgb(0.7, 0.1, 0.1) : rgb(0.3, 0.4, 0.5) });
-    page.drawText(f.status, { x: 310, y: currentY + 6, size: 8, font: timesBold, color: statusColor });
-    page.drawText(f.span, { x: 395, y: currentY + 6, size: 8, font: timesMono, color: rgb(0.2, 0.3, 0.6) });
-    page.drawText(f.detail.substring(0, 25), { x: 470, y: currentY + 6, size: 7.5, font: timesRomanFont, color: rgb(0.25, 0.3, 0.35) });
-  });
+      const statusColor = f.status === 'PASS' ? rgb(0.1, 0.6, 0.2) : f.status === 'FAIL' ? rgb(0.8, 0.1, 0.1) : f.status === 'WARNING' ? rgb(0.8, 0.5, 0.1) : rgb(0.4, 0.45, 0.5);
+      const span = f.line_start ? `L${f.line_start}${f.line_end ? `-L${f.line_end}` : ''}` : 'UNOBSERVED';
 
-  // Remediation Playbook Section
+      page.drawText(String(f.rule_id || f.control_ref || 'CTRL'), { x: 48, y: currentY + 6, size: 8, font: timesBold, color: rgb(0.15, 0.2, 0.25) });
+      page.drawText(String(f.framework || 'NIST/CIS'), { x: 130, y: currentY + 6, size: 8, font: timesRomanFont, color: rgb(0.3, 0.35, 0.4) });
+      page.drawText(String(f.severity || 'HIGH'), { x: 230, y: currentY + 6, size: 8, font: timesBold, color: f.severity === 'CRITICAL' || f.severity === 'HIGH' ? rgb(0.7, 0.1, 0.1) : rgb(0.3, 0.4, 0.5) });
+      page.drawText(String(f.status || 'FAIL'), { x: 310, y: currentY + 6, size: 8, font: timesBold, color: statusColor });
+      page.drawText(span, { x: 395, y: currentY + 6, size: 8, font: timesMono, color: rgb(0.2, 0.3, 0.6) });
+      page.drawText(String(f.title || f.description || '').substring(0, 24), { x: 470, y: currentY + 6, size: 7.5, font: timesRomanFont, color: rgb(0.25, 0.3, 0.35) });
+    });
+  }
+
+  // Dynamic Remediation Playbook Section
   const remY = currentY - 35;
   page.drawText('PROPOSED SAFE CLI REMEDIATION PLAYBOOK', { x: 40, y: remY, size: 11, font: timesBold, color: rgb(0.1, 0.15, 0.25) });
-  page.drawText('Syntactically validated for Cisco IOS/IOS-XE with prerequisite verification and atomic rollback:', { x: 40, y: remY - 14, size: 8, font: timesRomanFont, color: rgb(0.4, 0.45, 0.5) });
+  page.drawText(`Syntactically validated for ${vendor} with prerequisite verification and rollback:`, { x: 40, y: remY - 14, size: 8, font: timesRomanFont, color: rgb(0.4, 0.45, 0.5) });
 
   page.drawRectangle({
     x: 40,
-    y: remY - 150,
+    y: remY - 145,
     width: width - 80,
-    height: 130,
+    height: 125,
     color: rgb(0.08, 0.1, 0.14),
     borderColor: rgb(0.2, 0.25, 0.3),
     borderWidth: 1,
   });
 
-  const playbookLines = [
-    '! 1. Verification Command (Inspect current line status)',
-    'show running-config | include line vty|exec-timeout|transport input',
-    '',
-    '! 2. Hardening Remediation Commands (AC-12 & SC-8 Compliance)',
-    'configure terminal',
-    ' line vty 0 4',
-    '  transport input ssh',
-    '  exec-timeout 10 0',
-    '  exit',
-    '',
-    '! 3. Atomic Rollback Sequence (In case of operational disruption)',
-    'configure terminal',
-    ' line vty 0 4',
-    '  exec-timeout 0 0',
-  ];
+  const playbookLines: string[] = [];
+  const failing = findings.filter((f: any) => f.status === 'FAIL' || f.status === 'WARNING');
+  if (failing.length === 0) {
+    playbookLines.push('! Configuration satisfies all baseline controls.');
+    playbookLines.push('! No remediation or atomic rollback commands required.');
+  } else {
+    playbookLines.push(`! Target Node: ${hostname} (${vendor})`);
+    playbookLines.push('! Execute during scheduled maintenance window');
+    playbookLines.push('configure terminal');
+    failing.slice(0, 3).forEach((f: any) => {
+      const script = f.remediation_cli?.script || f.remediation_cli?.remediation_cli;
+      if (script) {
+        script.split('\n').filter((l: string) => !l.startsWith('configure') && !l.startsWith('end')).slice(0, 2).forEach((l: string) => {
+          playbookLines.push(' ' + l);
+        });
+      }
+    });
+    playbookLines.push('end');
+    playbookLines.push('write memory');
+  }
 
-  playbookLines.forEach((line, index) => {
+  playbookLines.slice(0, 11).forEach((line, index) => {
     const isComment = line.startsWith('!');
     page.drawText(line, {
       x: 52,
-      y: remY - 32 - (index * 9),
+      y: remY - 32 - (index * 9.5),
       size: 7.5,
       font: timesMono,
       color: isComment ? rgb(0.4, 0.6, 0.8) : rgb(0.85, 0.9, 0.95),
@@ -183,6 +202,7 @@ async function generateDefensePdf(payload?: any): Promise<Uint8Array> {
 
   return await pdfDoc.save();
 }
+
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

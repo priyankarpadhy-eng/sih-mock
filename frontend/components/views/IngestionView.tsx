@@ -32,7 +32,6 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { NavTab } from '../layout/Sidebar';
-import { DEMO_SAMPLES, DemoSample } from '../../lib/demo_samples';
 import { evaluateConfiguration, detectVendorAndHardware, HardwareFault } from '../../lib/compliance_evaluator';
 
 interface AuditFinding {
@@ -74,33 +73,6 @@ interface IngestionPageProps {
   hostname?: string;
 }
 
-const PRESET_CARDS = [
-  {
-    id: 'fortinet_fortios',
-    icon: ShieldAlert,
-    title: 'Fortinet FortiOS Firewall',
-    description: 'Check admin timeout, allowaccess telnet/http, HTTPS redirect, and syslog.',
-  },
-  {
-    id: 'cisco_cucme',
-    icon: FileText,
-    title: 'Cisco CUCME Benchmark',
-    description: 'Audit VoIP gateway against NIST AC-12, CIS 1.1, and DISA STIG controls.',
-  },
-  {
-    id: 'palo_alto',
-    icon: ShieldCheck,
-    title: 'PAN-OS Perimeter Firewall',
-    description: 'Verify security zones, idle timeouts, SSH ciphers, and admin access rules.',
-  },
-  {
-    id: 'juniper_junos',
-    icon: Terminal,
-    title: 'Juniper JunOS Gateway',
-    description: 'Check root logins, remote syslog forwarders, and NTP synchronization.',
-  },
-];
-
 export const IngestionPage: React.FC<IngestionPageProps> = ({
   rawConfig,
   onConfigChange,
@@ -118,7 +90,6 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   const [aiResponseText, setAiResponseText] = useState<string | null>(null);
   const [aiMeta, setAiMeta] = useState<{ provider?: string; model?: string; failover_log?: string[]; skills_applied?: string[]; detected_vendor?: string } | null>(null);
   const [showConfigDrawer, setShowConfigDrawer] = useState(false);
-  const [showPresetPicker, setShowPresetPicker] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isDeepResearch, setIsDeepResearch] = useState(false);
   const [showAuditDetails, setShowAuditDetails] = useState(false);
@@ -127,15 +98,11 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   const [copiedRollback, setCopiedRollback] = useState<string | null>(null);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [dynamicAuditResult, setDynamicAuditResult] = useState<any>(null);
-  const [ingestMeta, setIngestMeta] = useState<{ source: 'PASTED' | 'FILE' | 'PRESET'; label?: string } | null>(null);
+  const [ingestMeta, setIngestMeta] = useState<{ source: 'PASTED' | 'FILE'; label?: string } | null>(null);
   const [normalizedSchema, setNormalizedSchema] = useState<any>(null);
   const [drawerActiveTab, setDrawerActiveTab] = useState<'raw' | 'normalized'>('raw');
   const [isNormalizing, setIsNormalizing] = useState(false);
   const [copiedSchema, setCopiedSchema] = useState(false);
-  const [sampleVendorFilter, setSampleVendorFilter] = useState<'ALL' | 'Cisco' | 'Palo Alto' | 'Juniper' | 'Fortinet' | 'Multi-Vendor'>('ALL');
-  const [sampleStatusFilter, setSampleStatusFilter] = useState<'ALL' | 'CLEAN' | 'VULNERABLE'>('ALL');
-  const [activeSampleId, setActiveSampleId] = useState<string | null>(null);
-  const [showSampleModal, setShowSampleModal] = useState(false);
 
   // Multi-Step Live Pipeline Animation States
   type PipelineStage = 'idle' | 'detecting_vendor' | 'detecting_hardware' | 'normalizing' | 'compliance' | 'ai' | 'completed';
@@ -342,31 +309,6 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
       body: new URLSearchParams({ raw_config: configContent }),
     }).catch(() => {});
   };
-
-  const handleLoadDemoSample = async (sample: DemoSample) => {
-    setActiveSampleId(sample.id);
-    onConfigChange(sample.rawConfig);
-    setIngestMeta({
-      source: 'PRESET',
-      label: `${sample.vendor} (${sample.statusType === 'CLEAN' ? 'No Error' : 'Errors Found'})`,
-    });
-    setNormalizedSchema(null);
-    setShowSampleModal(false);
-    await runPipelineAudit(sample.rawConfig, promptText, sample.vendor);
-  };
-
-  const filteredSamples = DEMO_SAMPLES.filter((sample) => {
-    if (sampleVendorFilter !== 'ALL' && sample.vendor !== sampleVendorFilter) {
-      return false;
-    }
-    if (sampleStatusFilter === 'CLEAN' && sample.statusType !== 'CLEAN') {
-      return false;
-    }
-    if (sampleStatusFilter === 'VULNERABLE' && sample.statusType !== 'VULNERABLE' && sample.statusType !== 'COMBO') {
-      return false;
-    }
-    return true;
-  });
 
   const handleFetchNormalizedSchema = async () => {
     if (!rawConfig.trim()) return;
@@ -701,47 +643,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           {showAuditDetails ? 'Security Compliance Audit Results' : 'Let’s start a smart conversation'}
         </h1>
 
-        {/* Clean Dropdown Scenario Selector */}
-        {!showAuditDetails && (
-          <div className="mb-6 flex flex-col sm:flex-row items-center justify-center gap-2">
-            <span className="text-xs font-mono text-slate-500 font-medium">Test Scenario Preset:</span>
-            <div className="relative inline-flex items-center">
-              <select
-                value={activeSampleId || ''}
-                onChange={(e) => {
-                  const sample = DEMO_SAMPLES.find(s => s.id === e.target.value);
-                  if (sample) handleLoadDemoSample(sample);
-                }}
-                className="bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-800 font-mono text-xs font-semibold py-1.5 px-3 pr-8 rounded-xl shadow-2xs outline-none cursor-pointer appearance-none transition-all"
-              >
-                <option value="" disabled>Select Multi-Vendor Scenario...</option>
-                <optgroup label="Cisco Systems">
-                  <option value="cisco_clean">Cisco IOS (Hardened) — [Clean &bull; 0 Errors]</option>
-                  <option value="cisco_vulnerable">Cisco CUCME VoIP Gateway — [8 Violations &bull; Telnet/SNMP]</option>
-                </optgroup>
-                <optgroup label="Palo Alto Networks">
-                  <option value="palo_clean">PAN-OS Perimeter Firewall — [Clean &bull; 0 Errors]</option>
-                  <option value="palo_vulnerable">PAN-OS Edge Router — [7 Violations &bull; Insecure Protocols]</option>
-                </optgroup>
-                <optgroup label="Fortinet">
-                  <option value="forti_clean">Fortinet FortiOS Firewall — [Clean &bull; 0 Errors]</option>
-                  <option value="forti_vulnerable">Fortinet FortiOS Gateway — [6 Violations &bull; Admin Timeout]</option>
-                </optgroup>
-                <optgroup label="Juniper Networks">
-                  <option value="juniper_clean">Juniper JunOS Core Gateway — [Clean &bull; 0 Errors]</option>
-                  <option value="juniper_vulnerable">Juniper JunOS Access Router — [5 Violations &bull; Cleartext SSHv1]</option>
-                </optgroup>
-                <optgroup label="Multi-Vendor Fleet">
-                  <option value="combo_enterprise">Enterprise Multi-Vendor Hybrid Fleet — [12 Violations]</option>
-                  <option value="combo_datacenter">Zero-Trust Spine-Leaf Datacenter — [Clean Baseline]</option>
-                </optgroup>
-              </select>
-              <div className="pointer-events-none absolute right-2.5 text-slate-400">
-                <ChevronRight className="w-3.5 h-3.5 rotate-90" />
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Main Floating Input Card */}
         <div
@@ -841,8 +743,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             {/* Actions Toolbar Row */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
               
-              {/* Left Action Buttons: File Upload & Dedicated Sample Button */}
-              <div className="flex items-center gap-2">
+              {/* Left Action Buttons: File Upload & Folder Upload */}
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -852,39 +754,29 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                   <Paperclip className="w-4 h-4" />
                 </button>
 
-                {/* Dedicated Samples Icon Button */}
                 <button
                   type="button"
-                  onClick={() => setShowSampleModal(true)}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-all shadow-2xs cursor-pointer select-none"
-                  title="Open Multi-Vendor Samples (Clean vs Flawed Error Presets)"
+                  onClick={() => folderInputRef.current?.click()}
+                  className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer"
+                  title="Upload folder / repository of configurations"
                 >
-                  <FlaskConical className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Samples</span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-slate-700 border border-slate-200 font-bold hidden sm:inline">
-                    Error / Clean
-                  </span>
+                  <Layers className="w-4 h-4" />
                 </button>
+
+                <span className="text-[11px] font-mono text-slate-400 hidden sm:inline ml-1">
+                  {lineCount > 0 ? `${lineCount} lines ready` : 'Upload or paste CLI config'}
+                </span>
               </div>
 
-              {/* Right Action Buttons: Config Drawer, Presets, Deep Research, Send */}
+              {/* Right Action Buttons: Config Drawer, Deep Research, Send */}
               <div className="flex items-center gap-1.5 sm:gap-2 text-[#64748B]">
                 <button
                   type="button"
                   onClick={() => setShowConfigDrawer(true)}
-                  className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors"
+                  className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer"
                   title="Inspect raw configuration buffer"
                 >
                   <FileText className="w-4 h-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowPresetPicker(!showPresetPicker)}
-                  className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors"
-                  title="Load sample configuration presets"
-                >
-                  <Sliders className="w-4 h-4" />
                 </button>
 
                 {/* Deep Research Toggle Button */}
@@ -909,7 +801,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                 {/* Orange Round Send Button */}
                 <button
                   type="submit"
-                  disabled={isProcessing || isLoading}
+                  disabled={isProcessing || isLoading || !rawConfig.trim() && !promptText.trim()}
                   className="w-8 h-8 rounded-full bg-[#F97316] hover:bg-[#EA580C] text-white flex items-center justify-center transition-all shadow-xs shrink-0 disabled:opacity-50 cursor-pointer"
                   title="Run compliance verification"
                 >
@@ -918,35 +810,6 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
               </div>
             </div>
           </form>
-
-          {/* Embedded Preset Selector Strip */}
-          {showPresetPicker && (
-            <div className="mt-3 pt-3 border-t border-[#F1F5F9] flex flex-wrap gap-1.5">
-              {DEMO_SAMPLES.map((sample) => (
-                <button
-                  key={sample.id}
-                  type="button"
-                  onClick={() => {
-                    handleLoadDemoSample(sample);
-                    setShowPresetPicker(false);
-                  }}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors border cursor-pointer ${
-                    sample.statusType === 'CLEAN'
-                      ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
-                      : sample.statusType === 'VULNERABLE'
-                      ? 'bg-rose-50 hover:bg-rose-100 text-rose-800 border-rose-200'
-                      : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200'
-                  }`}
-                  title={`${sample.vendor}: ${sample.description}`}
-                >
-                  <span className="font-semibold">{sample.vendor}</span>
-                  <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-white/70">
-                    {sample.statusType === 'CLEAN' ? 'No Error' : `${sample.violationsCount} Errors`}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* Bottom Banner Strip Inside Floating Card */}
           <div className="mt-3 pt-3 border-t border-[#F1F5F9] flex items-center justify-between text-xs text-[#64748B]">
@@ -1263,45 +1126,11 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                   </p>
                 </div>
 
-                {/* Dropdown Sample Switcher */}
                 <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <label htmlFor="report-sample-select" className="text-xs font-mono text-slate-500 font-medium">Scenario:</label>
-                  <div className="relative inline-flex items-center">
-                    <select
-                      id="report-sample-select"
-                      value={activeSampleId || ''}
-                      onChange={(e) => {
-                        const sample = DEMO_SAMPLES.find(s => s.id === e.target.value);
-                        if (sample) handleLoadDemoSample(sample);
-                      }}
-                      className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 font-mono text-xs font-semibold py-1.5 px-3 pr-8 rounded-xl shadow-2xs outline-none cursor-pointer appearance-none transition-all"
-                    >
-                      <option value="" disabled>Switch Scenario...</option>
-                      <optgroup label="Cisco Systems">
-                        <option value="cisco_clean">Cisco IOS (Hardened) — [Clean &bull; 0 Errors]</option>
-                        <option value="cisco_vulnerable">Cisco CUCME VoIP — [8 Violations &bull; Errors]</option>
-                      </optgroup>
-                      <optgroup label="Palo Alto Networks">
-                        <option value="palo_clean">PAN-OS Perimeter Firewall — [Clean &bull; 0 Errors]</option>
-                        <option value="palo_vulnerable">PAN-OS Edge Router — [7 Violations &bull; Errors]</option>
-                      </optgroup>
-                      <optgroup label="Fortinet">
-                        <option value="forti_clean">Fortinet FortiOS Firewall — [Clean &bull; 0 Errors]</option>
-                        <option value="forti_vulnerable">Fortinet FortiOS Gateway — [6 Violations &bull; Errors]</option>
-                      </optgroup>
-                      <optgroup label="Juniper Networks">
-                        <option value="juniper_clean">Juniper JunOS Gateway — [Clean &bull; 0 Errors]</option>
-                        <option value="juniper_vulnerable">Juniper JunOS Access Router — [5 Violations &bull; Errors]</option>
-                      </optgroup>
-                      <optgroup label="Multi-Vendor Fleet">
-                        <option value="combo_enterprise">Enterprise Multi-Vendor Hybrid — [12 Violations]</option>
-                        <option value="combo_datacenter">Zero-Trust Spine-Leaf — [Clean Baseline]</option>
-                      </optgroup>
-                    </select>
-                    <div className="pointer-events-none absolute right-2.5 text-slate-400">
-                      <ChevronRight className="w-3.5 h-3.5 rotate-90" />
-                    </div>
-                  </div>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-mono text-xs font-semibold border border-slate-200">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span>Real-Time Configuration Audit</span>
+                  </span>
                 </div>
               </div>
 
@@ -1760,133 +1589,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
         </div>
       </div>
 
-      {/* Interactive Samples Modal Window */}
-      {showSampleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-none p-2 sm:p-4 overflow-y-auto">
-          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-slate-200 p-4 sm:p-6 space-y-4 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
-                  <FlaskConical className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Multi-Vendor Samples (Error vs Clean Presets)</h3>
-                  <p className="text-xs text-slate-500">Pick any sample configuration to load and immediately test audit compliance.</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSampleModal(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* Modal Filters */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-1.5 overflow-x-auto">
-                {(['ALL', 'Cisco', 'Palo Alto', 'Juniper', 'Fortinet', 'Multi-Vendor'] as const).map((vendor) => (
-                  <button
-                    key={vendor}
-                    type="button"
-                    onClick={() => setSampleVendorFilter(vendor)}
-                    className={`px-2.5 py-1 rounded-lg font-medium transition-all border cursor-pointer ${
-                      sampleVendorFilter === vendor
-                        ? 'bg-slate-900 text-white border-slate-900 font-semibold shadow-2xs'
-                        : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200'
-                    }`}
-                  >
-                    {vendor}
-                  </button>
-                ))}
-              </div>
-
-              <div className="inline-flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg border border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setSampleStatusFilter('ALL')}
-                  className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
-                    sampleStatusFilter === 'ALL' ? 'bg-white shadow-2xs font-bold text-slate-900' : 'text-slate-600'
-                  }`}
-                >
-                  All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSampleStatusFilter('CLEAN')}
-                  className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
-                    sampleStatusFilter === 'CLEAN' ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200' : 'text-slate-600'
-                  }`}
-                >
-                  No Error
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSampleStatusFilter('VULNERABLE')}
-                  className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
-                    sampleStatusFilter === 'VULNERABLE' ? 'bg-rose-50 text-rose-800 font-bold border border-rose-200' : 'text-slate-600'
-                  }`}
-                >
-                  Errors
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 overflow-y-auto pr-1 flex-1">
-              {filteredSamples.map((sample) => {
-                const isClean = sample.statusType === 'CLEAN';
-                const isCombo = sample.statusType === 'COMBO';
-                return (
-                  <div
-                    key={sample.id}
-                    onClick={() => handleLoadDemoSample(sample)}
-                    className="p-3 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl transition-all cursor-pointer group flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-[10px] font-mono font-bold uppercase text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
-                          {sample.vendor}
-                        </span>
-                        {isClean ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                            No Error &bull; Clean
-                          </span>
-                        ) : isCombo ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                            <Sliders className="w-3 h-3 text-amber-700" />
-                            Mixed &bull; {sample.violationsCount} Violations
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                            <AlertTriangle className="w-3 h-3 text-rose-600" />
-                            Errors &bull; {sample.violationsCount} Violations
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="text-xs font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
-                        {sample.name}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5">
-                        {sample.description}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-100 text-[10px] font-mono text-slate-400">
-                      <span>{sample.rawConfig.split('\n').length} lines</span>
-                      <span className="font-semibold text-blue-600 group-hover:underline">
-                        Audit Sample &rarr;
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ========================================================================= */}
       {/* AI API KEY & ENGINE CONFIGURATION MODAL                                  */}

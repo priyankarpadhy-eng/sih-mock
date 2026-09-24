@@ -155,17 +155,15 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
           <p className="text-xs text-[#64748B] mt-0.5">Deterministic Policy-as-Code audit engine with OSCAL evidence spans and safety proposals.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
-          <span className="text-[#64748B] text-[11px]">BENCHMARKS:</span>
-          {['cisco_ios', 'palo_alto', 'juniper_junos', 'fortinet_fortios', 'aws_sg'].map((key) => (
-            <button
-              key={key}
-              onClick={() => onLoadSample(key)}
-              className="px-2.5 py-1 bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-[#0F172A] transition-colors uppercase text-[11px] font-semibold"
-            >
-              {key.split('_')[0]}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+          <span className="text-slate-500 font-semibold">
+            {rawConfig.trim() ? `${rawConfig.split('\n').length} lines loaded` : 'No config loaded'}
+          </span>
+          {detectedVendor && (
+            <span className="px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-lg text-slate-800 text-[11px] font-semibold">
+              {detectedVendor}
+            </span>
+          )}
         </div>
       </div>
 
@@ -239,142 +237,157 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
       </div>
 
       {/* Blockchain Immutable Audit Ledger Stamp */}
-      <div className="bg-[#0F172A] text-white rounded-2xl p-5 shadow-sm space-y-3 font-mono text-xs border border-[#1E293B]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#334155] pb-3">
+      {/* Blockchain Immutable Audit Ledger Stamp */}
+      {auditResult?.blockchain_record ? (
+        <div className="bg-[#0F172A] text-white rounded-2xl p-5 shadow-sm space-y-3 font-mono text-xs border border-[#1E293B]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#334155] pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              <span className="font-bold tracking-wider text-[#10B981] uppercase text-[11px]">
+                Immutable Blockchain Audit Ledger
+              </span>
+              <span className="text-[10px] bg-[#1E293B] text-[#94A3B8] px-2 py-0.5 rounded border border-[#334155]">
+                Polygon Amoy EVM
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-[11px]">
+              <span className="text-[#94A3B8]">BLOCK:</span>
+              <span className="text-white font-bold">#{auditResult.blockchain_record.block_number}</span>
+              <span className="text-[#10B981] bg-[#10B981]/15 px-2.5 py-0.5 rounded border border-[#10B981]/30 font-semibold flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                SEALED ON-CHAIN
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+            <div>
+              <span className="text-[10px] text-[#94A3B8] uppercase block mb-1">Transaction Hash (TxID)</span>
+              <div className="flex items-center gap-1.5 bg-[#1E293B] p-2 rounded-lg border border-[#334155]">
+                <span className="text-[#E2E8F0] font-mono text-[11px] truncate flex-1">
+                  {auditResult.blockchain_record.tx_hash}
+                </span>
+                <button
+                  onClick={() => handleCopyTx(auditResult.blockchain_record.tx_hash)}
+                  className="text-[#94A3B8] hover:text-white transition-colors"
+                  title="Copy Transaction Hash"
+                >
+                  {copiedTx ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+                <a
+                  href={auditResult.blockchain_record.explorer_url || 'https://amoy.polygonscan.com'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#38BDF8] hover:text-[#7DD3FC] transition-colors"
+                  title="View on Polygonscan"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-[#94A3B8] uppercase block mb-1">Findings Merkle Root (SHA-256)</span>
+              <div className="flex items-center gap-1.5 bg-[#1E293B] p-2 rounded-lg border border-[#334155]">
+                <span className="text-[#E2E8F0] font-mono text-[11px] truncate flex-1">
+                  {auditResult.blockchain_record.findings_merkle_root}
+                </span>
+                <button
+                  onClick={() => handleCopyMerkle(auditResult.blockchain_record.findings_merkle_root)}
+                  className="text-[#94A3B8] hover:text-white transition-colors"
+                  title="Copy Merkle Root"
+                >
+                  {copiedMerkle ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-[#94A3B8] uppercase block mb-1">Auditor Cryptographic Key</span>
+              <div className="flex items-center justify-between bg-[#1E293B] p-2 rounded-lg border border-[#334155]">
+                <span className="text-[#E2E8F0] font-mono text-[11px] truncate">
+                  {auditResult.blockchain_record.auditor_address}
+                </span>
+                <button
+                  onClick={handleVerifyIntegrity}
+                  disabled={isVerifyingChain}
+                  className="px-2.5 py-0.5 bg-[#10B981] hover:bg-[#059669] text-white text-[10px] font-bold rounded transition-colors ml-2 flex-shrink-0 disabled:opacity-50"
+                >
+                  {isVerifyingChain ? 'CHECKING...' : chainVerified ? 'VERIFIED' : 'VERIFY'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-[#0F172A] text-white rounded-2xl p-4 shadow-sm font-mono text-xs border border-[#1E293B] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-            <span className="font-bold tracking-wider text-[#10B981] uppercase text-[11px]">
-              Immutable Blockchain Audit Ledger
-            </span>
-            <span className="text-[10px] bg-[#1E293B] text-[#94A3B8] px-2 py-0.5 rounded border border-[#334155]">
-              Polygon Amoy EVM
+            <Lock className="w-4 h-4 text-orange-400" />
+            <span className="text-slate-300">
+              Blockchain Ledger: Evaluation certificate will be cryptographically minted on Polygon Amoy EVM upon running audit.
             </span>
           </div>
-          <div className="flex items-center gap-2 text-[11px]">
-            <span className="text-[#94A3B8]">BLOCK:</span>
-            <span className="text-white font-bold">#{auditResult?.blockchain_record?.block_number || 48291042}</span>
-            <span className="text-[#10B981] bg-[#10B981]/15 px-2.5 py-0.5 rounded border border-[#10B981]/30 font-semibold flex items-center gap-1">
-              <Check className="w-3 h-3" />
-              SEALED ON-CHAIN
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-          <div>
-            <span className="text-[10px] text-[#94A3B8] uppercase block mb-1">Transaction Hash (TxID)</span>
-            <div className="flex items-center gap-1.5 bg-[#1E293B] p-2 rounded-lg border border-[#334155]">
-              <span className="text-[#E2E8F0] font-mono text-[11px] truncate flex-1">
-                {auditResult?.blockchain_record?.tx_hash || '0x6c803e004dfb19cc4b8941bb9d8c75094667de46f41ae80f81c264746c37a399'}
-              </span>
-              <button
-                onClick={() => handleCopyTx(auditResult?.blockchain_record?.tx_hash || '0x6c803e004dfb19cc4b8941bb9d8c75094667de46f41ae80f81c264746c37a399')}
-                className="text-[#94A3B8] hover:text-white transition-colors"
-                title="Copy Transaction Hash"
-              >
-                {copiedTx ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
-              <a
-                href={auditResult?.blockchain_record?.explorer_url || 'https://amoy.polygonscan.com'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#38BDF8] hover:text-[#7DD3FC] transition-colors"
-                title="View on Polygonscan"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <span className="text-[10px] text-[#94A3B8] uppercase block mb-1">Findings Merkle Root (SHA-256)</span>
-            <div className="flex items-center gap-1.5 bg-[#1E293B] p-2 rounded-lg border border-[#334155]">
-              <span className="text-[#E2E8F0] font-mono text-[11px] truncate flex-1">
-                {auditResult?.blockchain_record?.findings_merkle_root || '0x498a4e3fa3ad766b1a238640c499878d384501a357fbbde06ddfd9e0d16d0be2'}
-              </span>
-              <button
-                onClick={() => handleCopyMerkle(auditResult?.blockchain_record?.findings_merkle_root || '0x498a4e3fa3ad766b1a238640c499878d384501a357fbbde06ddfd9e0d16d0be2')}
-                className="text-[#94A3B8] hover:text-white transition-colors"
-                title="Copy Merkle Root"
-              >
-                {copiedMerkle ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <span className="text-[10px] text-[#94A3B8] uppercase block mb-1">Auditor Cryptographic Key</span>
-            <div className="flex items-center justify-between bg-[#1E293B] p-2 rounded-lg border border-[#334155]">
-              <span className="text-[#E2E8F0] font-mono text-[11px] truncate">
-                {auditResult?.blockchain_record?.auditor_address || '0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a'}
-              </span>
-              <button
-                onClick={handleVerifyIntegrity}
-                disabled={isVerifyingChain}
-                className="px-2.5 py-0.5 bg-[#10B981] hover:bg-[#059669] text-white text-[10px] font-bold rounded transition-colors ml-2 flex-shrink-0 disabled:opacity-50"
-              >
-                {isVerifyingChain ? 'CHECKING...' : chainVerified ? 'VERIFIED' : 'VERIFY'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Exploitable Attack Chain & Root-Cause Breaker Panel (Beating Manas) */}
-      {findings.some(f => f.status === 'FAIL') && (
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F1F5F9] pb-3">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              <h3 className="font-heading text-xs font-bold text-slate-900 uppercase tracking-wider">
-                Exploitable Attack Chain Analysis
-              </h3>
-            </div>
-            <span className="text-[11px] font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md font-semibold">
-              CRITICAL LATERAL MOVEMENT PATH DETECTED
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1 font-mono text-xs">
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-              <span className="text-[10px] text-slate-500 font-bold block">STEP 1: RECON</span>
-              <div className="font-semibold text-slate-900">Default SNMP Community</div>
-              <p className="text-[11px] text-slate-600 font-sans">Public community allows attackers to scrape internal routing and IP tables.</p>
-            </div>
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-              <span className="text-[10px] text-slate-500 font-bold block">STEP 2: INTERCEPTION</span>
-              <div className="font-semibold text-slate-900">Cleartext Telnet Active</div>
-              <p className="text-[11px] text-slate-600 font-sans">Transmits admin credentials in cleartext over the unencrypted network segment.</p>
-            </div>
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-              <span className="text-[10px] text-slate-500 font-bold block">STEP 3: PERSISTENCE</span>
-              <div className="font-semibold text-slate-900">Infinite Session Timeout</div>
-              <p className="text-[11px] text-slate-600 font-sans">Idle terminal sessions never close, allowing session hijacking without re-authentication.</p>
-            </div>
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg space-y-1">
-              <span className="text-[10px] text-rose-700 font-bold block">RESULT: COMPROMISE</span>
-              <div className="font-semibold text-rose-900">Full Node Takeover</div>
-              <p className="text-[11px] text-rose-800 font-sans">Privilege 15 execution granted; attacker pivots deeper into the perimeter.</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg text-xs">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-emerald-700 shrink-0" />
-              <span className="text-emerald-950 font-semibold">
-                Root-Cause Breaker: Applying fix <span className="font-mono font-bold text-emerald-800">CIS-1.1.2 (Enforce SSHv2 Only)</span> severs this entire attack chain.
-              </span>
-            </div>
-            <button
-              onClick={() => onNavigate('remediation')}
-              className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-md font-semibold text-xs transition-colors shrink-0 flex items-center gap-1.5"
-            >
-              <span>Execute Breaker Fix</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">STANDBY</span>
         </div>
       )}
+
+      {/* Exploitable Attack Chain & Root-Cause Breaker Panel (Strictly from real findings) */}
+      {findings.some(f => f.status === 'FAIL') && (() => {
+        const failedList = findings.filter(f => f.status === 'FAIL');
+        const primaryBreaker = failedList[0];
+        const chainSteps = failedList.slice(0, 4);
+        const stepLabels = ['STEP 1: RECON / ACCESS', 'STEP 2: PRIVILEGE ESCALATION', 'STEP 3: PERSISTENCE', 'RESULT: COMPROMISE'];
+
+        return (
+          <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F1F5F9] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                <h3 className="font-heading text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Exploitable Attack Chain Analysis
+                </h3>
+              </div>
+              <span className="text-[11px] font-mono text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-md font-semibold">
+                {failedList.length} EXPLOIT VECTORS FLAGGED IN INGESTED CONFIG
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1 font-mono text-xs">
+              {chainSteps.map((step, idx) => (
+                <div key={step.rule_id} className={`p-3 border rounded-lg space-y-1 ${idx === chainSteps.length - 1 ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}`}>
+                  <span className={`text-[10px] font-bold block ${idx === chainSteps.length - 1 ? 'text-rose-700' : 'text-slate-500'}`}>
+                    {stepLabels[idx] || `STEP ${idx + 1}: LATERAL PIVOT`}
+                  </span>
+                  <div className={`font-semibold truncate ${idx === chainSteps.length - 1 ? 'text-rose-900' : 'text-slate-900'}`} title={step.title}>
+                    {step.title}
+                  </div>
+                  <p className={`text-[11px] line-clamp-2 font-sans ${idx === chainSteps.length - 1 ? 'text-rose-800' : 'text-slate-600'}`}>
+                    Observed: {step.observed_value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {primaryBreaker && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-emerald-50/80 border border-emerald-200 rounded-lg text-xs">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-emerald-700 shrink-0" />
+                  <span className="text-emerald-950 font-semibold">
+                    Root-Cause Breaker: Applying fix <span className="font-mono font-bold text-emerald-800">[{primaryBreaker.rule_id}] {primaryBreaker.title}</span> mitigates lateral risk.
+                  </span>
+                </div>
+                <button
+                  onClick={() => onNavigate('remediation')}
+                  className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-md font-semibold text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Execute Breaker Fix</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Audit Findings Matrix */}
       <div className="bg-white border border-[#E2E8F0] rounded-xl p-4 sm:p-6 space-y-4">
@@ -412,8 +425,9 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
           </div>
         </div>
 
-        <div className="space-y-4">
-          {filteredFindings.map((item) => {
+        {filteredFindings.length > 0 ? (
+          <div className="space-y-4">
+            {filteredFindings.map((item) => {
             const fixScript = item.remediation_cli?.script || item.remediation_cli?.remediation_cli;
             const rollbackScript = item.remediation_cli?.rollback || item.rollback_cli;
             const lineSpanText = item.line_start ? (item.line_start === item.line_end ? `Line ${item.line_start}` : `Line ${item.line_start}-${item.line_end}`) : 'Not observed in artifact';
@@ -516,8 +530,21 @@ export const AuditorPage: React.FC<AuditorPageProps> = ({
                 )}
               </div>
             );
-          })}
-        </div>
+            })}
+          </div>
+        ) : (
+          <div className="bg-[#F8FAFC] border border-[#CBD5E1] p-12 rounded-xl text-center space-y-3">
+            <ShieldCheck className="w-10 h-10 text-[#94A3B8] mx-auto" />
+            <div className="font-bold text-sm text-[#0F172A]">
+              {!rawConfig.trim() ? "No Configuration Ingested Yet" : "No Findings Match Selected Filter"}
+            </div>
+            <p className="text-xs text-[#64748B] max-w-md mx-auto">
+              {!rawConfig.trim()
+                ? "Paste or upload your raw network configuration above, then click 'RUN COMPLIANCE AUDIT' to evaluate baseline compliance."
+                : "Try selecting 'ALL' above or adjust your filter to view controls."}
+            </p>
+          </div>
+        )}
       </div>
 
     </div>

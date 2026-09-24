@@ -38,6 +38,631 @@
   ],
   "tasks": [
     {
+      "task_id": "TASK-2026-9E66",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-BORDER-FW-01",
+      "device_hostname": "BORDER-FW-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T18:03:02Z",
+      "updated_at": "2026-09-24T18:03:02Z"
+    },
+    {
+      "task_id": "TASK-2026-32A1",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-BORDER-FW-01",
+      "device_hostname": "BORDER-FW-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T18:02:47Z",
+      "updated_at": "2026-09-24T18:02:47Z"
+    },
+    {
+      "task_id": "TASK-2026-AF3A",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-BORDER-FW-01",
+      "device_hostname": "BORDER-FW-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T18:02:46Z",
+      "updated_at": "2026-09-24T18:02:46Z"
+    },
+    {
+      "task_id": "TASK-2026-E1D0",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-BORDER-FW-01",
+      "device_hostname": "BORDER-FW-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T18:02:37Z",
+      "updated_at": "2026-09-24T18:02:37Z"
+    },
+    {
+      "task_id": "TASK-2026-D92D",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-BORDER-FW-01",
+      "device_hostname": "BORDER-FW-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T18:02:32Z",
+      "updated_at": "2026-09-24T18:02:32Z"
+    },
+    {
+      "task_id": "TASK-2026-DB17",
+      "title": "[Auto-Assigned] CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-BORDER-FW-01",
+      "device_hostname": "BORDER-FW-01",
+      "vendor": "cisco",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {},
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T18:02:05Z",
+      "updated_at": "2026-09-24T18:02:05Z"
+    },
+    {
+      "task_id": "TASK-2026-AE9B",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-BORDER-FW-01",
+      "device_hostname": "BORDER-FW-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T18:02:05Z",
+      "updated_at": "2026-09-24T18:02:05Z"
+    },
+    {
+      "task_id": "TASK-2026-E1FD",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-BORDER-FW-01",
+      "device_hostname": "BORDER-FW-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T18:02:04Z",
+      "updated_at": "2026-09-24T18:02:04Z"
+    },
+    {
+      "task_id": "TASK-2026-DE40",
+      "title": "Remediate NIST-SC-8: NIST-SC-8: Control SC-8 Transmission Confidentiality (No Telnet)",
+      "device_id": "DEV-CORE-SWITCH-01",
+      "device_hostname": "CORE-SWITCH-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "NIST-SC-8",
+        "raw_value": "Telnet permitted on management interface \u2014 evidence: `transport input telnet`"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:39:52Z",
+      "updated_at": "2026-09-24T17:39:52Z"
+    },
+    {
+      "task_id": "TASK-2026-2CA2",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-CORE-SWITCH-01",
+      "device_hostname": "CORE-SWITCH-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "Telnet permitted on management interface \u2014 evidence: `transport input telnet`"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:39:52Z",
+      "updated_at": "2026-09-24T17:39:52Z"
+    },
+    {
+      "task_id": "TASK-2026-1986",
+      "title": "Remediate NIST-SC-8: NIST-SC-8: Control SC-8 Transmission Confidentiality (No Telnet)",
+      "device_id": "DEV-CORE-SWITCH-01",
+      "device_hostname": "CORE-SWITCH-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "NIST-SC-8",
+        "raw_value": "Telnet permitted on management interface \u2014 evidence: `transport input telnet`"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:30:33Z",
+      "updated_at": "2026-09-24T17:30:33Z"
+    },
+    {
+      "task_id": "TASK-2026-C3AF",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-CORE-SWITCH-01",
+      "device_hostname": "CORE-SWITCH-01",
+      "vendor": "Generic Network Device",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "Telnet permitted on management interface \u2014 evidence: `transport input telnet`"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:30:33Z",
+      "updated_at": "2026-09-24T17:30:33Z"
+    },
+    {
+      "task_id": "TASK-2026-B6D5",
+      "title": "[Auto-Assigned] Insecure Default SNMP Community Strings Prohibited",
+      "device_id": "DEV-CORE-SWITCH-01",
+      "device_hostname": "CORE-SWITCH-01",
+      "vendor": "cisco",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {},
+      "remediation_script": "configure terminal\nno snmp-server community public\nno snmp-server community private\nsnmp-server group SECGROUP v3 priv\nend",
+      "comments": [],
+      "created_at": "2026-09-24T17:30:32Z",
+      "updated_at": "2026-09-24T17:30:32Z"
+    },
+    {
+      "task_id": "TASK-2026-CCF8",
+      "title": "[Auto-Assigned] Mandatory SSHv2 Cryptographic Transport",
+      "device_id": "DEV-CORE-SWITCH-01",
+      "device_hostname": "CORE-SWITCH-01",
+      "vendor": "cisco",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {},
+      "remediation_script": "configure terminal\nip ssh version 2\nip ssh time-out 60\nip ssh authentication-retries 3\nend",
+      "comments": [],
+      "created_at": "2026-09-24T17:30:32Z",
+      "updated_at": "2026-09-24T17:30:32Z"
+    },
+    {
+      "task_id": "TASK-2026-AF7F",
+      "title": "[Auto-Assigned] Insecure Cleartext Telnet Protocol Prohibited",
+      "device_id": "DEV-CORE-SWITCH-01",
+      "device_hostname": "CORE-SWITCH-01",
+      "vendor": "cisco",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {},
+      "remediation_script": "configure terminal\nline vty 0 15\n transport input ssh\nend\nwrite memory",
+      "comments": [],
+      "created_at": "2026-09-24T17:30:31Z",
+      "updated_at": "2026-09-24T17:30:31Z"
+    },
+    {
+      "task_id": "TASK-2026-8D6C",
+      "title": "Remediate CISCO-SC-8-002: CISCO-SC-8-002: Control SC-8 SSH Version 2 Mandatory",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-SC-8-002",
+        "raw_value": "SSH version 1 \u2014 version 2 required"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:28:18Z",
+      "updated_at": "2026-09-24T17:28:18Z"
+    },
+    {
+      "task_id": "TASK-2026-F222",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:28:18Z",
+      "updated_at": "2026-09-24T17:28:18Z"
+    },
+    {
+      "task_id": "TASK-2026-51E4",
+      "title": "Remediate CISCO-SC-8-002: CISCO-SC-8-002: Control SC-8 SSH Version 2 Mandatory",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-SC-8-002",
+        "raw_value": "SSH version 1 \u2014 version 2 required"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:23:53Z",
+      "updated_at": "2026-09-24T17:23:53Z"
+    },
+    {
+      "task_id": "TASK-2026-F09C",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:23:53Z",
+      "updated_at": "2026-09-24T17:23:53Z"
+    },
+    {
+      "task_id": "TASK-2026-713D",
+      "title": "Remediate CISCO-SC-8-002: CISCO-SC-8-002: Control SC-8 SSH Version 2 Mandatory",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-SC-8-002",
+        "raw_value": "SSH version 1 \u2014 version 2 required"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:21:33Z",
+      "updated_at": "2026-09-24T17:21:33Z"
+    },
+    {
+      "task_id": "TASK-2026-B5AD",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:21:33Z",
+      "updated_at": "2026-09-24T17:21:33Z"
+    },
+    {
+      "task_id": "TASK-2026-E7AE",
+      "title": "Remediate CISCO-SC-8-002: CISCO-SC-8-002: Control SC-8 SSH Version 2 Mandatory",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-SC-8-002",
+        "raw_value": "SSH version 1 \u2014 version 2 required"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:21:06Z",
+      "updated_at": "2026-09-24T17:21:06Z"
+    },
+    {
+      "task_id": "TASK-2026-C1DC",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:21:06Z",
+      "updated_at": "2026-09-24T17:21:06Z"
+    },
+    {
+      "task_id": "TASK-2026-3FBB",
+      "title": "Remediate CISCO-SC-8-002: CISCO-SC-8-002: Control SC-8 SSH Version 2 Mandatory",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-SC-8-002",
+        "raw_value": "SSH version 1 \u2014 version 2 required"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:19:49Z",
+      "updated_at": "2026-09-24T17:19:49Z"
+    },
+    {
+      "task_id": "TASK-2026-4D96",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:19:49Z",
+      "updated_at": "2026-09-24T17:19:49Z"
+    },
+    {
+      "task_id": "TASK-2026-00E7",
+      "title": "Remediate CISCO-SC-8-002: CISCO-SC-8-002: Control SC-8 SSH Version 2 Mandatory",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-SC-8-002",
+        "raw_value": "SSH version 1 \u2014 version 2 required"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:19:24Z",
+      "updated_at": "2026-09-24T17:19:24Z"
+    },
+    {
+      "task_id": "TASK-2026-5542",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:19:24Z",
+      "updated_at": "2026-09-24T17:19:24Z"
+    },
+    {
+      "task_id": "TASK-2026-4B51",
+      "title": "Remediate CISCO-SC-8-002: CISCO-SC-8-002: Control SC-8 SSH Version 2 Mandatory",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-SC-8-002",
+        "raw_value": "SSH version 1 \u2014 version 2 required"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:19:24Z",
+      "updated_at": "2026-09-24T17:19:24Z"
+    },
+    {
+      "task_id": "TASK-2026-8670",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:19:24Z",
+      "updated_at": "2026-09-24T17:19:24Z"
+    },
+    {
+      "task_id": "TASK-2026-7A67",
+      "title": "[Auto-Assigned] Centralized Remote Syslog Forwarding (180-Day Retention)",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "cisco",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {},
+      "remediation_script": "configure terminal\nlogging host 10.0.0.50\nlogging trap warnings\nend",
+      "comments": [],
+      "created_at": "2026-09-24T17:17:59Z",
+      "updated_at": "2026-09-24T17:17:59Z"
+    },
+    {
+      "task_id": "TASK-2026-11B1",
+      "title": "[Auto-Assigned] System Use Notification & Warning Banner",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "cisco",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {},
+      "remediation_script": "configure terminal\nbanner motd ^C\nAUTHORIZED ACCESS ONLY! Activities are monitored and logged.\n^C\nend",
+      "comments": [],
+      "created_at": "2026-09-24T17:17:59Z",
+      "updated_at": "2026-09-24T17:17:59Z"
+    },
+    {
+      "task_id": "TASK-2026-33BC",
+      "title": "Remediate CISCO-SC-8-002: CISCO-SC-8-002: Control SC-8 SSH Version 2 Mandatory",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-SC-8-002",
+        "raw_value": "SSH version 1 \u2014 version 2 required"
+      },
+      "remediation_script": "! Cisco IOS: Baseline Security Hardening\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:17:59Z",
+      "updated_at": "2026-09-24T17:17:59Z"
+    },
+    {
+      "task_id": "TASK-2026-B853",
+      "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CIS-1.1.2",
+        "raw_value": "False"
+      },
+      "remediation_script": "! Cisco IOS: Disable Telnet & Set Session Idle Timeout (NIST AC-12)\nline vty 0 4\n transport input ssh\n exec-timeout 10 0\nexit",
+      "comments": [],
+      "created_at": "2026-09-24T17:17:59Z",
+      "updated_at": "2026-09-24T17:17:59Z"
+    },
+    {
+      "task_id": "TASK-2026-1F38",
+      "title": "[Auto-Assigned] Mandatory SSHv2 Cryptographic Transport",
+      "device_id": "DEV-EDGE-R01-CISCO",
+      "device_hostname": "EDGE-R01-CISCO",
+      "vendor": "cisco",
+      "status": "TODO",
+      "priority": "HIGH",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {},
+      "remediation_script": "configure terminal\nip ssh version 2\nip ssh time-out 60\nip ssh authentication-retries 3\nend",
+      "comments": [],
+      "created_at": "2026-09-24T17:17:59Z",
+      "updated_at": "2026-09-24T17:17:59Z"
+    },
+    {
       "task_id": "TASK-2026-C9BA",
       "title": "[Auto-Assigned] Session Termination & Idle Timeout Enforcement",
       "device_id": "DEV-BRANCH-RTR-VULN",
@@ -8671,6 +9296,346 @@
     }
   ],
   "audit_logs": [
+    {
+      "log_id": "LOG-16F537",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-9E66",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:03:02Z"
+    },
+    {
+      "log_id": "LOG-9F97C1",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-32A1",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:02:47Z"
+    },
+    {
+      "log_id": "LOG-E32CB9",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-AF3A",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:02:46Z"
+    },
+    {
+      "log_id": "LOG-B85970",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-E1D0",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:02:37Z"
+    },
+    {
+      "log_id": "LOG-41D737",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-D92D",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:02:32Z"
+    },
+    {
+      "log_id": "LOG-542D1F",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_CREATED",
+      "resource_affected": "tasks/TASK-2026-DB17",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:02:05Z"
+    },
+    {
+      "log_id": "LOG-F8D1EA",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-AE9B",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:02:05Z"
+    },
+    {
+      "log_id": "LOG-A99786",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-E1FD",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:02:04Z"
+    },
+    {
+      "log_id": "LOG-DD5225",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-DE40",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:39:52Z"
+    },
+    {
+      "log_id": "LOG-A21E70",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-2CA2",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:39:52Z"
+    },
+    {
+      "log_id": "LOG-6E1F1C",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-1986",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:30:33Z"
+    },
+    {
+      "log_id": "LOG-6D6CA0",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-C3AF",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:30:33Z"
+    },
+    {
+      "log_id": "LOG-42BAE9",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_CREATED",
+      "resource_affected": "tasks/TASK-2026-B6D5",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:30:32Z"
+    },
+    {
+      "log_id": "LOG-DAF55E",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_CREATED",
+      "resource_affected": "tasks/TASK-2026-CCF8",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:30:32Z"
+    },
+    {
+      "log_id": "LOG-8ED522",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_CREATED",
+      "resource_affected": "tasks/TASK-2026-AF7F",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:30:31Z"
+    },
+    {
+      "log_id": "LOG-B61C16",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-8D6C",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:28:18Z"
+    },
+    {
+      "log_id": "LOG-46AA27",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-F222",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:28:18Z"
+    },
+    {
+      "log_id": "LOG-A7724C",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-51E4",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:23:53Z"
+    },
+    {
+      "log_id": "LOG-57D768",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-F09C",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:23:53Z"
+    },
+    {
+      "log_id": "LOG-327022",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-713D",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:21:33Z"
+    },
+    {
+      "log_id": "LOG-8FFACC",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-B5AD",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:21:33Z"
+    },
+    {
+      "log_id": "LOG-356CD5",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-E7AE",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:21:06Z"
+    },
+    {
+      "log_id": "LOG-36A716",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-C1DC",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:21:06Z"
+    },
+    {
+      "log_id": "LOG-21B55F",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-3FBB",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:19:49Z"
+    },
+    {
+      "log_id": "LOG-C0FC01",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-4D96",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:19:49Z"
+    },
+    {
+      "log_id": "LOG-D238B9",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-00E7",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:19:24Z"
+    },
+    {
+      "log_id": "LOG-E79667",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-5542",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:19:24Z"
+    },
+    {
+      "log_id": "LOG-739FAA",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-4B51",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:19:24Z"
+    },
+    {
+      "log_id": "LOG-900936",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-8670",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:19:24Z"
+    },
+    {
+      "log_id": "LOG-259D09",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_CREATED",
+      "resource_affected": "tasks/TASK-2026-7A67",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:17:59Z"
+    },
+    {
+      "log_id": "LOG-CEFF39",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_CREATED",
+      "resource_affected": "tasks/TASK-2026-11B1",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:17:59Z"
+    },
+    {
+      "log_id": "LOG-335C7E",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-33BC",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:17:59Z"
+    },
+    {
+      "log_id": "LOG-BFE723",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-B853",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:17:59Z"
+    },
+    {
+      "log_id": "LOG-1B31E3",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_CREATED",
+      "resource_affected": "tasks/TASK-2026-1F38",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T17:17:59Z"
+    },
     {
       "log_id": "LOG-737909",
       "user_uid": "FIREBASE_UID_SUPERADMIN_01",

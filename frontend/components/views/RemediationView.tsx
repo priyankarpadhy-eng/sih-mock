@@ -135,7 +135,7 @@ export const RemediationPage: React.FC<RemediationPageProps> = ({
 
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="font-mono text-xs text-orange-800 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200 font-bold">
-            VENDOR: {vendor || 'Cisco Systems'}
+            VENDOR: {vendor || 'Awaiting Ingestion'}
           </div>
 
           {!patchApplied ? (
@@ -266,6 +266,23 @@ export const RemediationPage: React.FC<RemediationPageProps> = ({
               </div>
             );
           })
+        ) : !rawConfig || !rawConfig.trim() ? (
+          <div className="bg-white border border-slate-200 p-12 rounded-xl text-center space-y-3">
+            <Terminal className="w-10 h-10 text-slate-400 mx-auto" />
+            <div className="font-heading text-sm font-bold text-slate-900">No Configuration Ingested Yet</div>
+            <p className="text-xs text-slate-500 font-sans max-w-md mx-auto">
+              Paste or upload a network configuration in the Ingestion tab to generate automated, syntax-validated CLI fix proposals.
+            </p>
+            {onNavigate && (
+              <button
+                onClick={() => onNavigate('ingestion')}
+                className="mt-2 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold font-mono inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Go to Ingestion</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         ) : (
           <div className="bg-white border border-slate-200 p-8 rounded-xl text-center space-y-2">
             <ShieldCheck className="w-8 h-8 text-emerald-600 mx-auto" />

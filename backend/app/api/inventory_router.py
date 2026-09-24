@@ -26,10 +26,16 @@ def get_inventory():
     return inventory_engine.get_all_assets()
 
 
-@router.get("/api/inventory/{device_id}", response_model=DeviceAsset)
+@router.get("/api/inventory/{device_id}", response_model=Optional[DeviceAsset])
 def get_device_asset(device_id: str):
     """Returns specific network device asset details."""
     return inventory_engine.get_asset_by_id(device_id)
+
+
+@router.post("/api/inventory", response_model=DeviceAsset)
+def add_device_asset(asset: DeviceAsset):
+    """Registers or updates a discovered network device asset."""
+    return inventory_engine.add_or_update_asset(asset)
 
 
 @router.get("/api/logs", response_model=List[UnifiedJsonLog])

@@ -6,7 +6,7 @@ interface IngestionDropzoneProps {
   onConfigChange: (newConfig: string) => void;
   detectedVendor: string;
   onEvaluate: () => void;
-  onLoadSample: (key: string) => void;
+  onLoadSample?: (key: string) => void;
   isLoading: boolean;
 }
 
@@ -15,7 +15,6 @@ export const IngestionDropzone: React.FC<IngestionDropzoneProps> = ({
   onConfigChange,
   detectedVendor,
   onEvaluate,
-  onLoadSample,
   isLoading,
 }) => {
   const [dragActive, setDragActive] = useState(false);
@@ -72,39 +71,11 @@ export const IngestionDropzone: React.FC<IngestionDropzoneProps> = ({
           </p>
         </div>
 
-        {/* Sample Selectors */}
-        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-          <span className="text-toc-text">LOAD PRESETS:</span>
-          <button
-            onClick={() => onLoadSample('cisco_ios')}
-            className="px-2.5 py-1 bg-toc-bg hover:bg-toc-hover border border-toc-border rounded text-toc-heading transition-colors"
-          >
-            Cisco IOS
-          </button>
-          <button
-            onClick={() => onLoadSample('palo_alto')}
-            className="px-2.5 py-1 bg-toc-bg hover:bg-toc-hover border border-toc-border rounded text-toc-heading transition-colors"
-          >
-            Palo Alto
-          </button>
-          <button
-            onClick={() => onLoadSample('juniper_junos')}
-            className="px-2.5 py-1 bg-toc-bg hover:bg-toc-hover border border-toc-border rounded text-toc-heading transition-colors"
-          >
-            JunOS
-          </button>
-          <button
-            onClick={() => onLoadSample('fortinet_fortios')}
-            className="px-2.5 py-1 bg-toc-bg hover:bg-toc-hover border border-toc-border rounded text-toc-heading transition-colors"
-          >
-            FortiOS
-          </button>
-          <button
-            onClick={() => onLoadSample('aws_sg')}
-            className="px-2.5 py-1 bg-toc-bg hover:bg-toc-hover border border-toc-border rounded text-toc-heading transition-colors"
-          >
-            AWS SG
-          </button>
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <span className="text-toc-text">MODE:</span>
+          <span className="px-2.5 py-1 bg-toc-bg border border-toc-border rounded text-toc-heading font-semibold">
+            Live Stream Ingestion
+          </span>
         </div>
       </div>
 

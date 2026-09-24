@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       }
     } else {
       const json = await req.json().catch(() => ({}));
-      rawConfig = json.raw_config || json.text || '';
+      rawConfig = json.raw_config || json.raw_text || json.text || '';
     }
 
     if (!rawConfig || !rawConfig.trim()) {
