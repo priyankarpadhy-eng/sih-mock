@@ -343,6 +343,7 @@ export default function AppContainer() {
             hostname={hostname}
             vendor={detectedVendor}
             complianceScore={complianceScore}
+            onNavigate={setActiveTab}
           />
         )}
 

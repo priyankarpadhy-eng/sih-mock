@@ -136,6 +136,37 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
     return 'bg-slate-100 text-slate-700 border-slate-200';
   };
 
+  const handleDownloadPdf = async (item: AuditHistoryRecord) => {
+    try {
+      const res = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          raw_config: item.raw_config || '',
+          compliance_score: item.compliance_score,
+          device_metadata: {
+            hostname: item.hostname,
+            vendor: item.vendor,
+          },
+          download: true,
+        }),
+      });
+      if (!res.ok) throw new Error('PDF export failed');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `compliance_audit_${item.vendor.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${(item.hostname || 'node').toLowerCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      console.error('PDF export error:', e);
+      alert('Unable to generate PDF report for this record.');
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-[1200px] mx-auto pb-12 select-none">
       
@@ -376,6 +407,15 @@ export const HistoryPage: React.FC<HistoryPageProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadPdf(item)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+                        title="Download official PDF report for this past audit"
+                      >
+                        <Download className="w-3.5 h-3.5 text-slate-500" />
+                        <span>PDF</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleLoadRecord(item)}

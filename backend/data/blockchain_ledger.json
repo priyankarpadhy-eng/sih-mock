@@ -2456,5 +2456,30 @@
         "explorer_url": "https://amoy.polygonscan.com/tx/0x33d64c144a81baf37856d02f65adfbb4c61aaf1ae220eb0096af71375883edc8"
       }
     ]
+  },
+  {
+    "block_number": 48291139,
+    "timestamp": "2026-09-25T09:01:09.494389+00:00",
+    "previous_hash": "0x33d64c144a81baf37856d02f65adfbb4c61aaf1ae220eb0096af71375883edc8",
+    "merkle_root": "0xab03aa9bebbd74c53cbaa22432b1c80bc17c6b6ca71372ba3f541925cdf90f14",
+    "tx_hash": "0x83c25d79ef6807f826368dbc066206d9436de40a2fb18aaad8ef5cfc3f13bab8",
+    "records": [
+      {
+        "tx_hash": "0x83c25d79ef6807f826368dbc066206d9436de40a2fb18aaad8ef5cfc3f13bab8",
+        "block_number": 48291139,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0xdf9338c9c4d0c5e0000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0xab03aa9bebbd74c53cbaa22432b1c80bc17c6b6ca71372ba3f541925cdf90f14",
+        "compliance_score": 57.1,
+        "hostname": "UNMAPPED-EDGE-SWITCH-01",
+        "vendor": "Huawei",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-25T09:01:09.494389+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x83c25d79ef6807f826368dbc066206d9436de40a2fb18aaad8ef5cfc3f13bab8"
+      }
+    ]
   }
 ]
