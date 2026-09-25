@@ -816,12 +816,12 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
 
           <button
             type="button"
-            onClick={() => setShowApiKeyModal(true)}
+            onClick={() => onNavigate('settings')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-orange-200 bg-orange-50 hover:bg-orange-100 text-[#EA580C] text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-            title="Configure OpenRouter or external AI API keys for reasoning"
+            title="Configure OpenRouter or external AI API keys in Settings"
           >
             <Key className="w-3.5 h-3.5 text-[#EA580C]" />
-            <span>{openRouterApiKey || backendAiStatus.totalKeys > 0 ? 'AI Key Pool Active' : 'Configure AI API Key'}</span>
+            <span>{openRouterApiKey || backendAiStatus.totalKeys > 0 ? 'AI Key Pool Active' : 'Configure AI Key in Settings'}</span>
           </button>
         </div>
 
@@ -1950,144 +1950,6 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
       </div>
 
 
-
-      {/* ========================================================================= */}
-      {/* AI API KEY & ENGINE CONFIGURATION MODAL                                  */}
-      {/* ========================================================================= */}
-      {showApiKeyModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center text-[#EA580C]">
-                  <Key className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">AI Reasoning Engine & API Keys</h3>
-                  <p className="text-xs text-slate-500">Configure OpenRouter keys with local air-gapped failover</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowApiKeyModal(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">
-                  OpenRouter API Key
-                </label>
-                <input
-                  type="password"
-                  value={openRouterApiKey}
-                  onChange={(e) => setOpenRouterApiKey(e.target.value)}
-                  placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxx"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-mono text-xs focus:bg-white focus:border-[#EA580C] outline-none transition-all"
-                />
-                <span className="text-[11px] text-slate-400 mt-1 block">
-                  Keys are stored encrypted locally and pooled in memory. If unset, queries fail over automatically to local Ollama (qwen3:4b).
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">
-                  Target AI Model
-                </label>
-                <select
-                  value={activeAiModel}
-                  onChange={(e) => setActiveAiModel(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-mono text-xs focus:bg-white focus:border-[#EA580C] outline-none transition-all cursor-pointer"
-                >
-                  <option value="nvidia/nemotron-3.5-lightning:free">Nvidia Nemotron 3.5 Lightning (Free &bull; 0 Latency)</option>
-                  <option value="google/gemini-2.0-flash-exp:free">Google Gemini 2.0 Flash (Free &bull; High Context)</option>
-                  <option value="meta-llama/llama-3.3-70b-instruct:free">Meta LLaMA 3.3 70B Instruct (Free &bull; Deep Reasoning)</option>
-                  <option value="anthropic/claude-3.5-sonnet">Anthropic Claude 3.5 Sonnet (Commercial &bull; Strict AST)</option>
-                  <option value="openai/gpt-4o">OpenAI GPT-4o (Commercial &bull; Comprehensive)</option>
-                </select>
-              </div>
-
-              {keyTestFeedback && (
-                <div
-                  className={`p-3 rounded-xl border text-xs font-mono flex items-center gap-2 ${
-                    keyTestFeedback.success
-                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                      : 'bg-rose-50 border-rose-200 text-rose-800'
-                  }`}
-                >
-                  {keyTestFeedback.success ? (
-                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                  ) : (
-                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                  )}
-                  <span>{keyTestFeedback.message}</span>
-                </div>
-              )}
-
-              {keySaveMessage && (
-                <div className="p-2.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs font-medium flex items-center gap-2">
-                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>{keySaveMessage}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-              <button
-                type="button"
-                onClick={handleTestApiKey}
-                disabled={isTestingKey}
-                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                {isTestingKey ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5 text-slate-500" />}
-                <span>Test Connection</span>
-              </button>
-
-              <div className="flex items-center gap-2">
-                {openRouterApiKey && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpenRouterApiKey('');
-                      localStorage.removeItem('vectornet_openrouter_key');
-                    }}
-                    className="px-3 py-1.5 text-slate-500 hover:text-rose-600 font-medium cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleSaveApiKey}
-                  disabled={isSavingKey}
-                  className={`px-5 py-2 rounded-xl text-white font-semibold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-75 ${
-                    isSavedKey
-                      ? 'bg-emerald-600 hover:bg-emerald-700'
-                      : 'bg-[#EA580C] hover:bg-[#C2410C]'
-                  }`}
-                >
-                  {isSavingKey ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Saving...</span>
-                    </>
-                  ) : isSavedKey ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Saved & Applied!</span>
-                    </>
-                  ) : (
-                    <span>Save & Apply</span>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

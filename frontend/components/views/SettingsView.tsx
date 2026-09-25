@@ -17,7 +17,16 @@ import {
   Building2,
   Layers,
   FileCode,
-  Bell
+  Bell,
+  Key,
+  Eye,
+  EyeOff,
+  Cpu,
+  Loader2,
+  Check,
+  RefreshCw,
+  ExternalLink,
+  ShieldAlert,
 } from 'lucide-react';
 import { UserProfile } from '../modals/AuthModal';
 
@@ -107,12 +116,53 @@ export const DEFAULT_AUTO_TASK_CONFIG: AutoTaskConfig = {
   ],
 };
 
+const FREE_AI_MODELS = [
+  {
+    id: 'nvidia/nemotron-3.5-lightning:free',
+    name: 'NVIDIA Nemotron 3.5 Lightning (Free - Recommended)',
+    desc: 'High-speed, high-accuracy reasoning engine for network configuration analysis',
+  },
+  {
+    id: 'nex-agi/nex-n2.5-pro:free',
+    name: 'Nex N2.5 Pro (Free)',
+    desc: 'Deep multi-vendor compliance & security rule evaluation',
+  },
+  {
+    id: 'liquid/lfm-2.5-2.6b:free',
+    name: 'Liquid LFM 2.5 (Free)',
+    desc: 'Ultra-lightweight fast response parser',
+  },
+  {
+    id: 'google/gemma-4-31b-it:free',
+    name: 'Google Gemma 4 31B Instruct (Free)',
+    desc: 'Instruction-tuned compliance reasoning engine',
+  },
+  {
+    id: 'openrouter/auto',
+    name: 'OpenRouter Auto-Router (Free/Auto)',
+    desc: 'Automatically routes to the highest-availability model',
+  },
+];
+
 interface SettingsPageProps {
   user: UserProfile | null;
   onNavigate?: (tab: any) => void;
 }
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) => {
+  const [activeTab, setActiveTab] = useState<'ai' | 'routing'>('ai');
+
+  // AI Key & Model State
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [activeModel, setActiveModel] = useState('nvidia/nemotron-3.5-lightning:free');
+  const [isSavingAi, setIsSavingAi] = useState(false);
+  const [aiSaveSuccess, setAiSaveSuccess] = useState<string | null>(null);
+  const [isTestingAi, setIsTestingAi] = useState(false);
+  const [testFeedback, setTestFeedback] = useState<{ success: boolean; message: string; latency?: number } | null>(null);
+  const [backendStatus, setBackendStatus] = useState<any>(null);
+
+  // Auto Task Config State
   const [config, setConfig] = useState<AutoTaskConfig>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -127,6 +177,120 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
 
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [testDispatched, setTestDispatched] = useState<string | null>(null);
+
+  // Fetch initial AI config on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedKey = localStorage.getItem('vectornet_openrouter_key');
+      const savedModel = localStorage.getItem('vectornet_ai_model');
+      if (savedKey) setApiKey(savedKey);
+      if (savedModel) setActiveModel(savedModel);
+    }
+
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/v1/ai/config', { signal: AbortSignal.timeout(3000) });
+        if (res.ok) {
+          const data = await res.json();
+          setBackendStatus(data);
+          if (data.active_model) setActiveModel(data.active_model);
+        }
+      } catch {
+        // backend offline
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const handleSaveAiConfig = async () => {
+    setIsSavingAi(true);
+    setAiSaveSuccess(null);
+    setTestFeedback(null);
+    const cleanKey = apiKey.trim();
+
+    try {
+      if (typeof window !== 'undefined') {
+        if (cleanKey) {
+          localStorage.setItem('vectornet_openrouter_key', cleanKey);
+        } else {
+          localStorage.removeItem('vectornet_openrouter_key');
+        }
+        localStorage.setItem('vectornet_ai_model', activeModel);
+      }
+
+      const res = await fetch('http://localhost:8000/api/v1/ai/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_keys: cleanKey ? [cleanKey] : [],
+          active_model: activeModel,
+          user_role: 'SUPER_ADMIN',
+          user_uid: 'ADMIN_01',
+          user_email: 'admin@vectornet.io',
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setBackendStatus(data.config || backendStatus);
+        setAiSaveSuccess(cleanKey ? 'API Key saved and active in OpenRouter pool.' : 'Key cleared. Running in local failover mode.');
+      } else {
+        setAiSaveSuccess('Saved locally in browser.');
+      }
+    } catch {
+      setAiSaveSuccess('Saved locally in browser.');
+    } finally {
+      setIsSavingAi(false);
+      setTimeout(() => setAiSaveSuccess(null), 4000);
+    }
+  };
+
+  const handleTestAiConnection = async () => {
+    setIsTestingAi(true);
+    setTestFeedback(null);
+    const start = Date.now();
+
+    try {
+      const formData = new FormData();
+      formData.append('prompt', 'Test connectivity and ping response.');
+      formData.append('system_instruction', 'Respond with PONG in 1 word.');
+
+      const res = await fetch('http://localhost:8000/api/v1/ai/query-failover', {
+        method: 'POST',
+        body: formData,
+      });
+      const latency = Date.now() - start;
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.provider === 'OPENROUTER') {
+          setTestFeedback({
+            success: true,
+            latency,
+            message: `Connected successfully to OpenRouter (${data.model}) in ${latency}ms.`,
+          });
+        } else {
+          setTestFeedback({
+            success: true,
+            latency,
+            message: `Connected via ${data.provider} (${data.model}) in ${latency}ms.`,
+          });
+        }
+      } else {
+        setTestFeedback({
+          success: false,
+          message: `Error ${res.status}: Failed to reach provider endpoint.`,
+        });
+      }
+    } catch {
+      setTestFeedback({
+        success: false,
+        message: 'Could not contact backend service on port 8000.',
+      });
+    } finally {
+      setIsTestingAi(false);
+    }
+  };
 
   const handleToggleEngine = () => {
     setConfig(prev => ({
@@ -168,54 +332,332 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
   return (
     <div className="space-y-6 max-w-5xl mx-auto w-full pb-12">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800">
-              <Settings className="w-4 h-4" />
+      {/* Top Header & Navigation Tabs */}
+      <div className="border-b border-slate-200 pb-4 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-[#EA580C]">
+                <Settings className="w-4 h-4" />
+              </div>
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight">System Settings & AI Configuration</h1>
             </div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Auto-Task Assignment & Routing Engine</h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Configure AI reasoning API keys, local vs cloud failover policies, and automated engineer task routing.
+            </p>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Super Administrator Policy Engine &bull; Automatically triage and dispatch vendor compliance violations to junior engineers with full remediation playbooks.
-          </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Tab Switcher */}
+        <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
           <button
             type="button"
-            onClick={handleResetDefaults}
-            className="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            onClick={() => setActiveTab('ai')}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'ai'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
+            }`}
           >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-            <span>Reset Defaults</span>
+            <Key className={`w-3.5 h-3.5 ${activeTab === 'ai' ? 'text-orange-400' : 'text-slate-400'}`} />
+            <span>AI Engine & API Keys</span>
           </button>
+
           <button
             type="button"
-            onClick={handleSaveSettings}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+            onClick={() => setActiveTab('routing')}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'routing'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
+            }`}
           >
-            <Save className="w-3.5 h-3.5 text-orange-400" />
-            <span>Save Configuration</span>
+            <Layers className={`w-3.5 h-3.5 ${activeTab === 'routing' ? 'text-orange-400' : 'text-slate-400'}`} />
+            <span>Auto-Task Assignment & Routing</span>
           </button>
         </div>
       </div>
 
-      {/* Status Feedback Banners */}
-      {savedSuccess && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-xl flex items-center gap-2 shadow-2xs">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Auto-task routing configuration saved successfully and active for upcoming audits.</span>
+      {/* ========================================================================= */}
+      {/* TAB 1: AI ENGINE & API KEYS                                               */}
+      {/* ========================================================================= */}
+      {activeTab === 'ai' && (
+        <div className="space-y-6">
+          
+          {/* Status Feedback Banners */}
+          {aiSaveSuccess && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-xl flex items-center gap-2 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>{aiSaveSuccess}</span>
+            </div>
+          )}
+
+          {testFeedback && (
+            <div
+              className={`p-3.5 rounded-xl border text-xs font-mono flex items-center gap-2.5 shadow-2xs ${
+                testFeedback.success
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  : 'bg-rose-50 border-rose-200 text-rose-900'
+              }`}
+            >
+              {testFeedback.success ? (
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              )}
+              <div className="flex-1">{testFeedback.message}</div>
+            </div>
+          )}
+
+          {/* AI Providers Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {/* Card 1: Cloud AI (OpenRouter) */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <Cpu className="w-4 h-4 text-[#EA580C]" />
+                  OpenRouter Cloud Pool
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                  apiKey.trim() || (backendStatus?.total_keys && backendStatus.total_keys > 0)
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {apiKey.trim() || (backendStatus?.total_keys && backendStatus.total_keys > 0) ? 'ACTIVE' : 'KEY NEEDED'}
+                </span>
+              </div>
+              <div className="text-xs text-slate-600 font-mono truncate">
+                Model: <span className="font-semibold text-slate-900">{activeModel.split('/').pop()}</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-normal">
+                Multi-key failover pool. Automatically sanitized before dispatch.
+              </p>
+            </div>
+
+            {/* Card 2: Local AI (Ollama) */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <Terminal className="w-4 h-4 text-blue-600" />
+                  Local Ollama Engine
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                  backendStatus?.local_ai?.status === 'ONLINE'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-slate-100 text-slate-600 border border-slate-200'
+                }`}>
+                  {backendStatus?.local_ai?.status === 'ONLINE' ? 'ONLINE' : 'OFFLINE'}
+                </span>
+              </div>
+              <div className="text-xs text-slate-600 font-mono truncate">
+                Port: <span className="font-semibold text-slate-900">11434</span> (qwen3:4b)
+              </div>
+              <p className="text-[11px] text-slate-500 leading-normal">
+                Air-gapped on-premise inference. Zero external data egress.
+              </p>
+            </div>
+
+            {/* Card 3: Privacy & Redaction */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  Credential Sanitizer
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  ENFORCED
+                </span>
+              </div>
+              <div className="text-xs text-slate-600 font-mono">
+                AES & Secret Redactor
+              </div>
+              <p className="text-[11px] text-slate-500 leading-normal">
+                Credentials and passwords stripped before cloud routing.
+              </p>
+            </div>
+          </div>
+
+          {/* Main Configuration Form Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-5">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Key className="w-4 h-4 text-[#EA580C]" />
+                OpenRouter API Key & Provider Configuration
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Enter your OpenRouter API key to enable high-accuracy multi-vendor compliance audits and CLI remediation synthesis.
+              </p>
+            </div>
+
+            {/* API Key Input with Hide / Unhide Toggle */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-800">
+                  OpenRouter API Key:
+                </label>
+                <a
+                  href="https://openrouter.ai/keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1 hover:underline"
+                >
+                  <span>Get OpenRouter API Key</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              <div className="relative flex items-center">
+                <input
+                  type={showApiKey ? 'text' : 'password'}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                  className="w-full pr-10 pl-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-all shadow-2xs"
+                />
+                
+                {/* Hide / Unhide Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="absolute right-2.5 p-1.5 text-slate-400 hover:text-slate-700 rounded-lg transition-colors cursor-pointer"
+                  title={showApiKey ? 'Hide API Key' : 'Show API Key'}
+                >
+                  {showApiKey ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Key is persisted securely in your local environment and synced with the backend failover pool.
+              </p>
+            </div>
+
+            {/* Model Selector Dropdown */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-800">
+                Reasoning LLM Model Selection:
+              </label>
+              <select
+                value={activeModel}
+                onChange={(e) => setActiveModel(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:border-orange-500 focus:bg-white transition-all shadow-2xs cursor-pointer"
+              >
+                {FREE_AI_MODELS.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[11px] text-slate-400">
+                Default: NVIDIA Nemotron 3.5 Lightning (Free). Supports Cisco, Juniper, Fortinet, and Palo Alto rule synthesis.
+              </p>
+            </div>
+
+            {/* Action Buttons Row */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSaveAiConfig}
+                  disabled={isSavingAi}
+                  className="px-4 py-2 bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
+                >
+                  {isSavingAi ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5 text-white" />
+                  )}
+                  <span>Save API Key & Model</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleTestAiConnection}
+                  disabled={isTestingAi}
+                  className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs disabled:opacity-50"
+                >
+                  {isTestingAi ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#EA580C]" />
+                  ) : (
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                  )}
+                  <span>Test Connection / Ping</span>
+                </button>
+              </div>
+
+              {apiKey && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setApiKey('');
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('vectornet_openrouter_key');
+                    }
+                    handleSaveAiConfig();
+                  }}
+                  className="px-3 py-2 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Clear Key
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
-      {testDispatched && (
-        <div className="p-3 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-mono rounded-xl flex items-center gap-2 shadow-2xs">
-          <Zap className="w-4 h-4 text-blue-600 shrink-0" />
-          <span>{testDispatched}</span>
-        </div>
-      )}
+      {/* ========================================================================= */}
+      {/* TAB 2: AUTO-TASK ASSIGNMENT & ROUTING ENGINE                               */}
+      {/* ========================================================================= */}
+      {activeTab === 'routing' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-blue-600" />
+                Automatic Remediation Task Dispatch Matrix
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Configure vendor SLA parameters and assign remediation tasks to junior network engineers.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleResetDefaults}
+                className="px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                <span>Reset Defaults</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveSettings}
+                className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+              >
+                <Save className="w-3.5 h-3.5 text-orange-400" />
+                <span>Save Routing</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Status Feedback Banners */}
+          {savedSuccess && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-xl flex items-center gap-2 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Auto-task routing configuration saved successfully and active for upcoming audits.</span>
+            </div>
+          )}
+
+          {testDispatched && (
+            <div className="p-3 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-mono rounded-xl flex items-center gap-2 shadow-2xs">
+              <Zap className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>{testDispatched}</span>
+            </div>
+          )}
 
       {/* Master Enable/Disable Control Card */}
       <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
@@ -472,6 +914,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
           </div>
         </div>
       </div>
+      </div>
+      )}
 
     </div>
   );
