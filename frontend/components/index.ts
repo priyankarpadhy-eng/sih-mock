@@ -18,6 +18,7 @@ export { SkillsManagementPage, SkillsManagementPage as SkillsView } from './view
 export { RemediationPage, RemediationPage as RemediationView } from './views/RemediationView';
 export { WorkbenchPage, WorkbenchPage as WorkbenchView } from './views/WorkbenchView';
 export { SettingsPage, SettingsPage as SettingsView } from './views/SettingsView';
+export { HistoryPage, HistoryPage as HistoryView } from './views/HistoryView';
 
 // Modals
 export { AuthModal } from './modals/AuthModal';

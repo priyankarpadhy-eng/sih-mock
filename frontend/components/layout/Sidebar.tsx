@@ -12,10 +12,11 @@ import {
   Menu,
   X,
   Settings,
+  History,
 } from 'lucide-react';
 import { UserProfile } from '../modals/AuthModal';
 
-export type NavTab = 'overview' | 'ingestion' | 'auditor' | 'workbench' | 'remediation' | 'tasks' | 'skills' | 'reports' | 'settings';
+export type NavTab = 'overview' | 'ingestion' | 'history' | 'auditor' | 'workbench' | 'remediation' | 'tasks' | 'skills' | 'reports' | 'settings';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -98,6 +99,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR'],
     },
     {
+      id: 'history' as NavTab,
+      label: 'Audit History',
+      icon: History,
+      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
+    },
+    {
       id: 'overview' as NavTab,
       label: 'Posture Overview',
       icon: LayoutDashboard,
@@ -117,25 +124,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'skills' as NavTab,
-      label: 'Agentic Skills',
+      label: 'Compliance Rules',
       icon: Sparkles,
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'],
     },
     {
       id: 'workbench' as NavTab,
-      label: 'AI Workbench',
+      label: 'Audit Workbench',
       icon: Cpu,
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'],
     },
     {
       id: 'reports' as NavTab,
-      label: 'PDF Reports',
+      label: 'Reports & Export',
       icon: FileText,
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'VIEWER'],
     },
     {
       id: 'settings' as NavTab,
-      label: 'Auto-Task Settings',
+      label: 'Settings',
       icon: Settings,
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'],
     },
@@ -242,21 +249,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div className="text-[9px] text-slate-500 font-mono truncate">
             {localAi.online ? 'Air-Gapped • Zero Egress' : 'Run: ollama run qwen3:4b'}
-          </div>
-        </div>
-
-        {/* Active Node Card */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 space-y-1">
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider flex items-center justify-between">
-            <span>ACTIVE NODE</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          </div>
-          <div className="text-xs font-bold text-slate-900 font-mono truncate">{hostname}</div>
-          <div className="flex items-center justify-between text-xs font-mono pt-1.5 border-t border-slate-200">
-            <span className="text-slate-500">COMPLIANCE</span>
-            <span className={`font-bold ${complianceScore >= 70 ? 'text-emerald-600' : 'text-rose-600'}`}>
-              {complianceScore}%
-            </span>
           </div>
         </div>
       </div>

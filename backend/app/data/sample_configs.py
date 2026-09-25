@@ -1,9 +1,57 @@
+import os
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+SAMPLE_DIR = os.path.join(BASE_DIR, "sample_configs")
+
+def _read_sample(filename: str, fallback: str) -> str:
+    path = os.path.join(SAMPLE_DIR, filename)
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read()
+        except Exception:
+            pass
+    return fallback
+
 SAMPLE_CONFIGS = {
+    "cisco_ios": {
+        "name": "Cisco IOS-XE Enterprise Core Router (ISR 4451 / Catalyst 8300)",
+        "vendor": "Cisco Systems",
+        "os_version": "IOS-XE 16.9.4",
+        "device_type": "router",
+        "filename": "cisco_ios_router.cfg",
+        "raw": _read_sample("cisco_ios_router.cfg", "! Cisco IOS-XE Core Router\nhostname RTR-NYC-CORE-01\nversion 16.9\n")
+    },
+    "juniper_junos": {
+        "name": "Juniper JunOS SRX340 Services Gateway",
+        "vendor": "Juniper Networks",
+        "os_version": "JunOS 21.4R1",
+        "device_type": "firewall",
+        "filename": "juniper_junos_srx.conf",
+        "raw": _read_sample("juniper_junos_srx.conf", "version 21.4R1;\nsystem { host-name SRX-BORD-SEC-01; }\n")
+    },
+    "palo_alto": {
+        "name": "Palo Alto PAN-OS 10.2 Next-Gen Perimeter Firewall (PA-3200)",
+        "vendor": "Palo Alto Networks",
+        "os_version": "PAN-OS 10.2.4",
+        "device_type": "firewall",
+        "filename": "paloalto_panos_firewall.cfg",
+        "raw": _read_sample("paloalto_panos_firewall.cfg", "set deviceconfig system hostname PA-3200-PERIMETER-FW01\nset deviceconfig system os-version 10.2.4\n")
+    },
+    "fortinet_fortios": {
+        "name": "Fortinet FortiGate-100F Enterprise Firewall",
+        "vendor": "Fortinet",
+        "os_version": "FortiOS 7.2.4",
+        "device_type": "firewall",
+        "filename": "fortinet_fortigate_firewall.conf",
+        "raw": _read_sample("fortinet_fortigate_firewall.conf", "config system global\n    set hostname \"FGT-100F-CORP-EDGE\"\nend\n")
+    },
     "cisco_cucme": {
         "name": "Cisco CUCME Benchmark (Problem Statement 26155 Gold Standard)",
         "vendor": "Cisco Systems",
         "os_version": "IOS 15.1",
         "device_type": "voip_gateway",
+        "filename": "cisco_cucme.cfg",
         "raw": """! Gold-Standard Cisco CUCME Configuration Benchmark (SIH Problem Statement 26155)
 version 15.1
 service timestamps debug datetime msec
@@ -53,87 +101,12 @@ line vty 5 15
 !
 end"""
     },
-    "cisco_ios": {
-        "name": "Cisco IOS-XE Core Router (Non-Compliant)",
-        "vendor": "Cisco Systems",
-        "os_version": "IOS-XE 16.9.4",
-        "device_type": "router",
-        "raw": """! Cisco IOS-XE Core Router Configuration
-hostname TAC-ROUTER-01
-version 16.9.4
-!
-enable secret 5 $1$mER7$vX3Y80x1g0f7
-service password-encryption
-!
-ip domain-name defense.mil
-ip ssh version 1
-!
-line vty 0 4
- exec-timeout 0 0
- transport input telnet ssh
-!
-snmp-server community public RO
-snmp-server community private RW
-!
-no logging host
-!
-end"""
-    },
-    "palo_alto": {
-        "name": "Palo Alto PAN-OS Perimeter Firewall",
-        "vendor": "Palo Alto Networks",
-        "os_version": "PAN-OS 10.1.0",
-        "device_type": "firewall",
-        "raw": """set deviceconfig system hostname FW-PAN-TACTICAL-01
-set deviceconfig system os-version 10.1.0
-set deviceconfig system idle-timeout 15
-set deviceconfig system service disable-telnet yes
-set deviceconfig system service disable-http yes
-set deviceconfig system ssh-cipher ciphers aes256-gcm
-set deviceconfig system snmp-setting version v3
-set deviceconfig system login-banner "WARNING: AUTHORIZED MILITARY PERSONNEL ONLY"
-set shared log-settings syslog SEC-SYSLOG server SYSLOG-01 server 10.0.100.50
-set security zones trust interfaces ge-0/0/0.0"""
-    },
-    "juniper_junos": {
-        "name": "Juniper JunOS Border Gateway",
-        "vendor": "Juniper Networks",
-        "os_version": "JunOS 21.4",
-        "device_type": "router",
-        "raw": """set system host-name BGP-JUNOS-01
-set system services ssh protocol-version v2
-set system services telnet disable
-set system login idle-timeout 10
-set system login message "UNAUTHORIZED ACCESS PROHIBITED. ALL ACTIVITIES MONITORED AND LOGGED."
-set system syslog host 10.0.100.50 any info
-set system ntp server 10.0.0.1
-set snmp v3 usm local-engine user admin authentication-sha password SECURE_PASS"""
-    },
-    "fortinet_fortios": {
-        "name": "Fortinet FortiGate SASE Hub",
-        "vendor": "Fortinet",
-        "os_version": "FortiOS 7.2",
-        "device_type": "firewall",
-        "raw": """config system global
-    set hostname "FG-SASE-HUB-01"
-    set admintimeout 10
-    set admin-sport 8443
-    set admin-https-redirect enable
-    set pre-login-banner enable
-end
-config system snmp community
-    delete 1
-end
-config log syslogd setting
-    set status enable
-    set server "10.0.100.50"
-end"""
-    },
     "sonic_whitebox": {
         "name": "SONiC Open Networking Switch (White Box)",
         "vendor": "Sonic Foundation",
         "os_version": "SONiC 202311",
         "device_type": "whitebox",
+        "filename": "sonic_switch.json",
         "raw": """{
   "DEVICE_METADATA": {
     "localhost": {
@@ -156,30 +129,6 @@ end"""
       }
     }
   }
-}"""
-    },
-    "aws_sg": {
-        "name": "AWS Cloud Security Group (Perimeter)",
-        "vendor": "Amazon Web Services",
-        "os_version": "AWS Cloud SG",
-        "device_type": "cloud_sg",
-        "raw": """{
-  "Description": "Production Web & Management Security Group",
-  "GroupName": "sg-production-perimeter",
-  "IpPermissions": [
-    {
-      "FromPort": 22,
-      "IpProtocol": "tcp",
-      "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-      "ToPort": 22
-    },
-    {
-      "FromPort": 443,
-      "IpProtocol": "tcp",
-      "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-      "ToPort": 443
-    }
-  ]
 }"""
     }
 }

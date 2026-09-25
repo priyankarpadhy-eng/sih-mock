@@ -32,14 +32,17 @@ OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 # Sensitivity policy: which levels allow cloud transmission
 CLOUD_ALLOWED_SENSITIVITY = {"low", "medium"}
 
-# Default model to use if not configured
-DEFAULT_MODEL = "nvidia/nemotron-3.5-lightning:free"
+# Default model to use if not configured (Smart Auto-Select with working fallbacks)
+DEFAULT_MODEL = "openrouter/auto"
 FALLBACK_MODELS = [
-    "nvidia/nemotron-3.5-lightning:free",
-    "nex-agi/nex-n2.5-pro:free",
-    "liquid/lfm-2.5-2.6b:free",
-    "google/gemma-4-31b-it:free",
     "openrouter/auto",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "poolside/laguna-xs-2.1:free",
+    "inclusionai/ling-3.0-flash-fin:free",
+    "inclusionai/ling-3.0-flash-sante:free",
+    "cohere/north-mini-code:free",
+    "nex-agi/nex-n2.5-mini:free",
 ]
 
 

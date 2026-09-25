@@ -33,6 +33,9 @@ import {
   Lock,
   ExternalLink,
   ArrowRight,
+  Upload,
+  FolderUp,
+  Settings,
 } from 'lucide-react';
 import { NavTab } from '../layout/Sidebar';
 import { evaluateConfiguration, detectVendorAndHardware, HardwareFault } from '../../lib/compliance_evaluator';
@@ -106,6 +109,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   const [drawerActiveTab, setDrawerActiveTab] = useState<'raw' | 'normalized'>('raw');
   const [isNormalizing, setIsNormalizing] = useState(false);
   const [copiedSchema, setCopiedSchema] = useState(false);
+  const [isSchemaCardOpen, setIsSchemaCardOpen] = useState(true);
+  const [schemaViewMode, setSchemaViewMode] = useState<'json' | 'topology' | 'security'>('json');
 
   // Multi-Step Live Pipeline Animation States
   type PipelineStage = 'idle' | 'detecting_vendor' | 'detecting_hardware' | 'normalizing' | 'compliance' | 'ai' | 'completed';
@@ -125,15 +130,9 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   const [isPipelineDetailsOpen, setIsPipelineDetailsOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // AI API Key Management
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  // AI API Key & Model State
   const [openRouterApiKey, setOpenRouterApiKey] = useState('');
-  const [activeAiModel, setActiveAiModel] = useState('nvidia/nemotron-3.5-lightning:free');
-  const [keySaveMessage, setKeySaveMessage] = useState<string | null>(null);
-  const [isSavingKey, setIsSavingKey] = useState(false);
-  const [isSavedKey, setIsSavedKey] = useState(false);
-  const [isTestingKey, setIsTestingKey] = useState(false);
-  const [keyTestFeedback, setKeyTestFeedback] = useState<{ success: boolean; message: string } | null>(null);
+  const [activeAiModel, setActiveAiModel] = useState('openrouter/auto');
 
   // Blockchain Ledger & Attack Chain State
   const [copiedTx, setCopiedTx] = useState(false);
@@ -175,7 +174,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
     localOnline: false,
     localModel: 'Not Connected',
     cloudOnline: false,
-    cloudModel: 'nvidia/nemotron-3.5-lightning:free',
+    cloudModel: 'openrouter/auto',
     totalKeys: 0
   });
 
@@ -201,7 +200,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             localOnline: localIsOnline,
             localModel: localIsOnline ? (data.local_ai?.model || 'qwen3:4b') : 'Not Connected',
             cloudOnline: cloudIsOnline,
-            cloudModel: data.cloud_ai?.model || data.active_model || 'google/gemini-2.0-flash-exp:free',
+            cloudModel: data.cloud_ai?.model || data.active_model || 'openrouter/auto',
             totalKeys: data.total_keys || 0
           });
           if (data.active_model) setActiveAiModel(data.active_model);
@@ -214,100 +213,6 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
     const interval = setInterval(fetchStatus, 15000);
     return () => clearInterval(interval);
   }, []);
-
-  const handleSaveApiKey = async () => {
-    setIsSavingKey(true);
-    setIsSavedKey(false);
-    setKeySaveMessage(null);
-
-    const trimmedKey = (openRouterApiKey || '').trim();
-
-    try {
-      if (typeof window !== 'undefined') {
-        if (trimmedKey) {
-          localStorage.setItem('vectornet_openrouter_key', trimmedKey);
-        } else {
-          localStorage.removeItem('vectornet_openrouter_key');
-        }
-        localStorage.setItem('vectornet_ai_model', activeAiModel);
-      }
-
-      // Persist to backend server if reachable with 2s timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-      await fetch('http://localhost:8000/api/v1/ai/configure', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          api_keys: trimmedKey ? [trimmedKey] : [],
-          active_model: activeAiModel,
-          user_role: 'SUPER_ADMIN',
-          user_uid: 'FIREBASE_UID_SUPERADMIN_01',
-          user_email: 'admin@vectornet.io'
-        }),
-        signal: controller.signal
-      }).catch(() => {});
-      clearTimeout(timeoutId);
-
-      setIsSavingKey(false);
-      setIsSavedKey(true);
-      setKeySaveMessage(trimmedKey ? 'API key saved & active for reasoning.' : 'Key cleared. Running in local failover mode.');
-
-      // Automatically close modal after brief visual confirmation
-      setTimeout(() => {
-        setShowApiKeyModal(false);
-        setIsSavedKey(false);
-        setKeySaveMessage(null);
-      }, 700);
-    } catch (err) {
-      console.error('Error saving API key:', err);
-      setIsSavingKey(false);
-      setIsSavedKey(true);
-      setKeySaveMessage('Key saved locally in browser.');
-      setTimeout(() => {
-        setShowApiKeyModal(false);
-        setIsSavedKey(false);
-        setKeySaveMessage(null);
-      }, 700);
-    }
-  };
-
-  const handleTestApiKey = async () => {
-    setIsTestingKey(true);
-    setKeyTestFeedback(null);
-    const start = Date.now();
-    try {
-      const formData = new FormData();
-      formData.append('prompt', 'Verify active compliance auditor reasoning engine');
-      formData.append('system_instruction', 'Respond with PONG in 1 word.');
-
-      const res = await fetch('http://localhost:8000/api/v1/ai/query-failover', {
-        method: 'POST',
-        body: formData
-      });
-      const latency = Date.now() - start;
-      if (res.ok) {
-        const data = await res.json();
-        setKeyTestFeedback({
-          success: true,
-          message: `Active (${latency}ms) — Provider: ${data.provider || 'Ready'} (${data.model || activeAiModel})`
-        });
-      } else {
-        setKeyTestFeedback({
-          success: false,
-          message: `Error ${res.status}: Failed to reach provider endpoint`
-        });
-      }
-    } catch {
-      setKeyTestFeedback({
-        success: false,
-        message: 'Backend server not responding on port 8000'
-      });
-    } finally {
-      setIsTestingKey(false);
-    }
-  };
 
   // Live Multi-Step Execution Pipeline: runs sequential animation & deterministic analysis
   const runPipelineAudit = async (configContent: string, promptQuery?: string, sourceLabel?: string) => {
@@ -336,20 +241,30 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
     setPipelineStage('detecting_hardware');
     await new Promise((r) => setTimeout(r, 420));
 
-    // Step 3: Schema Normalization
+    // Step 3: Mandatory Universal JSON Schema Normalization & Log Merging
     setPipelineStage('normalizing');
-    fetch('http://localhost:8000/api/v1/normalize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ raw_text: configContent }),
-    })
-      .then(r => (r.ok ? r.json() : null))
-      .then(data => {
-        if (data?.normalized_schema) setNormalizedSchema(data.normalized_schema);
-      })
-      .catch(() => {});
-    setPipelineData(prev => ({ ...prev, controls_count: 18 }));
-    await new Promise((r) => setTimeout(r, 400));
+    try {
+      const normRes = await fetch('http://localhost:8000/api/v1/normalize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ raw_text: configContent }),
+      });
+      if (normRes.ok) {
+        const normData = await normRes.json();
+        const schema = normData.normalized_schema || normData;
+        setNormalizedSchema(schema);
+        const ifaceCount = schema.fleet_summary?.total_interfaces || schema.network?.interfaces?.length || 18;
+        const devCount = schema.fleet_summary?.total_devices || (schema.devices ? schema.devices.length : 1);
+        setPipelineData(prev => ({
+          ...prev,
+          controls_count: ifaceCount,
+          device_count: devCount
+        }));
+      }
+    } catch (e) {
+      console.error('Auto normalization error:', e);
+    }
+    await new Promise((r) => setTimeout(r, 450));
 
     // Step 4: Compliance check
     setPipelineStage('compliance');
@@ -374,6 +289,11 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
         formData.append('query', payload);
         formData.append('raw_config', configContent);
         formData.append('deep_research', isDeepResearch ? 'true' : 'false');
+
+        const activeKey = openRouterApiKey || (typeof window !== 'undefined' ? localStorage.getItem('vectornet_openrouter_key') : '') || '';
+        const activeMod = activeAiModel || (typeof window !== 'undefined' ? localStorage.getItem('vectornet_ai_model') : '') || 'openrouter/auto';
+        if (activeKey) formData.append('api_key', activeKey);
+        if (activeMod) formData.append('model', activeMod);
 
         const res = await fetch('http://localhost:8000/api/query-ai', {
           method: 'POST',
@@ -427,8 +347,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
         body: JSON.stringify({ raw_text: rawConfig }),
       });
       if (res.ok) {
-        const data = await res.json();
-        setNormalizedSchema(data.normalized_schema);
+        const schema = data.normalized_schema || data;
+        setNormalizedSchema(schema);
       }
     } catch (err) {
       console.error("Normalization error:", err);
@@ -489,7 +409,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           const content = evt.target.result as string;
           onConfigChange(content);
           setIngestMeta({ source: 'FILE', label: file.name });
-          runPipelineAudit(content, promptText, file.name);
+          setShowAuditDetails(false);
+          setPipelineStage('idle');
         }
       };
       reader.readAsText(file);
@@ -507,7 +428,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             const content = evt.target.result as string;
             onConfigChange(content);
             setIngestMeta({ source: 'FILE', label: file.name });
-            runPipelineAudit(content, promptText, file.name);
+            setShowAuditDetails(false);
+            setPipelineStage('idle');
           }
         };
         reader.readAsText(file);
@@ -524,7 +446,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             if (processed === files.length) {
               onConfigChange(combined);
               setIngestMeta({ source: 'FILE', label: `${files.length} files` });
-              runPipelineAudit(combined, promptText, `${files.length} files`);
+              setShowAuditDetails(false);
+              setPipelineStage('idle');
             }
           };
           r.readAsText(f);
@@ -548,11 +471,32 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           if (processed === files.length) {
             onConfigChange(combined);
             setIngestMeta({ source: 'FILE', label: `Directory (${files.length} files)` });
-            runPipelineAudit(combined, promptText, `Directory (${files.length} files)`);
+            setShowAuditDetails(false);
+            setPipelineStage('idle');
           }
         };
         r.readAsText(f);
       });
+    }
+  };
+
+  const loadSamplePreset = async (presetKey: string) => {
+    try {
+      const res = await fetch('http://localhost:8000/api/sample-configs');
+      if (res.ok) {
+        const configs = await res.json();
+        const item = configs[presetKey];
+        if (item && item.raw) {
+          const filename = item.filename || `${presetKey}.cfg`;
+          onConfigChange(item.raw);
+          setIngestMeta({ source: 'FILE', label: filename });
+          setShowAuditDetails(false);
+          setPipelineStage('idle');
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load sample config from API:', e);
     }
   };
 
@@ -582,7 +526,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
       e.preventDefault();
       onConfigChange(pasted);
       setIngestMeta({ source: 'PASTED', label: 'Pasted Configuration' });
-      runPipelineAudit(pasted, promptText, 'Pasted Configuration');
+      setShowAuditDetails(false);
+      setPipelineStage('idle');
     }
   };
 
@@ -612,6 +557,9 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
       setPromptText('');
     }
 
+    const activeKey = openRouterApiKey || (typeof window !== 'undefined' ? localStorage.getItem('vectornet_openrouter_key') : '') || '';
+    const activeMod = activeAiModel || (typeof window !== 'undefined' ? localStorage.getItem('vectornet_ai_model') : '') || 'openrouter/auto';
+
     if (!activeConfig.trim()) {
       if (trimmedPrompt) {
         // Natural language query without config (e.g. asking compliance / architecture questions)
@@ -621,6 +569,9 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           formData.append('query', trimmedPrompt);
           formData.append('raw_config', '');
           formData.append('deep_research', isDeepResearch ? 'true' : 'false');
+          if (activeKey) formData.append('api_key', activeKey);
+          if (activeMod) formData.append('model', activeMod);
+
           const res = await fetch('http://localhost:8000/api/query-ai', {
             method: 'POST',
             body: formData,
@@ -630,7 +581,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             setAiResponseText(data.response_text || 'Compliance verification complete.');
             setAiMeta({
               provider: data.provider || 'DETERMINISTIC_RULES',
-              model: data.model || backendAiStatus.cloudModel || 'gemini-2.0-flash-exp:free',
+              model: data.model || activeMod,
               failover_log: data.failover_log || [],
               skills_applied: data.skills_applied || []
             });
@@ -658,6 +609,8 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
         formData.append('query', payload);
         formData.append('raw_config', activeConfig);
         formData.append('deep_research', isDeepResearch ? 'true' : 'false');
+        if (activeKey) formData.append('api_key', activeKey);
+        if (activeMod) formData.append('model', activeMod);
 
         const res = await fetch('http://localhost:8000/api/query-ai', {
           method: 'POST',
@@ -668,7 +621,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
           setAiResponseText(data.response_text || 'Analysis complete.');
           setAiMeta({
             provider: data.provider || 'AI_ENGINE',
-            model: data.model || backendAiStatus.cloudModel,
+            model: data.model || activeMod,
             failover_log: data.failover_log || [],
             skills_applied: data.skills_applied || []
           });
@@ -688,11 +641,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
   };
 
   const toggleDeepResearch = () => {
-    const next = !isDeepResearch;
-    setIsDeepResearch(next);
-    if (next) {
-      handleQuerySubmit();
-    }
+    setIsDeepResearch((prev) => !prev);
   };
 
   const handleCopyConfig = () => {
@@ -774,84 +723,65 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
       <div className="w-full flex flex-col items-center pt-2 md:pt-4">
         
         {/* Top Status & Controls Bar */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-6">
-          {backendAiStatus.localOnline ? (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-slate-700 text-xs font-medium shadow-xs">
-              <span className="flex items-center gap-1.5">
+        <div className="w-full max-w-[840px] flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-2">
+            {backendAiStatus.localOnline ? (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-slate-700 text-xs font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="font-semibold text-emerald-950">Local AI Active</span>
-              </span>
-              <span className="text-emerald-300">&bull;</span>
-              <span className="text-emerald-800 font-mono text-[11px] font-bold">{backendAiStatus.localModel}</span>
-              <span className="text-emerald-300">&bull;</span>
-              <span className="text-emerald-700 font-mono text-[11px]">Port 11434 (Air-Gapped)</span>
-            </div>
-          ) : (backendAiStatus.cloudOnline || openRouterApiKey || backendAiStatus.totalKeys > 0) ? (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-sky-200 bg-sky-50 text-slate-700 text-xs font-medium shadow-xs">
-              <span className="flex items-center gap-1.5">
+                <span className="text-emerald-300">&bull;</span>
+                <span className="text-emerald-800 font-mono text-[11px]">{backendAiStatus.localModel}</span>
+                <span className="text-emerald-300">&bull;</span>
+                <span className="text-emerald-700 font-mono text-[11px]">Port 11434</span>
+              </div>
+            ) : (backendAiStatus.cloudOnline || openRouterApiKey || backendAiStatus.totalKeys > 0) ? (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-200 bg-sky-50 text-slate-700 text-xs font-medium">
                 <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
-                <span className="font-semibold text-sky-950">Cloud AI Connected</span>
-              </span>
-              <span className="text-sky-300">&bull;</span>
-              <span className="text-sky-800 font-mono text-[11px] font-bold truncate max-w-[170px]">
-                {(backendAiStatus.cloudModel || activeAiModel).split('/').pop()}
-              </span>
-              <span className="text-sky-300">&bull;</span>
-              <span className="text-sky-600 font-mono text-[11px]">
-                {backendAiStatus.totalKeys > 0 ? `${backendAiStatus.totalKeys} Key Active` : 'OpenRouter Pool'}
-              </span>
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 text-xs font-medium shadow-xs">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-slate-400" />
-                <span className="font-semibold text-slate-700">Local AI: Offline</span>
-              </span>
-              <span className="text-slate-300">&bull;</span>
-              <span className="text-slate-500 font-mono text-[11px]">Port 11434 (Not Running)</span>
-              <span className="text-slate-300">&bull;</span>
-              <span className="text-amber-700 font-mono text-[11px] font-medium">Deterministic Rules Active</span>
-            </div>
-          )}
+                <span className="font-semibold text-sky-950">AI Engine Online</span>
+                <span className="text-sky-300">&bull;</span>
+                <span className="text-sky-800 font-mono text-[11px] truncate max-w-[170px]">
+                  {(backendAiStatus.cloudModel || activeAiModel).split('/').pop()}
+                </span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-700 text-xs font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="font-semibold text-slate-800">Rule Engine Ready</span>
+                <span className="text-slate-300">&bull;</span>
+                <span className="text-slate-600 font-mono text-[11px]">Deterministic Policy Evaluation</span>
+              </div>
+            )}
+          </div>
 
           <button
             type="button"
             onClick={() => onNavigate('settings')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-orange-200 bg-orange-50 hover:bg-orange-100 text-[#EA580C] text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
             title="Configure OpenRouter or external AI API keys in Settings"
           >
-            <Key className="w-3.5 h-3.5 text-[#EA580C]" />
-            <span>{openRouterApiKey || backendAiStatus.totalKeys > 0 ? 'AI Key Pool Active' : 'Configure AI Key in Settings'}</span>
+            <Settings className="w-3.5 h-3.5 text-slate-500" />
+            <span>API Settings</span>
           </button>
         </div>
 
-        {/* Center Geometric Emblem */}
+        {/* Primary Page Header */}
         {!showAuditDetails && (
-          <div className="mb-4 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-[#F97316]">
-              <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="14" y="4" width="7" height="22" rx="2" fill="#F97316" />
-                <rect x="21" y="16" width="7" height="22" rx="2" fill="#F97316" />
-                <rect x="4" y="21" width="22" height="7" rx="2" fill="#F97316" />
-                <rect x="16" y="14" width="22" height="7" rx="2" fill="#F97316" />
-              </svg>
-            </div>
+          <div className="text-center max-w-[680px] mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-2 font-heading">
+              Network Configuration Audit
+            </h1>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Upload multi-vendor router and firewall configurations. The engine normalizes all devices into a single Universal JSON schema and verifies compliance against NIST SP 800-53, CIS, and CERT-In standards.
+            </p>
           </div>
         )}
-
-        {/* Primary Centered Heading */}
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0F172A] text-center mb-3">
-          {showAuditDetails ? 'Security Compliance Audit Results' : 'Let’s start a smart conversation'}
-        </h1>
-
-
 
         {/* Main Floating Input Card */}
         <div
           onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleDropFile}
-          className={`w-full max-w-[780px] bg-white border ${
+          className={`w-full max-w-[840px] bg-white border ${
             isDragOver ? 'border-[#EA580C] ring-2 ring-orange-200 bg-orange-50/20' : 'border-[#E2E8F0]'
           } rounded-[24px] shadow-xs p-4 transition-all focus-within:border-[#CBD5E1] focus-within:shadow-md`}
         >
@@ -915,7 +845,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                   setShowConfigDrawer(true);
                 }}
                 className="h-[74px] px-3 bg-[#F8FAFC] hover:bg-[#F1F5F9] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl flex flex-col items-center justify-center gap-1 text-[10px] text-[#334155] font-mono transition-all cursor-pointer shadow-2xs group"
-                title="View Standard Universal JSON Schema (Problem Statement 26155 Normalization)"
+                title="View Standard Universal JSON Schema"
               >
                 <Code className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
                 <span className="font-bold text-[10px] text-[#0F172A]">Universal JSON</span>
@@ -945,27 +875,29 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
               
               {/* Left Action Buttons: File Upload & Folder Upload */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer"
-                  title="Upload config file (.cfg, .conf, .json, .xml, .txt)"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/90 rounded-lg transition-colors cursor-pointer border border-slate-200 shadow-2xs"
+                  title="Upload one or multiple configuration files (.cfg, .conf, .json, .xml, .txt)"
                 >
-                  <Paperclip className="w-4 h-4" />
+                  <Upload className="w-3.5 h-3.5 text-slate-700" />
+                  <span>Upload Files</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => folderInputRef.current?.click()}
-                  className="p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] rounded-lg transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-950 bg-slate-100 hover:bg-slate-200/90 rounded-lg transition-colors cursor-pointer border border-slate-200 shadow-2xs"
                   title="Upload folder / repository of configurations"
                 >
-                  <Layers className="w-4 h-4" />
+                  <FolderUp className="w-3.5 h-3.5 text-slate-700" />
+                  <span className="hidden sm:inline">Upload Folder</span>
                 </button>
 
                 <span className="text-[11px] font-mono text-slate-400 hidden sm:inline ml-1">
-                  {lineCount > 0 ? `${lineCount} lines ready` : 'Upload or paste CLI config'}
+                  {lineCount > 0 ? `${lineCount} lines ready` : 'Choose 1 or multiple files'}
                 </span>
               </div>
 
@@ -1002,7 +934,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                 {/* Orange Round Send Button */}
                 <button
                   type="submit"
-                  disabled={isProcessing || isLoading || !rawConfig.trim() && !promptText.trim()}
+                  disabled={isProcessing || isLoading || (!rawConfig.trim() && !promptText.trim())}
                   className="w-8 h-8 rounded-full bg-[#F97316] hover:bg-[#EA580C] text-white flex items-center justify-center transition-all shadow-xs shrink-0 disabled:opacity-50 cursor-pointer"
                   title="Run compliance verification"
                 >
@@ -1026,6 +958,118 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Quick Sample Configurations Suite */}
+        {lineCount === 0 && !showAuditDetails && (
+          <div className="w-full max-w-[840px] mt-6 flex flex-col gap-2.5">
+            <div className="flex items-center justify-between text-xs text-slate-600 font-medium px-1">
+              <span>Or evaluate sample configurations from <code className="font-mono text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[11px]">sample_configs/</code>:</span>
+              <span className="text-[11px] text-slate-400 font-mono">1-click test</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              <button
+                type="button"
+                onClick={() => loadSamplePreset('cisco_ios')}
+                className="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-left transition-all hover:border-slate-300 shadow-2xs cursor-pointer group flex flex-col justify-between"
+                title="Load Cisco IOS-XE Router Configuration"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                      Cisco IOS-XE
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <div className="text-xs font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                    ISR 4451 Router
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                    cisco_ios_router.cfg
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-400 pt-2 border-t border-slate-100 mt-2 font-mono">
+                  BGP, OSPF, TACACS+
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => loadSamplePreset('juniper_junos')}
+                className="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-left transition-all hover:border-slate-300 shadow-2xs cursor-pointer group flex flex-col justify-between"
+                title="Load Juniper Junos SRX Gateway Configuration"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Junos OS
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <div className="text-xs font-semibold text-slate-900 group-hover:text-emerald-700 transition-colors">
+                    SRX340 Gateway
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                    juniper_junos_srx.conf
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-400 pt-2 border-t border-slate-100 mt-2 font-mono">
+                  Zones, NAT, Telnet
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => loadSamplePreset('palo_alto')}
+                className="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-left transition-all hover:border-slate-300 shadow-2xs cursor-pointer group flex flex-col justify-between"
+                title="Load Palo Alto PAN-OS Firewall Configuration"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200">
+                      PAN-OS
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <div className="text-xs font-semibold text-slate-900 group-hover:text-orange-700 transition-colors">
+                    PA-3220 Firewall
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                    paloalto_panos_firewall.cfg
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-400 pt-2 border-t border-slate-100 mt-2 font-mono">
+                  Rules, SIEM, Cleartext
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => loadSamplePreset('fortinet_fortios')}
+                className="p-3.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-left transition-all hover:border-slate-300 shadow-2xs cursor-pointer group flex flex-col justify-between"
+                title="Load Fortinet FortiGate Firewall Configuration"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                      FortiOS
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <div className="text-xs font-semibold text-slate-900 group-hover:text-purple-700 transition-colors">
+                    FortiGate-100F
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                    fortinet_fortigate_firewall.conf
+                  </div>
+                </div>
+                <div className="text-[10px] text-slate-400 pt-2 border-t border-slate-100 mt-2 font-mono">
+                  Lockout, Interfaces, SNMP
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Animated Reasoning & Execution Pipeline (Claude/ChatGPT Style) */}
         {pipelineStage !== 'idle' && (
@@ -1057,12 +1101,12 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                       <>
                         <span className="text-emerald-700">Hardware identified: {pipelineData.hardware || 'Network Gateway'}</span>
                         <span className="text-slate-400 font-normal mx-1">&bull;</span>
-                        <span className="text-slate-700">Normalising configuration...</span>
+                        <span className="text-slate-700">Merging all configurations & logs into Singular Universal JSON via AI...</span>
                       </>
                     )}
                     {pipelineStage === 'compliance' && (
                       <>
-                        <span className="text-emerald-700">Normalising complete</span>
+                        <span className="text-emerald-700">Universal JSON Schema Normalized & Joined</span>
                         <span className="text-slate-400 font-normal mx-1">&bull;</span>
                         <span className="text-slate-700">Compliance checking against NIST & CIS...</span>
                       </>
@@ -1196,13 +1240,13 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                     )}
                     <span>
                       {pipelineStage === 'normalizing'
-                        ? 'Normalising configuration...'
-                        : 'Normalising complete'}
+                        ? 'Merging & normalizing to Singular Universal JSON via AI...'
+                        : 'Universal JSON Schema normalized & joined'}
                     </span>
                   </div>
                   {(pipelineStage === 'compliance' || pipelineStage === 'ai' || pipelineStage === 'completed') && (
                     <span className="font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                      {pipelineData.controls_count || 18} controls mapped
+                      {pipelineData.device_count && pipelineData.device_count > 1 ? `${pipelineData.device_count} devices joined` : `${pipelineData.controls_count || 18} controls mapped`}
                     </span>
                   )}
                 </div>
@@ -1260,11 +1304,11 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
 
         {/* AI Query Response Bubble */}
         {(aiResponseText || isProcessing) && (
-          <div className="w-full max-w-[780px] mt-4 bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-xs text-xs space-y-2.5 select-text">
-            <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-2">
-              <span className="font-semibold text-[#0F172A] flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#F97316]" />
-                VectorNet AI Assistant Reasoning
+          <div className="w-full max-w-[840px] mt-4 bg-white border border-slate-200 rounded-2xl p-4 shadow-xs text-xs space-y-2.5 select-text">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <span className="font-semibold text-slate-900 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-orange-600" />
+                Security Analysis & Recommendations
               </span>
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-mono font-bold">
@@ -1279,7 +1323,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                   <button
                     type="button"
                     onClick={() => { setAiResponseText(null); setAiMeta(null); }}
-                    className="text-[#94A3B8] hover:text-[#0F172A]"
+                    className="text-slate-400 hover:text-slate-900"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -1288,17 +1332,17 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
             </div>
             {isProcessing && !aiResponseText ? (
               <div className="flex items-center gap-2 py-3 text-slate-500 font-mono">
-                <Loader2 className="w-4 h-4 text-[#EA580C] animate-spin" />
-                <span>Synthesizing compliance analysis & remediation via AI engine...</span>
+                <Loader2 className="w-4 h-4 text-orange-600 animate-spin" />
+                <span>Analyzing compliance controls and remediation guidance...</span>
               </div>
             ) : (
-              <p className="text-[#334155] leading-relaxed font-mono whitespace-pre-wrap select-text">
+              <p className="text-slate-700 leading-relaxed font-mono whitespace-pre-wrap select-text">
                 {aiResponseText}
               </p>
             )}
             {aiMeta?.skills_applied && aiMeta.skills_applied.length > 0 && (
               <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1.5 text-[10px]">
-                <span className="text-slate-500 font-semibold">Rules & Skills Applied:</span>
+                <span className="text-slate-500 font-semibold">Rules & Frameworks Applied:</span>
                 {aiMeta.skills_applied.map((skill, idx) => (
                   <span
                     key={idx}
@@ -1323,7 +1367,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
         {/* Rendered once verification is triggered                                 */}
         {/* ========================================================================= */}
         {showAuditDetails && (
-          <div className="w-full max-w-[780px] mt-6 space-y-5">
+          <div className="w-full max-w-[840px] mt-6 space-y-5">
 
             {/* Formal Report Section Header */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
@@ -1420,14 +1464,17 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
               <div className="flex items-center gap-2 w-full md:w-auto">
                 <button
                   type="button"
-                  onClick={async () => {
-                    if (!normalizedSchema && rawConfig.trim()) {
-                      await handleFetchNormalizedSchema();
+                  onClick={() => {
+                    const el = document.getElementById('universal-json-panel');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth' });
+                      setIsSchemaCardOpen(true);
+                    } else {
+                      setDrawerActiveTab('normalized');
+                      setShowConfigDrawer(true);
                     }
-                    setDrawerActiveTab('normalized');
-                    setShowConfigDrawer(true);
                   }}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-mono text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
+                  className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 font-mono text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
                   title="Inspect Standard Universal JSON Schema"
                 >
                   <Code className="w-3.5 h-3.5 text-blue-600" />
@@ -1453,6 +1500,237 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                   <RotateCcw className="w-4 h-4" />
                 </button>
               </div>
+            </div>
+
+            {/* Mandatory Universal JSON Schema & Normalization Panel */}
+            <div id="universal-json-panel" className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Code className="w-5 h-5 text-blue-600 shrink-0" />
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight font-heading">
+                      Universal JSON Schema (Problem Statement 26155 Normalized Data Model)
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Multi-vendor CLI configurations & logs merged into a singular unified JSON schema with automated AI semantic tagging
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 text-[10px] font-mono font-bold">
+                    <Sparkles className="w-3 h-3 text-blue-600" />
+                    <span>AI Normalized</span>
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[10px] font-mono font-semibold border border-slate-200">
+                    {normalizedSchema?.aggregation_mode === 'MULTI_DEVICE_STREAM' ? `Fleet Joined (${normalizedSchema?.fleet_summary?.total_devices || 4} Devices)` : 'Single Device'}
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-mono font-bold border border-emerald-200">
+                    JSON Schema v2.1.0
+                  </span>
+                </div>
+              </div>
+
+              {/* Fleet Summary Metrics Strip */}
+              {normalizedSchema?.fleet_summary && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-mono">
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase">Joined Devices</span>
+                    <span className="font-bold text-slate-900 text-sm">{normalizedSchema.fleet_summary.total_devices}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase">Total Interfaces</span>
+                    <span className="font-bold text-slate-900 text-sm">{normalizedSchema.fleet_summary.total_interfaces}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase">Routing Protocols</span>
+                    <span className="font-bold text-blue-700 text-sm">{(normalizedSchema.merged_topology?.routing?.protocols || ['OSPF', 'BGP']).join(', ') || 'Static'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px] uppercase">Security Flags</span>
+                    <span className="font-bold text-rose-700 text-sm">{normalizedSchema.fleet_summary.critical_violations_detected || 0} Alerts</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Toolbar for Schema */}
+              <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+                <div className="flex items-center gap-1.5 font-mono">
+                  <button
+                    type="button"
+                    onClick={() => setSchemaViewMode('json')}
+                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                      schemaViewMode === 'json'
+                        ? 'bg-slate-900 text-white font-bold'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    Singular JSON
+                  </button>
+                  {normalizedSchema?.unified_inventory && (
+                    <button
+                      type="button"
+                      onClick={() => setSchemaViewMode('topology')}
+                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                        schemaViewMode === 'topology'
+                          ? 'bg-slate-900 text-white font-bold'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      Unified Inventory
+                    </button>
+                  )}
+                  {normalizedSchema?.consolidated_security_posture && (
+                    <button
+                      type="button"
+                      onClick={() => setSchemaViewMode('security')}
+                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                        schemaViewMode === 'security'
+                          ? 'bg-slate-900 text-white font-bold'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      Security Matrix
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 font-mono">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (normalizedSchema) {
+                        navigator.clipboard.writeText(JSON.stringify(normalizedSchema, null, 2));
+                        setCopiedSchema(true);
+                        setTimeout(() => setCopiedSchema(false), 2000);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    {copiedSchema ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
+                    <span>{copiedSchema ? 'Copied' : 'Copy JSON'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (normalizedSchema) {
+                        const blob = new Blob([JSON.stringify(normalizedSchema, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `universal_schema_${activeHostname || 'fleet'}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Download</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsSchemaCardOpen(!isSchemaCardOpen)}
+                    className="p-1 text-slate-400 hover:text-slate-700 rounded-lg transition-colors cursor-pointer"
+                    title={isSchemaCardOpen ? 'Collapse Schema' : 'Expand Schema'}
+                  >
+                    {isSchemaCardOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* View Content */}
+              {isSchemaCardOpen && (
+                <div className="space-y-3 pt-1">
+                  {schemaViewMode === 'json' && (
+                    <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-[#0F172A] p-4 text-slate-200 font-mono text-[11px] leading-relaxed max-h-[380px] overflow-y-auto shadow-inner select-text">
+                      <pre className="whitespace-pre">
+                        {normalizedSchema ? JSON.stringify(normalizedSchema, null, 2) : '// Normalizing and joining configurations into Singular Universal JSON...'}
+                      </pre>
+                    </div>
+                  )}
+
+                  {schemaViewMode === 'topology' && normalizedSchema?.unified_inventory && (
+                    <div className="border border-slate-200 rounded-xl overflow-hidden">
+                      <table className="w-full text-left font-mono text-xs">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 text-[10px] uppercase font-bold">
+                          <tr>
+                            <th className="p-2.5">Hostname</th>
+                            <th className="p-2.5">Vendor</th>
+                            <th className="p-2.5">Role</th>
+                            <th className="p-2.5">Primary IP</th>
+                            <th className="p-2.5">Source File</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 bg-white">
+                          {normalizedSchema.unified_inventory.map((inv: any, i: number) => (
+                            <tr key={i} className="hover:bg-slate-50/70">
+                              <td className="p-2.5 font-bold text-slate-900">{inv.hostname}</td>
+                              <td className="p-2.5 text-slate-700">{inv.vendor}</td>
+                              <td className="p-2.5 text-blue-700">{inv.device_type}</td>
+                              <td className="p-2.5 text-slate-600">{inv.primary_ip}</td>
+                              <td className="p-2.5 text-slate-400 text-[10px]">{inv.source_file || 'Stream'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {schemaViewMode === 'security' && normalizedSchema?.consolidated_security_posture && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                      <div className="p-3 rounded-xl border border-rose-200 bg-rose-50/50 space-y-1">
+                        <span className="font-bold text-rose-800 text-[11px] uppercase block">Telnet Enabled</span>
+                        <div className="text-slate-800 text-xs">
+                          {normalizedSchema.consolidated_security_posture.telnet_hosts?.length > 0
+                            ? normalizedSchema.consolidated_security_posture.telnet_hosts.join(', ')
+                            : 'None (Secure)'}
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-xl border border-amber-200 bg-amber-50/50 space-y-1">
+                        <span className="font-bold text-amber-800 text-[11px] uppercase block">Weak Passwords</span>
+                        <div className="text-slate-800 text-xs">
+                          {normalizedSchema.consolidated_security_posture.weak_password_hosts?.length > 0
+                            ? normalizedSchema.consolidated_security_posture.weak_password_hosts.join(', ')
+                            : 'None (Hashed)'}
+                        </div>
+                      </div>
+                      <div className="p-3 rounded-xl border border-orange-200 bg-orange-50/50 space-y-1">
+                        <span className="font-bold text-orange-800 text-[11px] uppercase block">Default SNMP</span>
+                        <div className="text-slate-800 text-xs">
+                          {normalizedSchema.consolidated_security_posture.insecure_snmp_hosts?.length > 0
+                            ? normalizedSchema.consolidated_security_posture.insecure_snmp_hosts.join(', ')
+                            : 'None (Restricted)'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AI Architectural Insights Bar */}
+                  {normalizedSchema?.ai_insights && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-mono">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-800">AI Architecture Role:</span>
+                        <span className="px-2 py-0.5 rounded bg-white text-slate-700 border border-slate-200 font-semibold text-[11px]">
+                          {normalizedSchema.ai_insights.architecture_role || 'Enterprise Perimeter'}
+                        </span>
+                        <span className="text-slate-300">&bull;</span>
+                        <span className="text-slate-500">Risk:</span>
+                        <span className={`font-bold ${
+                          normalizedSchema.ai_insights.risk_rating === 'CRITICAL' ? 'text-rose-600' : 'text-amber-600'
+                        }`}>
+                          {normalizedSchema.ai_insights.risk_rating || 'HIGH'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">
+                        Synthesized via {normalizedSchema.ai_insights.provider || 'Deterministic Engine'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Blockchain Immutable Audit Ledger Stamp */}
@@ -1934,9 +2212,9 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
       )}
 
       {/* Bottom Footer */}
-      <div className="w-full max-w-[780px] mx-auto flex items-center justify-between text-[11px] text-[#94A3B8] pt-8">
-        <div className="flex-1 text-center">
-          VectorNet can make mistakes. Check important info. Ingested policies are verified deterministically.
+      <div className="w-full max-w-[840px] mx-auto flex items-center justify-between text-[11px] text-slate-400 pt-8 pb-4">
+        <div className="flex-1 text-center font-mono">
+          Evaluations are executed deterministically against codified regulatory frameworks (NIST SP 800-53, CIS Benchmarks, CERT-In).
         </div>
 
         <div className="flex items-center gap-2 text-[#94A3B8] shrink-0">

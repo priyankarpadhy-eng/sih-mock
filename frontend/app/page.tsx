@@ -12,6 +12,7 @@ import {
   TaskWorkspacePage,
   SkillsManagementPage,
   SettingsPage,
+  HistoryPage,
   AuthModal,
 } from '../components';
 import type { NavTab, UserProfile } from '../lib/types';
@@ -270,15 +271,26 @@ export default function AppContainer() {
           />
         )}
 
+        {activeTab === 'history' && (
+          <HistoryPage
+            onNavigate={setActiveTab}
+            onLoadConfig={(cfg) => {
+              setRawConfig(cfg);
+              detectVendorLocally(cfg);
+              if (cfg.trim()) {
+                handleEvaluate(cfg);
+              }
+            }}
+          />
+        )}
+
         {(activeTab === 'ingestion' || activeTab === 'auditor') && (
           <IngestionPage
             rawConfig={rawConfig}
             onConfigChange={(newCfg) => {
               setRawConfig(newCfg);
               detectVendorLocally(newCfg);
-              if (newCfg.trim()) {
-                handleEvaluate(newCfg);
-              } else {
+              if (!newCfg.trim()) {
                 setAuditResult(null);
               }
             }}

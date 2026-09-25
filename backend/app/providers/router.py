@@ -56,7 +56,7 @@ class IntelligentRouter:
         keys, initial_model = self._load_api_keys_and_model()
         self._openrouter = OpenRouterProvider(
             api_keys=keys,
-            model=initial_model or self._get_env("OPENROUTER_MODEL", "nvidia/nemotron-3.5-lightning:free"),
+            model=initial_model or self._get_env("OPENROUTER_MODEL", "openrouter/auto"),
             timeout_s=35,
         )
         self._prefer_local = self._get_env("PREFER_LOCAL_AI", "true").lower() == "true"
@@ -121,7 +121,8 @@ class IntelligentRouter:
                                     env_keys.append(k)
                         elif line.startswith("OPENROUTER_DEFAULT_MODEL=") or line.startswith("OPENROUTER_MODEL="):
                             m_val = line.split("=", 1)[1].strip().strip('"').strip("'")
-                            if m_val:
+                            # Only use .env model if user has not explicitly configured one in UI/file
+                            if m_val and not active_model_found:
                                 active_model_found = m_val
         except Exception:
             pass
@@ -140,23 +141,24 @@ class IntelligentRouter:
     def save_key_pool(self, keys: List[str], model: Optional[str] = None, ollama_model: Optional[str] = None):
         """Persist API key pool and model selection to disk."""
         clean_keys = [k.strip() for k in keys if k.strip()]
-        # Also load env keys so they aren't lost if UI sends partial list
-        env_keys = []
-        for var_name in ("OPENROUTER_API_KEYS", "OPENROUTER_API_KEY"):
-            raw = os.environ.get(var_name, "")
-            if raw:
-                for k in raw.split(","):
-                    k = k.strip()
-                    if k and k not in env_keys:
-                        env_keys.append(k)
+        
+        # If user explicitly provides keys from UI, use them as authoritative
+        if clean_keys:
+            final_keys = clean_keys
+        else:
+            # Check env fallback only if user provided no keys
+            env_keys = []
+            for var_name in ("OPENROUTER_API_KEYS", "OPENROUTER_API_KEY"):
+                raw = os.environ.get(var_name, "")
+                if raw:
+                    for k in raw.split(","):
+                        k = k.strip()
+                        if k and k not in env_keys:
+                            env_keys.append(k)
+            final_keys = env_keys
 
-        combined = []
-        for k in clean_keys + env_keys:
-            if k and k not in combined:
-                combined.append(k)
-
-        final_keys = combined if combined else (clean_keys or [k for k in self._openrouter._api_keys if k])
-        self._openrouter.set_keys(final_keys, model)
+        chosen_model = model or getattr(self._openrouter, "_model", None) or "google/gemini-2.0-flash-exp:free"
+        self._openrouter.set_keys(final_keys, chosen_model)
         if ollama_model:
             self._local._model = ollama_model
         os.makedirs(DATA_DIR, exist_ok=True)
@@ -164,7 +166,7 @@ class IntelligentRouter:
             json.dump(
                 {
                     "api_keys": final_keys,
-                    "active_model": model or self._openrouter._model,
+                    "active_model": chosen_model,
                     "ollama_model": ollama_model or self._local._model,
                     "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 },

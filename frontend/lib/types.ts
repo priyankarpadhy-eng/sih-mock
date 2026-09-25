@@ -16,6 +16,7 @@ export interface UserProfile {
 
 export type NavTab = 
   | 'ingestion' 
+  | 'history'
   | 'overview' 
   | 'auditor' 
   | 'workbench' 

@@ -116,31 +116,46 @@ export const DEFAULT_AUTO_TASK_CONFIG: AutoTaskConfig = {
   ],
 };
 
-const FREE_AI_MODELS = [
-  {
-    id: 'nvidia/nemotron-3.5-lightning:free',
-    name: 'NVIDIA Nemotron 3.5 Lightning (Free - Recommended)',
-    desc: 'High-speed, high-accuracy reasoning engine for network configuration analysis',
-  },
-  {
-    id: 'nex-agi/nex-n2.5-pro:free',
-    name: 'Nex N2.5 Pro (Free)',
-    desc: 'Deep multi-vendor compliance & security rule evaluation',
-  },
-  {
-    id: 'liquid/lfm-2.5-2.6b:free',
-    name: 'Liquid LFM 2.5 (Free)',
-    desc: 'Ultra-lightweight fast response parser',
-  },
-  {
-    id: 'google/gemma-4-31b-it:free',
-    name: 'Google Gemma 4 31B Instruct (Free)',
-    desc: 'Instruction-tuned compliance reasoning engine',
-  },
+export const FREE_AI_MODELS = [
   {
     id: 'openrouter/auto',
-    name: 'OpenRouter Auto-Router (Free/Auto)',
-    desc: 'Automatically routes to the highest-availability model',
+    name: 'Smart Auto-Select (Recommended)',
+    desc: 'Automatically routes to the fastest, most reliable free model with instant failover',
+  },
+  {
+    id: 'nvidia/nemotron-3-super-120b-a12b:free',
+    name: 'NVIDIA Nemotron 3 Super (120B Free)',
+    desc: '1701ms fast response, high accuracy network configuration security analysis',
+  },
+  {
+    id: 'nvidia/nemotron-3-ultra-550b-a55b:free',
+    name: 'NVIDIA Nemotron 3 Ultra (550B Free)',
+    desc: '1706ms flagship high-capacity reasoning model for multi-vendor compliance',
+  },
+  {
+    id: 'poolside/laguna-xs-2.1:free',
+    name: 'Poolside Laguna XS 2.1 (Free)',
+    desc: '1618ms ultra-low latency response parser for network CLI audits',
+  },
+  {
+    id: 'cohere/north-mini-code:free',
+    name: 'Cohere North Mini Code (Free)',
+    desc: '1979ms code-specialized reasoning engine for CLI scripting and regex rules',
+  },
+  {
+    id: 'inclusionai/ling-3.0-flash-fin:free',
+    name: 'inclusionAI Ling 3.0 Flash Fin (Free)',
+    desc: '1914ms high-throughput compliance analysis engine',
+  },
+  {
+    id: 'inclusionai/ling-3.0-flash-sante:free',
+    name: 'inclusionAI Ling 3.0 Flash Sante (Free)',
+    desc: '1929ms fast multi-framework policy evaluator',
+  },
+  {
+    id: 'nex-agi/nex-n2.5-mini:free',
+    name: 'Nex AGI Nex-N2.5-Mini (Free)',
+    desc: '3043ms lightweight multi-vendor compliance rule engine',
   },
 ];
 
@@ -155,8 +170,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
   // AI Key & Model State
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
-  const [activeModel, setActiveModel] = useState('nvidia/nemotron-3.5-lightning:free');
+  const [activeModel, setActiveModel] = useState('openrouter/auto');
   const [isSavingAi, setIsSavingAi] = useState(false);
+  const [isSaveSuccess, setIsSaveSuccess] = useState(false);
   const [aiSaveSuccess, setAiSaveSuccess] = useState<string | null>(null);
   const [isTestingAi, setIsTestingAi] = useState(false);
   const [testFeedback, setTestFeedback] = useState<{ success: boolean; message: string; latency?: number } | null>(null);
@@ -194,6 +210,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
           const data = await res.json();
           setBackendStatus(data);
           if (data.active_model) setActiveModel(data.active_model);
+          if (data.api_keys && data.api_keys.length > 0 && !apiKey) {
+            // keep existing unmasked key if stored
+          }
         }
       } catch {
         // backend offline
@@ -202,11 +221,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
     fetchConfig();
   }, []);
 
-  const handleSaveAiConfig = async () => {
+  const handleSaveAiConfig = async (overrideKey?: string) => {
     setIsSavingAi(true);
     setAiSaveSuccess(null);
     setTestFeedback(null);
-    const cleanKey = apiKey.trim();
+    const cleanKey = (overrideKey !== undefined ? overrideKey : apiKey).trim();
 
     try {
       if (typeof window !== 'undefined') {
@@ -233,15 +252,19 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
       if (res.ok) {
         const data = await res.json();
         setBackendStatus(data.config || backendStatus);
-        setAiSaveSuccess(cleanKey ? 'API Key saved and active in OpenRouter pool.' : 'Key cleared. Running in local failover mode.');
+        setAiSaveSuccess(cleanKey ? 'API Key saved and active in OpenRouter pool.' : 'Key cleared. Running in failover mode.');
       } else {
         setAiSaveSuccess('Saved locally in browser.');
       }
+      setIsSaveSuccess(true);
+      setTimeout(() => setIsSaveSuccess(false), 3000);
     } catch {
       setAiSaveSuccess('Saved locally in browser.');
+      setIsSaveSuccess(true);
+      setTimeout(() => setIsSaveSuccess(false), 3000);
     } finally {
       setIsSavingAi(false);
-      setTimeout(() => setAiSaveSuccess(null), 4000);
+      setTimeout(() => setAiSaveSuccess(null), 5000);
     }
   };
 
@@ -249,11 +272,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
     setIsTestingAi(true);
     setTestFeedback(null);
     const start = Date.now();
+    const cleanKey = apiKey.trim();
 
     try {
       const formData = new FormData();
       formData.append('prompt', 'Test connectivity and ping response.');
       formData.append('system_instruction', 'Respond with PONG in 1 word.');
+      if (cleanKey) {
+        formData.append('api_key', cleanKey);
+      }
+      if (activeModel) {
+        formData.append('model', activeModel);
+      }
 
       const res = await fetch('http://localhost:8000/api/v1/ai/query-failover', {
         method: 'POST',
@@ -285,12 +315,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
     } catch {
       setTestFeedback({
         success: false,
-        message: 'Could not contact backend service on port 8000.',
+        message: 'Could not contact backend service on port 8000. Start backend with uvicorn.',
       });
     } finally {
       setIsTestingAi(false);
     }
   };
+
 
   const handleToggleEngine = () => {
     setConfig(prev => ({
@@ -435,26 +466,26 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
               </p>
             </div>
 
-            {/* Card 2: Local AI (Ollama) */}
+            {/* Card 2: Local AI (Ollama - Optional) */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-slate-800 flex items-center gap-1.5">
                   <Terminal className="w-4 h-4 text-blue-600" />
-                  Local Ollama Engine
+                  Local AI (Air-Gapped)
                 </span>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                   backendStatus?.local_ai?.status === 'ONLINE'
                     ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                     : 'bg-slate-100 text-slate-600 border border-slate-200'
                 }`}>
-                  {backendStatus?.local_ai?.status === 'ONLINE' ? 'ONLINE' : 'OFFLINE'}
+                  {backendStatus?.local_ai?.status === 'ONLINE' ? 'ONLINE' : 'OPTIONAL (OFFLINE)'}
                 </span>
               </div>
               <div className="text-xs text-slate-600 font-mono truncate">
-                Port: <span className="font-semibold text-slate-900">11434</span> (qwen3:4b)
+                Engine: <span className="font-semibold text-slate-900">{backendStatus?.local_ai?.status === 'ONLINE' ? 'Ollama 11434' : 'Cloud / Policy Mode'}</span>
               </div>
               <p className="text-[11px] text-slate-500 leading-normal">
-                Air-gapped on-premise inference. Zero external data egress.
+                Optional on-prem engine. System routes through OpenRouter pool and policy engine.
               </p>
             </div>
 
@@ -552,56 +583,72 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
                 ))}
               </select>
               <p className="text-[11px] text-slate-400">
-                Default: NVIDIA Nemotron 3.5 Lightning (Free). Supports Cisco, Juniper, Fortinet, and Palo Alto rule synthesis.
+                Default: Smart Auto-Select (openrouter/auto). Automatically routes to fastest available free model.
               </p>
             </div>
 
             {/* Action Buttons Row */}
-            <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleSaveAiConfig}
-                  disabled={isSavingAi}
-                  className="px-4 py-2 bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
-                >
-                  {isSavingAi ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Save className="w-3.5 h-3.5 text-white" />
-                  )}
-                  <span>Save API Key & Model</span>
-                </button>
+            <div className="pt-2 border-t border-slate-100 space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveAiConfig()}
+                    disabled={isSavingAi}
+                    className={`px-4 py-2 text-white text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50 ${
+                      isSaveSuccess
+                        ? 'bg-emerald-600 hover:bg-emerald-700'
+                        : 'bg-[#EA580C] hover:bg-[#C2410C]'
+                    }`}
+                  >
+                    {isSavingAi ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : isSaveSuccess ? (
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    ) : (
+                      <Save className="w-3.5 h-3.5 text-white" />
+                    )}
+                    <span>{isSavingAi ? 'Saving...' : isSaveSuccess ? 'Saved & Applied!' : 'Save API Key & Model'}</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={handleTestAiConnection}
-                  disabled={isTestingAi}
-                  className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs disabled:opacity-50"
-                >
-                  {isTestingAi ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#EA580C]" />
-                  ) : (
-                    <Zap className="w-3.5 h-3.5 text-amber-500" />
-                  )}
-                  <span>Test Connection / Ping</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleTestAiConnection}
+                    disabled={isTestingAi}
+                    className="px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs disabled:opacity-50"
+                  >
+                    {isTestingAi ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#EA580C]" />
+                    ) : (
+                      <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    )}
+                    <span>Test Connection / Ping</span>
+                  </button>
+                </div>
+
+                {apiKey && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApiKey('');
+                      if (typeof window !== 'undefined') {
+                        localStorage.removeItem('vectornet_openrouter_key');
+                      }
+                      handleSaveAiConfig('');
+                    }}
+                    className="px-3 py-2 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                  >
+                    Clear Key
+                  </button>
+                )}
               </div>
 
-              {apiKey && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setApiKey('');
-                    if (typeof window !== 'undefined') {
-                      localStorage.removeItem('vectornet_openrouter_key');
-                    }
-                    handleSaveAiConfig();
-                  }}
-                  className="px-3 py-2 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
-                >
-                  Clear Key
-                </button>
+              {/* Inline Save Success Banner right below buttons */}
+              {aiSaveSuccess && (
+                <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium rounded-xl flex items-center gap-2 shadow-2xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{aiSaveSuccess}</span>
+                </div>
               )}
             </div>
           </div>

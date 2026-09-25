@@ -8,7 +8,7 @@ and calculates SHA-256 cryptographic source integrity hashes.
 
 import hashlib
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from backend.app.core.models import (
     AccessControl,
     AccountSecurity,
@@ -287,22 +287,50 @@ class ConfigNormalizer:
         )
 
     @classmethod
-    def normalize_to_universal_schema(cls, raw_text: str, override_vendor: Optional[str] = None) -> Dict[str, Any]:
+    def _split_into_device_chunks(cls, raw_text: str) -> List[Tuple[str, str]]:
         """
-        Smart India Hackathon (NTRO/NCIIPC PS 26155) - Mandatory Normalization:
-        Converts proprietary vendor-specific CLI outputs, logs, and configurations
-        (Cisco, Juniper, Fortinet, Huawei, Palo Alto, etc.) into the standardized
-        Universal JSON Schema model:
-        {
-          "device": { "vendor": "...", "hostname": "...", "os": "...", "device_type": "..." },
-          "network": { "interfaces": [...], "routing": {...}, "vlans": [...] },
-          "security": { "authentication": {...}, "snmp": {...}, "access_control": {...} },
-          "logging_and_telemetry": { ... }
-        }
+        Splits multi-file or multi-device input into discrete device chunks.
+        Supports:
+          1. UI Ingestion delimiters: '! ==== FILE: <filename> ===='
+          2. Multiple hostname definitions across concatenated configs
         """
+        text = raw_text.strip()
+        # Pattern 1: Explicit file delimiter from multi-file or folder uploads
+        file_delim_pattern = r'(?:^|\n)(?:!|#)\s*={10,}\s*\n(?:!|#)\s*(?:REPO\s+)?FILE:\s*([^\n]+)\n(?:!|#)\s*={10,}\s*\n'
+        parts = re.split(file_delim_pattern, text)
+        if len(parts) > 1:
+            chunks: List[Tuple[str, str]] = []
+            # parts has [preamble, filename_1, content_1, filename_2, content_2, ...]
+            for i in range(1, len(parts), 2):
+                fname = parts[i].strip()
+                content = parts[i + 1].strip() if (i + 1) < len(parts) else ""
+                if content:
+                    chunks.append((fname, content))
+            if chunks:
+                return chunks
+
+        # Pattern 2: Detect multiple hostnames in single pasted text
+        host_matches = list(re.finditer(r'(?:^|\n)(?:hostname|sysname|set\s+deviceconfig\s+system\s+hostname|set\s+system\s+host-name)\s+["\']?([\w\.\-]+)["\']?', text, re.IGNORECASE))
+        if len(host_matches) > 1:
+            chunks = []
+            for idx, m in enumerate(host_matches):
+                hname = m.group(1)
+                start_idx = m.start()
+                end_idx = host_matches[idx + 1].start() if idx + 1 < len(host_matches) else len(text)
+                chunk_str = text[start_idx:end_idx].strip()
+                chunks.append((f"device_{hname}.cfg", chunk_str))
+            if chunks:
+                return chunks
+
+        # Default: Single device / log stream
+        return [("primary_config.cfg", text)]
+
+    @classmethod
+    def _normalize_single_device(cls, raw_text: str, source_label: str = "primary_config.cfg", override_vendor: Optional[str] = None) -> Dict[str, Any]:
+        """Normalizes a single device configuration or log stream into the standard 4-block schema."""
         if not raw_text or not raw_text.strip():
             return {
-                "device": {"vendor": "Generic", "hostname": "unknown", "os": "Unknown", "device_type": "network_device"},
+                "device": {"vendor": "Generic", "hostname": "unknown", "os": "Unknown", "device_type": "network_device", "source_file": source_label},
                 "network": {"interfaces": [], "routing": {}, "vlans": []},
                 "security": {"authentication": {}, "snmp": {}, "access_control": {}},
                 "logging_and_telemetry": {"status": "EMPTY_PAYLOAD"}
@@ -311,18 +339,15 @@ class ConfigNormalizer:
         text = raw_text.strip()
         lines = text.splitlines()
 
-        # Check if input is a structured log stream (e.g. Fortinet KV logs or syslog)
         is_fortinet_log = "devname=" in text or "logid=" in text or "type=\"traffic\"" in text or "type=traffic" in text
         is_syslog = (re.search(r'%[A-Z0-9_\-]+:\s+', text) is not None) or ("syslog" in text.lower())
 
-        # Base parsing from SBM
         sbm = cls.parse_config(text, override_vendor=override_vendor)
         vendor = sbm.device_metadata.vendor
         hostname = sbm.device_metadata.hostname
         os_ver = sbm.device_metadata.os_version
         dev_type = sbm.device_metadata.device_type
 
-        # 1. Device Block
         if is_fortinet_log:
             dev_match = re.search(r'devname="?([^"\s]+)"?', text)
             if dev_match:
@@ -335,10 +360,10 @@ class ConfigNormalizer:
             "vendor": vendor,
             "hostname": hostname,
             "os": os_ver,
-            "device_type": dev_type
+            "device_type": dev_type,
+            "source_file": source_label
         }
 
-        # 2. Network Block (interfaces, routing, vlans, or traffic flows)
         interfaces = []
         routing: Dict[str, Any] = {"protocols": [], "static_routes": []}
         vlans = []
@@ -351,7 +376,6 @@ class ConfigNormalizer:
                 if match:
                     iface_name = match.group(1)
                     interfaces.append({"name": iface_name, "status": "CONFIGURED", "ip": "Unassigned"})
-            # IP address assignment
             ip_match = re.search(r'ip\s+address\s+(\d+\.\d+\.\d+\.\d+)\s+(\d+\.\d+\.\d+\.\d+)', line_s, re.IGNORECASE)
             if ip_match and interfaces:
                 interfaces[-1]["ip"] = f"{ip_match.group(1)}/{ip_match.group(2)}"
@@ -359,21 +383,34 @@ class ConfigNormalizer:
             jun_if = re.search(r'set\s+interfaces\s+([\w\.\/\-]+)\s+unit\s+(\d+)\s+family\s+inet\s+address\s+(\S+)', line_s, re.IGNORECASE)
             if jun_if:
                 interfaces.append({"name": f"{jun_if.group(1)}.{jun_if.group(2)}", "status": "UP", "ip": jun_if.group(3)})
+            # Palo Alto interface
+            pa_if = re.search(r'set\s+network\s+interface\s+ethernet\s+([\w\.\/\-]+)\s+layer3\s+ip\s+(\S+)', line_s, re.IGNORECASE)
+            if pa_if:
+                interfaces.append({"name": pa_if.group(1), "status": "UP", "ip": pa_if.group(2)})
+            # Fortinet interface
+            if "edit \"port" in line_s.lower() or "edit \"wan" in line_s.lower():
+                fn_m = re.search(r'edit\s+"?([\w\.\/\-]+)"?', line_s, re.IGNORECASE)
+                if fn_m:
+                    interfaces.append({"name": fn_m.group(1), "status": "CONFIGURED", "ip": "Unassigned"})
+            if "set ip " in line_s.lower() and interfaces and interfaces[-1]["ip"] == "Unassigned":
+                fip = re.search(r'set\s+ip\s+(\d+\.\d+\.\d+\.\d+)\s+(\d+\.\d+\.\d+\.\d+)', line_s, re.IGNORECASE)
+                if fip:
+                    interfaces[-1]["ip"] = f"{fip.group(1)}/{fip.group(2)}"
+
             # Routing
-            if "router ospf" in line_s.lower() or "protocols ospf" in line_s.lower():
+            if "router ospf" in line_s.lower() or "protocols ospf" in line_s.lower() or "ospf" in line_s.lower() and "router" in line_s.lower():
                 if "OSPF" not in routing["protocols"]:
                     routing["protocols"].append("OSPF")
-            if "router bgp" in line_s.lower() or "protocols bgp" in line_s.lower():
+            if "router bgp" in line_s.lower() or "protocols bgp" in line_s.lower() or "neighbor " in line_s.lower() and "remote-as" in line_s.lower():
                 if "BGP" not in routing["protocols"]:
                     routing["protocols"].append("BGP")
-            if "ip route" in line_s.lower():
+            if "ip route" in line_s.lower() or "router static" in line_s.lower():
                 routing["static_routes"].append(line_s)
             # VLANs
             vlan_match = re.search(r'(?:vlan|set vlans)\s+(\d+)', line_s, re.IGNORECASE)
             if vlan_match:
                 vlans.append(int(vlan_match.group(1)))
 
-        # If log stream, extract traffic sessions
         traffic_sessions = []
         if is_fortinet_log or is_syslog:
             for line in lines:
@@ -396,7 +433,6 @@ class ConfigNormalizer:
             "traffic_sessions": traffic_sessions[:10]
         }
 
-        # 3. Security Block (authentication, snmp, access_control)
         auth_sec = sbm.authentication_security
         sec_block = {
             "authentication": {
@@ -423,7 +459,6 @@ class ConfigNormalizer:
             }
         }
 
-        # 4. Logging & Telemetry Block
         logging_block = {
             "syslog_enabled": sbm.network_and_services.logging_syslog_enabled or is_syslog or is_fortinet_log,
             "ntp_servers_configured": sbm.network_and_services.ntp_servers_configured,
@@ -438,3 +473,219 @@ class ConfigNormalizer:
             "security": sec_block,
             "logging_and_telemetry": logging_block
         }
+
+    @classmethod
+    def _generate_ai_insights(cls, devices_summary: List[Dict[str, Any]], sample_text: str) -> Dict[str, Any]:
+        """
+        Uses AI engine (OpenRouter pool / Local Ollama) to enrich the Universal JSON Schema
+        with architectural role classifications, risk posture, and anomalous policy insights.
+        Falls back to deterministic security heuristics if AI is offline or air-gapped.
+        """
+        try:
+            from backend.app.engines.llm_engine import ai_engine
+            if ai_engine and (ai_engine.api_keys or getattr(ai_engine, "ollama_available", False)):
+                prompt = (
+                    "You are VectorNet Universal Schema Engine. Given this normalized network configuration summary:\n"
+                    f"{json.dumps(devices_summary[:4], indent=2)}\n\n"
+                    "Extract high-level architectural insights in strict JSON format:\n"
+                    "{\n"
+                    '  "architecture_role": "Perimeter Gateway / Core Routing / Access Mesh",\n'
+                    '  "risk_rating": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",\n'
+                    '  "primary_concerns": ["..."],\n'
+                    '  "remediation_priority": "Immediate / Scheduled / Low"\n'
+                    "}\nReturn ONLY JSON."
+                )
+                res = ai_engine.query_with_failover(prompt=prompt, system_instruction="You are an automated network configuration schema normalizer. Return valid JSON only.")
+                if res.get("success") and res.get("response_text"):
+                    raw_resp = res["response_text"].strip()
+                    # Clean markdown code blocks if wrapped
+                    if "```" in raw_resp:
+                        raw_resp = re.sub(r'```(?:json)?\n?', '', raw_resp).strip('` \n')
+                    parsed_ai = json.loads(raw_resp)
+                    parsed_ai["provider"] = res.get("provider", "OPENROUTER")
+                    parsed_ai["model"] = res.get("model", "openrouter/auto")
+                    return parsed_ai
+        except Exception:
+            pass
+
+        # Deterministic heuristic fallback
+        total_devs = len(devices_summary)
+        has_telnet = any(d.get("security", {}).get("authentication", {}).get("telnet_enabled") for d in devices_summary)
+        has_weak = any(d.get("security", {}).get("authentication", {}).get("has_weak_password_hashes") for d in devices_summary)
+        has_snmp = any(d.get("security", {}).get("snmp", {}).get("default_community_strings_detected") for d in devices_summary)
+
+        risk = "CRITICAL" if (has_telnet and has_weak) else ("HIGH" if (has_telnet or has_snmp or has_weak) else "LOW")
+        concerns = []
+        if has_telnet: concerns.append("Cleartext Telnet enabled across active management plane")
+        if has_weak: concerns.append("Reversible Type-7 or plaintext credential exposure")
+        if has_snmp: concerns.append("Default public/private SNMP community strings active")
+        if not concerns: concerns.append("Configuration adheres to baseline hardening principles")
+
+        return {
+            "architecture_role": "Multi-Vendor Enterprise Fleet" if total_devs > 1 else "Enterprise Edge Appliance",
+            "risk_rating": risk,
+            "primary_concerns": concerns,
+            "remediation_priority": "Immediate" if risk in ("CRITICAL", "HIGH") else "Scheduled",
+            "provider": "DETERMINISTIC_HEURISTIC_ENGINE",
+            "model": "rule-based-sbm"
+        }
+
+    @classmethod
+    def normalize_to_universal_schema(cls, raw_text: str, override_vendor: Optional[str] = None, use_ai: bool = True) -> Dict[str, Any]:
+        """
+        Smart India Hackathon (NTRO/NCIIPC PS 26155) - Mandatory Normalization:
+        Converts proprietary vendor-specific CLI outputs, logs, and configurations
+        (Cisco, Juniper, Fortinet, Huawei, Palo Alto, etc.) into the standardized
+        Universal JSON Schema model.
+
+        Supports multi-file / multi-device input:
+        Automatically merges and joins all ingested logs and device configs
+        into ONE singular, consolidated Universal JSON document.
+        """
+        if not raw_text or not raw_text.strip():
+            return {
+                "schema_version": "2.1.0",
+                "aggregation_mode": "EMPTY",
+                "device": {"vendor": "Generic", "hostname": "unknown", "os": "Unknown", "device_type": "network_device"},
+                "network": {"interfaces": [], "routing": {}, "vlans": []},
+                "security": {"authentication": {}, "snmp": {}, "access_control": {}},
+                "logging_and_telemetry": {"status": "EMPTY_PAYLOAD"}
+            }
+
+        chunks = cls._split_into_device_chunks(raw_text)
+
+        # 1. Normalize each device chunk
+        device_schemas: List[Dict[str, Any]] = []
+        for source_label, chunk_text in chunks:
+            single_schema = cls._normalize_single_device(chunk_text, source_label=source_label, override_vendor=override_vendor)
+            device_schemas.append(single_schema)
+
+        primary_device = device_schemas[0]
+
+        # 2. If single device, return canonical 4-block schema + ai_insights
+        if len(device_schemas) == 1:
+            ai_insights = cls._generate_ai_insights(device_schemas, raw_text[:2000]) if use_ai else {}
+            return {
+                "schema_version": "2.1.0",
+                "aggregation_mode": "SINGLE_DEVICE",
+                "device": primary_device["device"],
+                "network": primary_device["network"],
+                "security": primary_device["security"],
+                "logging_and_telemetry": primary_device["logging_and_telemetry"],
+                "devices": device_schemas,
+                "ai_insights": ai_insights
+            }
+
+        # 3. If multiple devices / logs, JOIN into a unified singular JSON schema
+        all_interfaces = []
+        all_routing_protocols = set()
+        all_vlans = set()
+        all_traffic_sessions = []
+        unified_inventory = []
+        telnet_hosts = []
+        weak_hash_hosts = []
+        snmp_default_hosts = []
+        syslog_active_hosts = []
+
+        for d in device_schemas:
+            h = d["device"]["hostname"]
+            v = d["device"]["vendor"]
+            t = d["device"]["device_type"]
+            src = d["device"].get("source_file", "")
+            
+            # Inventory
+            first_ip = d["network"]["interfaces"][0]["ip"] if d["network"]["interfaces"] else "Unassigned"
+            unified_inventory.append({
+                "hostname": h,
+                "vendor": v,
+                "device_type": t,
+                "os": d["device"]["os"],
+                "primary_ip": first_ip,
+                "source_file": src
+            })
+
+            # Interfaces & Topology
+            for iface in d["network"]["interfaces"]:
+                all_interfaces.append({
+                    "device": h,
+                    "name": iface["name"],
+                    "ip": iface["ip"],
+                    "status": iface["status"]
+                })
+            for proto in d["network"]["routing"].get("protocols", []):
+                all_routing_protocols.add(proto)
+            for vlan in d["network"].get("vlans", []):
+                all_vlans.add(vlan)
+            for s in d["network"].get("traffic_sessions", []):
+                all_traffic_sessions.append(s)
+
+            # Security Posture
+            if d["security"]["authentication"].get("telnet_enabled"):
+                telnet_hosts.append(h)
+            if d["security"]["authentication"].get("has_weak_password_hashes"):
+                weak_hash_hosts.append(h)
+            if d["security"]["snmp"].get("default_community_strings_detected"):
+                snmp_default_hosts.append(h)
+
+            # Telemetry
+            if d["logging_and_telemetry"].get("syslog_enabled"):
+                syslog_active_hosts.append(h)
+
+        ai_insights = cls._generate_ai_insights(device_schemas, raw_text[:2500]) if use_ai else {}
+
+        fleet_summary = {
+            "total_devices": len(device_schemas),
+            "vendors": sorted(list(set(d["device"]["vendor"] for d in device_schemas))),
+            "hostnames": [d["device"]["hostname"] for d in device_schemas],
+            "total_interfaces": len(all_interfaces),
+            "critical_violations_detected": len(telnet_hosts) + len(weak_hash_hosts) + len(snmp_default_hosts)
+        }
+
+        merged_network = {
+            "total_interfaces": len(all_interfaces),
+            "interfaces": all_interfaces[:50],
+            "routing": {"protocols": sorted(list(all_routing_protocols)), "mesh_active": len(all_routing_protocols) > 0},
+            "vlans": sorted(list(all_vlans)),
+            "traffic_sessions": all_traffic_sessions[:20]
+        }
+
+        consolidated_security = {
+            "telnet_detected_in_fleet": len(telnet_hosts) > 0,
+            "telnet_hosts": telnet_hosts,
+            "weak_passwords_detected": len(weak_hash_hosts) > 0,
+            "weak_password_hosts": weak_hash_hosts,
+            "insecure_snmp_detected": len(snmp_default_hosts) > 0,
+            "insecure_snmp_hosts": snmp_default_hosts,
+            "fleet_compliance_status": "NON_COMPLIANT" if (telnet_hosts or weak_hash_hosts or snmp_default_hosts) else "COMPLIANT"
+        }
+
+        central_telemetry = {
+            "syslog_active_hosts": syslog_active_hosts,
+            "syslog_fleet_coverage": f"{len(syslog_active_hosts)}/{len(device_schemas)} devices",
+            "central_siem_configured": len(syslog_active_hosts) > 0,
+            "total_lines_analyzed": sum(d["logging_and_telemetry"].get("lines_parsed", 0) for d in device_schemas)
+        }
+
+        # SINGULAR CONSOLIDATED UNIVERSAL JSON DOCUMENT
+        return {
+            "schema_version": "2.1.0",
+            "aggregation_mode": "MULTI_DEVICE_STREAM",
+            "fleet_summary": fleet_summary,
+            "unified_inventory": unified_inventory,
+            "devices": device_schemas,
+            "merged_topology": merged_network,
+            "consolidated_security_posture": consolidated_security,
+            "central_telemetry": central_telemetry,
+            "ai_insights": ai_insights,
+            # Backward compatibility root blocks (mapped from fleet/primary)
+            "device": {
+                "vendor": "Multi-Vendor Enterprise Fleet",
+                "hostname": f"FLEET-{len(device_schemas)}-NODES",
+                "os": "Cross-Platform Universal Mesh",
+                "device_type": "fleet_array"
+            },
+            "network": merged_network,
+            "security": primary_device["security"],
+            "logging_and_telemetry": primary_device["logging_and_telemetry"]
+        }
+

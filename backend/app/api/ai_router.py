@@ -65,9 +65,17 @@ def get_provider_status():
 @router.post("/api/v1/ai/query-failover")
 def query_ai_failover(
     prompt: str = Form(...),
-    system_instruction: str = Form("You are VectorNet AI Auditor.")
+    system_instruction: str = Form("You are VectorNet AI Auditor."),
+    api_key: Optional[str] = Form(None),
+    model: Optional[str] = Form(None),
 ):
     """Queries AI model with multi-key failover and error recovery."""
+    clean_key = (api_key or "").strip()
+    clean_model = (model or "").strip()
+    if clean_key:
+        ai_engine.set_key_pool(keys=[clean_key], active_model=clean_model or None)
+    elif clean_model:
+        ai_engine.set_key_pool(keys=ai_engine.api_keys, active_model=clean_model)
     return ai_engine.query_with_failover(prompt, system_instruction)
 
 
@@ -75,17 +83,27 @@ def query_ai_failover(
 def query_ai_ingestion(
     query: Optional[str] = Form(""),
     raw_config: Optional[str] = Form(""),
-    deep_research: Optional[bool] = Form(False)
+    deep_research: Optional[bool] = Form(False),
+    api_key: Optional[str] = Form(None),
+    model: Optional[str] = Form(None),
 ):
     """
     Problem Statement 26155 Mandate:
     1. Normalizes heterogeneous CLI / logs into Standard Universal JSON Schema.
     2. Executes multi-framework compliance audit across NIST, CIS, DISA STIG.
-    3. Queries Ollama qwen3:4b on port 11434 (with resilient failover pool).
-    4. Returns structured report, normalized schema, and evidence findings.
+    3. Queries OpenRouter or local Ollama with resilient failover pool.
+    4. Dynamically registers API key and custom model from website request payload.
+    5. Returns structured report, normalized schema, and evidence findings.
     """
     clean_query = (query or "").strip()
     clean_config = (raw_config or "").strip()
+    clean_key = (api_key or "").strip()
+    clean_model = (model or "").strip()
+
+    if clean_key:
+        ai_engine.set_key_pool(keys=[clean_key], active_model=clean_model or None)
+    elif clean_model:
+        ai_engine.set_key_pool(keys=ai_engine.api_keys, active_model=clean_model)
 
     return audit_orchestrator.run_normalized_audit(
         raw_text=clean_config,
