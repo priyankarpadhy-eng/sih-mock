@@ -999,7 +999,7 @@ filter-rule incoming-traffic allow-all`;
         {lineCount === 0 && !showAuditDetails && (
           <div className="w-full max-w-[840px] mt-6 flex flex-col gap-2.5">
             <div className="flex items-center justify-between text-xs text-slate-600 font-medium px-1">
-              <span>Or evaluate sample configurations from <code className="font-mono text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[11px]">sample_configs/</code>:</span>
+              <span>Or evaluate multi-vendor benchmark configurations:</span>
               <span className="text-[11px] text-slate-400 font-mono">1-click test</span>
             </div>
 

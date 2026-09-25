@@ -156,13 +156,19 @@ class AgenticSkillsEngine:
         framework = meta.get("framework", skill_name)
         vendor = meta.get("vendor", None)  # New: vendor tag for vendor-specific rule sets
 
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        try:
+            rel_filepath = os.path.relpath(filepath, base_dir).replace("\\", "/")
+        except Exception:
+            rel_filepath = os.path.basename(filepath)
+
         profile = SkillProfile(
             skill_id=skill_id,
             skill_name=skill_name,
             category=category,
             framework=framework,
             vendor=vendor,
-            filepath=filepath,
+            filepath=rel_filepath,
             raw_content=content
         )
 

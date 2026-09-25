@@ -10,10 +10,11 @@ These files are designed to be ingested via the **Ingestion** page — individua
 
 | Vendor | File Name | Device Model | OS / Firmware | Description | Key Audit Scenarios |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Cisco Systems** | [`cisco_ios_router.cfg`](file:///c:/Users/priya/Documents/sih_mock/sample_configs/cisco_ios_router.cfg) | ISR 4451-X / Catalyst 8300 | Cisco IOS-XE 16.9.4 | Core Enterprise Edge Router with BGP, OSPF, TACACS+ AAA, VRF Mgmt | Weak Type-7 password, Telnet allowed on VTY, SNMP community string `public` |
-| **Juniper Networks** | [`juniper_junos_srx.conf`](file:///c:/Users/priya/Documents/sih_mock/sample_configs/juniper_junos_srx.conf) | SRX340 Services Gateway | Junos OS 21.4R1 | Next-Gen Security Gateway with Zones, Screens, Policies, and Syslog | Cleartext Telnet service, plaintext secondary user credential, SNMP v2 community |
-| **Palo Alto Networks** | [`paloalto_panos_firewall.cfg`](file:///c:/Users/priya/Documents/sih_mock/sample_configs/paloalto_panos_firewall.cfg) | PA-3220 Next-Gen Firewall | PAN-OS 10.2.4 Enterprise | Perimeter Security Gateway with Zones, Threat Profiles, SIEM Forwarding | Telnet enabled (`disable-telnet no`), SNMP v2c community `public`, plaintext password |
-| **Fortinet** | [`fortinet_fortigate_firewall.conf`](file:///c:/Users/priya/Documents/sih_mock/sample_configs/fortinet_fortigate_firewall.conf) | FortiGate-100F Enterprise | FortiOS 7.2.4 GA | Multi-interface Security Appliance with UTM, NAT, Admin Lockout | Telnet in interface `allowaccess`, SNMP community string `public` |
+| **Cisco Systems** | [`cisco_ios_router.cfg`](./cisco_ios_router.cfg) | ISR 4451-X / Catalyst 8300 | Cisco IOS-XE 16.9.4 | Core Enterprise Edge Router with BGP, OSPF, TACACS+ AAA, VRF Mgmt | Weak Type-7 password, Telnet allowed on VTY, SNMP community string `public` |
+| **Juniper Networks** | [`juniper_junos_srx.conf`](./juniper_junos_srx.conf) | SRX340 Services Gateway | Junos OS 21.4R1 | Next-Gen Security Gateway with Zones, Screens, Policies, and Syslog | Cleartext Telnet service, plaintext secondary user credential, SNMP v2 community |
+| **Palo Alto Networks** | [`paloalto_panos_firewall.cfg`](./paloalto_panos_firewall.cfg) | PA-3220 Next-Gen Firewall | PAN-OS 10.2.4 Enterprise | Perimeter Security Gateway with Zones, Threat Profiles, SIEM Forwarding | Telnet enabled (`disable-telnet no`), SNMP v2c community `public`, plaintext password |
+| **Fortinet** | [`fortinet_fortigate_firewall.conf`](./fortinet_fortigate_firewall.conf) | FortiGate-100F Enterprise | FortiOS 7.2.4 GA | Multi-interface Security Appliance with UTM, NAT, Admin Lockout | Telnet in interface `allowaccess`, SNMP community string `public` |
+| **Unidentified Whitebox** | [`unidentified_custom_switch.cfg`](./unidentified_custom_switch.cfg) | EdgeCore OpenSwitch | Embedded NOS v4.2 | Proprietary Switch CLI Syntax with unmapped commands | Telnet enabled on port 23, plaintext user credentials, default SNMP |
 
 ---
 
