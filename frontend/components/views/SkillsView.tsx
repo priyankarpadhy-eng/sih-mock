@@ -409,7 +409,7 @@ export const SkillsManagementPage: React.FC<SkillsManagementPageProps> = ({ user
                 </span>
               </h3>
               <p className="text-xs text-slate-300 font-mono">
-                100% Defense-Grade On-Premise Inference &bull; Zero External Data Leakage &bull; Private Network Security Compliance
+                100% Private On-Premise Inference &bull; Zero External Data Leakage &bull; Air-Gapped Network Security Compliance
               </p>
             </div>
 

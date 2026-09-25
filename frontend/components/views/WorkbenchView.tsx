@@ -76,12 +76,12 @@ export const WorkbenchPage: React.FC<WorkbenchPageProps> = ({
     {
       key: 'access_control.management_acl_applied',
       label: 'Management interface access control list (ACL)',
-      category: 'Perimeter Defense'
+      category: 'Perimeter Security'
     },
     {
       key: 'access_control.login_block_failed_attempts',
       label: 'Brute-force login rate limiting (login block-for)',
-      category: 'Authentication Defense'
+      category: 'Authentication Security'
     },
     {
       key: 'network_and_services.logging_syslog_enabled',

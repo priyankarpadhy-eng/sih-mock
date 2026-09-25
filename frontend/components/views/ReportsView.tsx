@@ -41,6 +41,20 @@ export interface HistoricalAuditItem {
   filename: string;
 }
 
+export interface ReportPreviewItem {
+  id: string;
+  vendorName: string;
+  deviceModel: string;
+  osVersion: string;
+  hostname: string;
+  complianceScore: number;
+  passedCount: number;
+  violationsCount: number;
+  filename: string;
+  configText: string;
+  isLiveSession?: boolean;
+}
+
 const CISCO_SAMPLE_CFG = `! Cisco IOS-XE Core Router
 hostname RTR-NYC-CORE-01
 version 16.9
@@ -186,6 +200,23 @@ const DEFAULT_SEEDED_HISTORY: HistoricalAuditItem[] = [
     raw_config: FORTINET_SAMPLE_CFG,
     filename: 'compliance_audit_fortinet_fgt100f.pdf',
   },
+  {
+    id: 'audit-multi-01',
+    timestamp: '2026-09-23T14:10:00Z',
+    formatted_date: '2 days ago',
+    source_name: 'campus_core_bundle.cfg (4 Devices)',
+    vendor: 'Multi-Vendor',
+    hardware: 'Fleet Aggregation (Cisco, Juniper, Palo Alto)',
+    os_platform: 'Heterogeneous Fleet',
+    hostname: 'CAMPUS-CORE-FLEET',
+    compliance_score: 74,
+    passed_count: 27,
+    violations_count: 10,
+    total_controls: 37,
+    critical_violations: ['SNMP Cleartext', 'Telnet Allowed on 2 Nodes'],
+    raw_config: CISCO_SAMPLE_CFG,
+    filename: 'compliance_audit_campus_fleet.pdf',
+  },
 ];
 
 export const ReportsPage: React.FC<ReportsPageProps> = ({
@@ -196,9 +227,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
   onNavigate,
 }) => {
   // Mode selection: 'current' (live session) vs 'history' (previous runs)
-  const [activeMode, setActiveMode] = useState<'current' | 'history'>(
-    rawConfig && rawConfig.trim() ? 'current' : 'history'
-  );
+  const [activeMode, setActiveMode] = useState<'current' | 'history'>('current');
 
   const [historyItems, setHistoryItems] = useState<HistoricalAuditItem[]>(DEFAULT_SEEDED_HISTORY);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string>(DEFAULT_SEEDED_HISTORY[0].id);
@@ -236,33 +265,55 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
             if (mapped.length > 0) {
               setSelectedHistoryId(mapped[0].id);
             }
+            return;
           }
         }
+        setHistoryItems(DEFAULT_SEEDED_HISTORY);
       } catch {
-        // use DEFAULT_SEEDED_HISTORY fallback
+        setHistoryItems(DEFAULT_SEEDED_HISTORY);
       }
     };
     fetchBackendHistory();
   }, []);
 
   // Determine current active item to preview and download
+  const isCustomConfig = Boolean(rawConfig && rawConfig.trim());
+
   const currentItem = React.useMemo(() => {
-    if (activeMode === 'current' && rawConfig && rawConfig.trim()) {
+    if (activeMode === 'current') {
+      if (isCustomConfig) {
+        return {
+          id: 'current_active',
+          vendorName: vendor || 'Current Ingested Device',
+          deviceModel: 'Live Parsed Configuration',
+          osVersion: 'Universal Canonical Baseline',
+          hostname: hostname || 'TAC-INGESTED-NODE',
+          complianceScore: complianceScore || 75,
+          passedCount: Math.round((complianceScore || 75) * 0.08),
+          violationsCount: Math.max(1, 10 - Math.round((complianceScore || 75) * 0.08)),
+          filename: `compliance_audit_${(vendor || 'custom').toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`,
+          configText: rawConfig,
+          isLiveSession: true,
+        };
+      }
+
+      // Default active dummy session so user NEVER sees "no session found"
       return {
-        id: 'current_active',
-        vendorName: vendor || 'Current Ingested Device',
-        deviceModel: 'Live Parsed Configuration',
-        osVersion: 'Universal Canonical Baseline',
-        hostname: hostname || 'TAC-INGESTED-NODE',
-        complianceScore: complianceScore || 75,
-        passedCount: Math.round((complianceScore || 75) * 0.08),
-        violationsCount: Math.max(1, 10 - Math.round((complianceScore || 75) * 0.08)),
-        filename: `compliance_audit_current_${(vendor || 'live').toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`,
-        configText: rawConfig,
+        id: 'sample_active',
+        vendorName: 'Cisco Systems',
+        deviceModel: 'ISR 4451-X Enterprise Core Router',
+        osVersion: 'Cisco IOS-XE 16.9.4',
+        hostname: 'RTR-NYC-CORE-01',
+        complianceScore: 78,
+        passedCount: 7,
+        violationsCount: 2,
+        filename: 'compliance_audit_cisco_isr4451.pdf',
+        configText: CISCO_SAMPLE_CFG,
+        isLiveSession: false,
       };
     }
 
-    // Otherwise history mode (or fallback if no current rawConfig)
+    // History mode: selected historical audit run
     const hist = historyItems.find((h) => h.id === selectedHistoryId) || historyItems[0] || DEFAULT_SEEDED_HISTORY[0];
     return {
       id: hist.id,
@@ -275,8 +326,9 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
       violationsCount: hist.violations_count,
       filename: hist.filename,
       configText: hist.raw_config || CISCO_SAMPLE_CFG,
+      isLiveSession: false,
     };
-  }, [activeMode, rawConfig, hostname, vendor, complianceScore, historyItems, selectedHistoryId]);
+  }, [activeMode, isCustomConfig, rawConfig, hostname, vendor, complianceScore, historyItems, selectedHistoryId]);
 
   // Generate PDF preview blob whenever current item or pdfKey changes
   useEffect(() => {
@@ -320,7 +372,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
   }, [currentItem, pdfKey]);
 
   // PDF Download action
-  const handleDownloadReport = async (itemToDownload: typeof currentItem) => {
+  const handleDownloadReport = async (itemToDownload: ReportPreviewItem) => {
     setIsExporting(true);
     try {
       const response = await fetch('/api/export-pdf', {
@@ -362,8 +414,6 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
     }
   };
 
-  const hasCurrentConfig = Boolean(rawConfig && rawConfig.trim());
-
   return (
     <div className="space-y-6 max-w-[1280px] mx-auto pb-12 select-none">
       
@@ -374,7 +424,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
             Executive Compliance Audit Reports
           </h1>
           <p className="text-xs text-slate-500 mt-0.5 font-mono">
-            Export and verify defense-grade compliance audit reports (NIST SP 800-53 &bull; CIS Benchmarks &bull; CERT-In)
+            Export and verify network compliance audit reports (NIST SP 800-53 &bull; CIS Benchmarks &bull; CERT-In)
           </p>
         </div>
 
@@ -416,7 +466,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
             <button
               type="button"
               onClick={() => setActiveMode('current')}
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                 activeMode === 'current'
                   ? 'bg-orange-600 text-white shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -424,15 +474,13 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
             >
               <ShieldCheck className={`w-3.5 h-3.5 ${activeMode === 'current' ? 'text-white' : 'text-orange-600'}`} />
               <span>Current Ingestion Check</span>
-              {hasCurrentConfig && (
-                <span className={`w-2 h-2 rounded-full ${activeMode === 'current' ? 'bg-white' : 'bg-emerald-500 animate-pulse'}`} />
-              )}
+              <span className={`w-2 h-2 rounded-full ${activeMode === 'current' ? 'bg-white' : 'bg-emerald-500 animate-pulse'}`} />
             </button>
 
             <button
               type="button"
               onClick={() => setActiveMode('history')}
-              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
                 activeMode === 'history'
                   ? 'bg-slate-900 text-white shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -451,13 +499,13 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
 
         <div className="text-[11px] font-mono text-slate-500 px-1">
           {activeMode === 'current' ? (
-            hasCurrentConfig ? (
-              <span className="text-emerald-700 font-medium">Live Ingestion Active &bull; {vendor || 'Detected Vendor'}</span>
+            isCustomConfig ? (
+              <span className="text-emerald-700 font-medium">Live Ingested Configuration &bull; {vendor || 'Detected Vendor'}</span>
             ) : (
-              <span className="text-slate-500">No active scan in buffer &bull; Showing demo fallback</span>
+              <span className="text-slate-600 font-medium">Sample Active Audit Session &bull; Cisco Systems</span>
             )
           ) : (
-            <span>Select any previous audit from the history archive below</span>
+            <span>Select any past audit from the historical archive below</span>
           )}
         </div>
       </div>
@@ -472,79 +520,70 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
                 Active Ingestion Compliance Audit Report
               </h2>
             </div>
-            {hasCurrentConfig ? (
+            {isCustomConfig ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Live Ingestion Session
+                Live Ingested Session
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                <AlertTriangle className="w-3 h-3 text-amber-600" />
-                No Custom Config Ingested Yet
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                Sample Active Audit Session
               </span>
             )}
           </div>
 
-          {hasCurrentConfig ? (
-            <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold font-mono px-2 py-0.5 rounded uppercase tracking-wider bg-orange-100 text-orange-800 border border-orange-200">
-                    {vendor || 'Canonical Vendor'}
-                  </span>
-                  <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded border ${
-                    complianceScore >= 70
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-rose-50 text-rose-700 border-rose-200'
-                  }`}>
-                    {complianceScore}% Compliance
-                  </span>
-                </div>
-                <div className="text-sm font-bold text-slate-900 font-heading">
-                  Node: {hostname || 'TAC-INGESTED-NODE'}
-                </div>
-                <div className="text-xs text-slate-500 font-mono">
-                  Frameworks: NIST SP 800-53 Rev 5 &bull; CIS Benchmarks &bull; CERT-In Mandates
-                </div>
+          <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold font-mono px-2 py-0.5 rounded uppercase tracking-wider bg-orange-100 text-orange-800 border border-orange-200">
+                  {currentItem.vendorName}
+                </span>
+                <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded border ${
+                  currentItem.complianceScore >= 70
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-rose-50 text-rose-700 border-rose-200'
+                }`}>
+                  {currentItem.complianceScore}% Compliance
+                </span>
+                <span className="text-[11px] font-mono text-slate-500">
+                  ({currentItem.passedCount} Passed &bull; {currentItem.violationsCount} Issues)
+                </span>
               </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleDownloadReport(currentItem)}
-                  disabled={isExporting}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-mono font-semibold shadow-2xs transition-colors cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download Current Audit PDF</span>
-                </button>
+              <div className="text-sm font-bold text-slate-900 font-heading">
+                Node: {currentItem.hostname} &bull; {currentItem.deviceModel}
+              </div>
+              <div className="text-xs text-slate-500 font-mono">
+                Frameworks: NIST SP 800-53 Rev 5 &bull; CIS Benchmarks &bull; CERT-In Directives
               </div>
             </div>
-          ) : (
-            <div className="p-6 rounded-xl border border-dashed border-slate-200 text-center space-y-3">
-              <p className="text-xs text-slate-600 font-mono">
-                No active configuration has been ingested in this session. You can export any past audit record below, or load a config in the Ingestion console.
-              </p>
-              <div className="flex items-center justify-center gap-3">
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleDownloadReport(currentItem)}
+                disabled={isExporting}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-mono font-semibold shadow-2xs transition-colors cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Current Audit PDF</span>
+              </button>
+            </div>
+          </div>
+
+          {!isCustomConfig && (
+            <div className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600">
+              <span>Showing sample active session. To audit and export your own live devices, paste or upload configs in Ingestion & Audit.</span>
+              {onNavigate && (
                 <button
                   type="button"
-                  onClick={() => setActiveMode('history')}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-colors cursor-pointer"
+                  onClick={() => onNavigate('ingestion')}
+                  className="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-1 cursor-pointer shrink-0 ml-3"
                 >
-                  <History className="w-3.5 h-3.5" />
-                  <span>Switch to Previous Audits</span>
+                  <span>Open Ingestion Console</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
-                {onNavigate && (
-                  <button
-                    type="button"
-                    onClick={() => onNavigate('ingestion')}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <span>Go to Ingestion Console</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
+              )}
             </div>
           )}
         </div>
@@ -565,7 +604,7 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
             {historyItems.map((item) => {
               const isSelected = selectedHistoryId === item.id;
               const isPassed = item.compliance_score >= 70;
@@ -574,19 +613,19 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
                 <div
                   key={item.id}
                   onClick={() => setSelectedHistoryId(item.id)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
+                  className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between space-y-2.5 ${
                     isSelected
                       ? 'border-orange-500 bg-orange-50/20 shadow-xs ring-1 ring-orange-300'
                       : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200 truncate max-w-[100px]">
                         {item.vendor}
                       </span>
                       <span
-                        className={`text-[11px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+                        className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${
                           isPassed
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-rose-50 text-rose-700 border-rose-200'
@@ -599,25 +638,25 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
                     <div className="text-xs font-bold text-slate-900 line-clamp-1">
                       {item.hardware || item.source_name}
                     </div>
-                    <div className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">
+                    <div className="text-[10px] text-slate-500 font-mono mt-0.5 truncate">
                       {item.hostname} &bull; {item.formatted_date}
                     </div>
 
-                    <div className="flex items-center gap-1.5 flex-wrap pt-2 mt-2 border-t border-slate-100 text-[10px] font-mono text-slate-500">
+                    <div className="flex items-center gap-1 pt-1.5 mt-1.5 border-t border-slate-100 text-[10px] font-mono text-slate-500">
                       <span className="text-emerald-700 font-semibold">{item.passed_count} Passed</span>
                       <span>&bull;</span>
                       <span className="text-rose-700 font-semibold">{item.violations_count} Issues</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-100">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedHistoryId(item.id);
                       }}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors cursor-pointer text-center ${
+                      className={`flex-1 py-1 rounded-lg text-[11px] font-mono font-semibold transition-colors cursor-pointer text-center ${
                         isSelected
                           ? 'bg-slate-900 text-white'
                           : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
@@ -645,9 +684,9 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({
                         });
                       }}
                       title={`Download ${item.vendor} Compliance Audit PDF`}
-                      className="p-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 transition-colors cursor-pointer"
+                      className="p-1 rounded-lg bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 transition-colors cursor-pointer"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>

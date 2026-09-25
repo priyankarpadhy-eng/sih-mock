@@ -24,8 +24,8 @@ from backend.app.services.skills_service import skills_engine
 from backend.app.services.telemetry_service import inventory_engine, log_aggregator_engine
 
 app = FastAPI(
-    title="VectorNet Agentic Compliance & Workflow Engine API",
-    description="Defense-Grade Network Configuration Compliance Auditor for SIH 2026 (PS 26155)",
+    title="VectorNet Network Security Compliance API",
+    description="Multi-Vendor Network Configuration Compliance Auditor for SIH 2026 (PS 26155)",
     version="2.0.0"
 )
 
@@ -44,9 +44,9 @@ def health_check():
     """Returns platform operational health status and active capabilities."""
     return {
         "status": "ONLINE",
-        "service": "VectorNet Agentic Cyber Command API Engine (SIH 26155)",
+        "service": "VectorNet Network Security Compliance Engine (SIH 26155)",
         "version": "2.0.0",
-        "agentic_skills_loaded": len(skills_engine.skills),
+        "compliance_skills_loaded": len(skills_engine.skills),
         "ai_key_pool_count": len(ai_engine.api_keys),
         "active_ai_model": ai_engine.active_model,
         "firestore_mode": firestore_store.mode,

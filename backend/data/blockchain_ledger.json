@@ -2481,5 +2481,30 @@
         "explorer_url": "https://amoy.polygonscan.com/tx/0x83c25d79ef6807f826368dbc066206d9436de40a2fb18aaad8ef5cfc3f13bab8"
       }
     ]
+  },
+  {
+    "block_number": 48291140,
+    "timestamp": "2026-09-25T09:41:40.175572+00:00",
+    "previous_hash": "0x83c25d79ef6807f826368dbc066206d9436de40a2fb18aaad8ef5cfc3f13bab8",
+    "merkle_root": "0x246a9c39f79dd32b57870c143098174a2aa68783728a4d5944e6a410d4e207ad",
+    "tx_hash": "0x78f43f647246109fc99621fb920441f62fb4fd67505b63de23187a7d6858fab8",
+    "records": [
+      {
+        "tx_hash": "0x78f43f647246109fc99621fb920441f62fb4fd67505b63de23187a7d6858fab8",
+        "block_number": 48291140,
+        "contract_address": "0x789D46e91Eb0668bF63806C19853907cCe2b781b",
+        "config_hash": "0x94eaa24db98e4cf5000000000000000000000000000000000000000000000000",
+        "findings_merkle_root": "0x246a9c39f79dd32b57870c143098174a2aa68783728a4d5944e6a410d4e207ad",
+        "compliance_score": 85.7,
+        "hostname": "RTR-NYC-CORE-01",
+        "vendor": "Cisco Systems",
+        "auditor_address": "0x4C1A95f55C4F7F80a3E63cAb3a09e07F3740D72a",
+        "auditor_id": "auditor@vectornet.io",
+        "timestamp": "2026-09-25T09:41:40.175572+00:00",
+        "status": "CONFIRMED",
+        "network": "Polygon Amoy Testnet (EVM Chain ID 80002)",
+        "explorer_url": "https://amoy.polygonscan.com/tx/0x78f43f647246109fc99621fb920441f62fb4fd67505b63de23187a7d6858fab8"
+      }
+    ]
   }
 ]

@@ -159,7 +159,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div>
               <h1 className="font-bold text-sm text-slate-900 tracking-tight">VECTORNET</h1>
-              <p className="text-[10px] text-slate-500 font-mono">Defense Compliance Auditor</p>
+              <p className="text-[10px] text-slate-500 font-mono">Network Compliance Auditor</p>
             </div>
           </div>
           {isMobile && (

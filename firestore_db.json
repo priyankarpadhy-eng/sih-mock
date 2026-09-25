@@ -38,6 +38,44 @@
   ],
   "tasks": [
     {
+      "task_id": "TASK-2026-8F3A",
+      "title": "Remediate CISCO-IA-5-001: CISCO-IA-5-001: Control IA-5 No Type-7 Password Obfuscation",
+      "device_id": "DEV-RTR-NYC-CORE-01",
+      "device_hostname": "RTR-NYC-CORE-01",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "CISCO-IA-5-001",
+        "raw_value": "Detected insecure types: type_7, sha256_or_md5"
+      },
+      "remediation_script": "! Cisco IOS: Replace Weak Reversible Password Hashes with Secret\nno username b\nusername admin privilege 15 secret 4 <NEW_STRONG_SECRET>\nenable secret 4 <NEW_ENABLE_SECRET>\nservice password-encryption",
+      "comments": [],
+      "created_at": "2026-09-25T09:41:40Z",
+      "updated_at": "2026-09-25T09:41:40Z"
+    },
+    {
+      "task_id": "TASK-2026-E288",
+      "title": "Remediate DISA-IA-5: DISA-IA-5: Reversible Password Encryption Prohibition",
+      "device_id": "DEV-RTR-NYC-CORE-01",
+      "device_hostname": "RTR-NYC-CORE-01",
+      "vendor": "Cisco Systems",
+      "status": "TODO",
+      "priority": "CRITICAL",
+      "reporter_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "assignee_uid": "FIREBASE_UID_OPERATOR_03",
+      "finding_reference": {
+        "rule_id": "DISA-IA-5",
+        "raw_value": "Detected insecure types: type_7, sha256_or_md5"
+      },
+      "remediation_script": "! Cisco IOS: Replace Weak Reversible Password Hashes with Secret\nno username b\nusername admin privilege 15 secret 4 <NEW_STRONG_SECRET>\nenable secret 4 <NEW_ENABLE_SECRET>\nservice password-encryption",
+      "comments": [],
+      "created_at": "2026-09-25T09:41:40Z",
+      "updated_at": "2026-09-25T09:41:40Z"
+    },
+    {
       "task_id": "TASK-2026-8920",
       "title": "Remediate CIS-1.1.2: CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition",
       "device_id": "DEV-UNMAPPED-EDGE-SWITCH-01",
@@ -11206,6 +11244,26 @@
     }
   ],
   "audit_logs": [
+    {
+      "log_id": "LOG-DA3CDA",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-8F3A",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-25T09:41:40Z"
+    },
+    {
+      "log_id": "LOG-6CC71E",
+      "user_uid": "SYSTEM_AUTOMATED_ENGINE",
+      "user_email": "engine@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "TASK_ASSIGNED",
+      "resource_affected": "tasks/TASK-2026-E288",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-25T09:41:40Z"
+    },
     {
       "log_id": "LOG-1BB32B",
       "user_uid": "SYSTEM_AUTOMATED_ENGINE",

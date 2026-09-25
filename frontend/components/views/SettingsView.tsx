@@ -60,7 +60,7 @@ export const DEFAULT_AUTO_TASK_CONFIG: AutoTaskConfig = {
   tagCertInDirectives: true,
   autoDryRunVerification: true,
   notifyJiraWebhook: true,
-  jiraEndpoint: 'https://jira.internal.defense.gov/rest/api/2/issue',
+  jiraEndpoint: 'https://jira.internal.enterprise.local/rest/api/2/issue',
   notifyTeamsWebhook: false,
   routingMatrix: [
     {
@@ -910,7 +910,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, onNavigate }) 
             Downstream Integration Webhooks (Jira Cloud & Teams)
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Synchronize auto-created tickets with institutional defense help desks and SOC monitoring channels.
+            Synchronize auto-created tickets with institutional help desks and SOC monitoring channels.
           </p>
         </div>
 
