@@ -130,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'workbench' as NavTab,
-      label: 'Audit Workbench',
+      label: 'Mapping Page',
       icon: Cpu,
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'],
     },

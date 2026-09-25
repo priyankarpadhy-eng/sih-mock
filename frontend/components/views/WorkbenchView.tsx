@@ -154,9 +154,9 @@ export const WorkbenchPage: React.FC<WorkbenchPageProps> = ({
       
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-[#0F172A] tracking-tight">Interactive training module</h1>
+        <h1 className="text-xl font-bold text-[#0F172A] tracking-tight">Schema Mapping Workbench</h1>
         <p className="text-xs text-[#64748B] mt-0.5">
-          Map unrecognized CLI statements directly into security parameters and update internal heuristics without redeploying code.
+          Map unrecognized CLI statements directly into Universal Security Schema parameters and train the AI parser without redeploying code.
         </p>
       </div>
 

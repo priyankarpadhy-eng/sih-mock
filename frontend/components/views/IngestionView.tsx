@@ -499,6 +499,41 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
     } catch (e) {
       console.error('Failed to load sample config from API:', e);
     }
+
+    if (presetKey === 'unidentified_nos') {
+      const fallback = `! ==============================================================================
+! UNIDENTIFIED PROPRIETARY NETWORK APPLIANCE CONFIGURATION
+! Hardware Target: EdgeCore Whitebox OpenSwitch (Unknown Vendor NOS)
+! Architecture: Custom Proprietary CLI Syntax (Unmapped to Standard Parser)
+! ==============================================================================
+appliance-identifier sysname UNMAPPED-EDGE-SWITCH-01
+system-hardware-profile edgecore-x9900-custom
+firmware-release embedded-nos-v4.2.1
+
+! Management Access Configuration
+remote-session telnet-service state enabled port 23
+remote-session ssh-daemon state enabled v1-only
+admin-timeout idle-session-seconds 1800
+login-policy max-failed-attempts 0
+
+! Authentication Credentials
+security-account user admin secret plain-text vector_admin_pass
+security-account operator-level read-write
+
+! Monitoring & Telemetry
+snmp-agent community-string public access read-only
+snmp-agent trap-target host 192.168.10.250
+syslog-facility remote-host 192.168.10.50 level debug
+
+! Interface Configuration
+port-config ge-1/0/1 state active ip-addr 10.50.1.1 netmask 255.255.255.0
+port-config ge-1/0/2 state active ip-addr 10.50.2.1 netmask 255.255.255.0
+filter-rule incoming-traffic allow-all`;
+      onConfigChange(fallback);
+      setIngestMeta({ source: 'FILE', label: 'unidentified_custom_switch.cfg' });
+      setShowAuditDetails(false);
+      setPipelineStage('idle');
+    }
   };
 
   const handleTextPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -968,7 +1003,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
               <span className="text-[11px] text-slate-400 font-mono">1-click test</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
               <button
                 type="button"
                 onClick={() => loadSamplePreset('cisco_ios')}
@@ -1068,6 +1103,31 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                   Lockout, Interfaces, SNMP
                 </div>
               </button>
+
+              <button
+                type="button"
+                onClick={() => loadSamplePreset('unidentified_nos')}
+                className="p-3.5 rounded-xl border border-amber-300 bg-amber-50/50 hover:bg-amber-100/60 text-left transition-all hover:border-amber-400 shadow-2xs cursor-pointer group flex flex-col justify-between"
+                title="Load Unidentified Proprietary Switch Configuration"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                      Unidentified
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                  <div className="text-xs font-semibold text-slate-900 group-hover:text-amber-900 transition-colors">
+                    Custom Switch NOS
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                    unidentified_custom.cfg
+                  </div>
+                </div>
+                <div className="text-[10px] text-amber-700 pt-2 border-t border-amber-200 mt-2 font-mono">
+                  Unmapped CLI Syntax
+                </div>
+              </button>
             </div>
           </div>
         )}
@@ -1123,9 +1183,15 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                       <>
                         <span className="text-emerald-700 font-bold">Audit & verification complete</span>
                         <span className="text-slate-400 font-normal mx-1">&bull;</span>
-                        <span className="text-slate-700 font-medium">
-                          {pipelineData.vendor || 'Multi-Vendor'} ({pipelineData.hardware || 'Gateway'}) &bull; Score: {pipelineData.score ?? 0}%
-                        </span>
+                        {(pipelineData.vendor?.toLowerCase().includes('unidentified') || detectedVendor?.toLowerCase().includes('unidentified')) ? (
+                          <span className="text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                            UNIDENTIFIED VENDOR (Requires Schema Mapping)
+                          </span>
+                        ) : (
+                          <span className="text-slate-700 font-medium">
+                            {pipelineData.vendor || 'Multi-Vendor'} ({pipelineData.hardware || 'Gateway'}) &bull; Score: {pipelineData.score ?? 0}%
+                          </span>
+                        )}
                       </>
                     )}
                   </span>
@@ -1360,6 +1426,63 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                 <span className="text-slate-400">Context-Minimized • AES Sanitized</span>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* BIG UNIDENTIFIED VENDOR CALLOUT BANNER & MAPPING WORKBENCH PROMPT         */}
+        {/* Displayed prominently when unmapped proprietary syntax is parsed          */}
+        {/* ========================================================================= */}
+        {((pipelineData.vendor && pipelineData.vendor.toLowerCase().includes('unidentified')) || 
+          (detectedVendor && detectedVendor.toLowerCase().includes('unidentified')) ||
+          rawConfig.toLowerCase().includes('unidentified') ||
+          rawConfig.toLowerCase().includes('unmapped-edge') ||
+          rawConfig.toLowerCase().includes('embedded-nos')) && (
+          <div className="w-full max-w-[840px] mt-6 bg-gradient-to-r from-amber-50 via-orange-50/60 to-amber-50 border-2 border-amber-400 rounded-2xl p-6 shadow-md space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-3 py-1 bg-amber-500 text-white font-mono font-bold text-xs rounded-md uppercase tracking-wider shadow-xs flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>UNIDENTIFIED VENDOR DETECTED</span>
+                  </span>
+                  <span className="text-xs font-mono font-semibold text-amber-800 bg-amber-100/90 border border-amber-300 px-2 py-0.5 rounded">
+                    Unrecognized CLI Syntax
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-heading">
+                  Unidentified Configuration Pattern Detected
+                </h2>
+                <p className="text-sm text-slate-700 max-w-2xl leading-relaxed">
+                  The parser detected proprietary or unmapped CLI commands that do not match existing Cisco, Juniper, Palo Alto, or Fortinet signatures. 
+                  <strong className="text-slate-900 block mt-1.5">
+                    Do you want to map these statements into the Universal Common Schema?
+                  </strong>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0 pt-1">
+                <button
+                  type="button"
+                  onClick={() => onNavigate('workbench')}
+                  className="px-5 py-3 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold font-mono text-xs rounded-xl flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+                >
+                  <span>Yes, Take Me to Mapping Page</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Preview of Unmapped Lines */}
+            <div className="pt-3 border-t border-amber-200/80 text-xs font-mono">
+              <div className="text-[11px] text-amber-900 font-semibold mb-1.5">Unparsed statements requiring mapping:</div>
+              <div className="bg-white/80 rounded-xl p-3 border border-amber-200 text-slate-800 space-y-1 max-h-28 overflow-y-auto">
+                <div className="text-slate-600">&bull; <code className="text-slate-900 font-bold">remote-session telnet-service state enabled port 23</code></div>
+                <div className="text-slate-600">&bull; <code className="text-slate-900 font-bold">security-account user admin secret plain-text vector_admin_pass</code></div>
+                <div className="text-slate-600">&bull; <code className="text-slate-900 font-bold">snmp-agent community-string public access read-only</code></div>
+                <div className="text-slate-600">&bull; <code className="text-slate-900 font-bold">admin-timeout idle-session-seconds 1800</code></div>
+              </div>
+            </div>
           </div>
         )}
 

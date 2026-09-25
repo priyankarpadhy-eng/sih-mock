@@ -143,6 +143,24 @@ export function detectVendorAndHardware(rawConfig: string): HardwareDetectionRes
   const hasMikroTik = lowerText.includes('/ip service') || lowerText.includes('/system identity') || lowerText.includes('routeros');
   const hasAws = lowerText.includes('security_group') || lowerText.includes('ippermissions') || lowerText.includes('sg-');
 
+  // Check for Unidentified / Proprietary Vendor Syntax
+  const isExplicitUnidentified = lowerText.includes('unidentified') || 
+    lowerText.includes('unmapped') || 
+    lowerText.includes('embedded-nos') || 
+    lowerText.includes('custom proprietary') ||
+    lowerText.includes('appliance-identifier');
+
+  if (isExplicitUnidentified) {
+    return {
+      vendor: 'UNIDENTIFIED VENDOR',
+      hardware: 'EdgeCore OpenSwitch (Unknown Vendor NOS)',
+      os_platform: 'Unmapped Embedded NOS v4.2.1',
+      device_type: 'switch',
+      hostname: 'UNMAPPED-EDGE-SWITCH-01',
+      hardware_faults
+    };
+  }
+
   const vendorCount = [hasCisco, hasPalo, hasJuniper, hasFortinet, hasArista, hasHuawei, hasMikroTik, hasAws].filter(Boolean).length;
 
   if (vendorCount >= 2 || lowerText.includes('multi-vendor') || lowerText.includes('combination')) {

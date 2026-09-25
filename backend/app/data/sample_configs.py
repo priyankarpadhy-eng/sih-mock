@@ -46,6 +46,14 @@ SAMPLE_CONFIGS = {
         "filename": "fortinet_fortigate_firewall.conf",
         "raw": _read_sample("fortinet_fortigate_firewall.conf", "config system global\n    set hostname \"FGT-100F-CORP-EDGE\"\nend\n")
     },
+    "unidentified_nos": {
+        "name": "Unidentified Whitebox Switch (Custom Proprietary NOS)",
+        "vendor": "UNIDENTIFIED VENDOR",
+        "os_version": "Unknown Embedded OS v4.2",
+        "device_type": "switch",
+        "filename": "unidentified_custom_switch.cfg",
+        "raw": _read_sample("unidentified_custom_switch.cfg", "! Unidentified Proprietary Switch\nappliance-identifier sysname UNMAPPED-EDGE-SWITCH-01\nremote-session telnet-service state enabled port 23\n")
+    },
     "cisco_cucme": {
         "name": "Cisco CUCME Benchmark (Problem Statement 26155 Gold Standard)",
         "vendor": "Cisco Systems",

@@ -44,6 +44,7 @@ export default function AppContainer() {
       return;
     }
     const cfgL = cfg.toLowerCase();
+    const isUnidentified = cfgL.includes("unidentified") || cfgL.includes("unmapped") || cfgL.includes("embedded-nos") || cfgL.includes("appliance-identifier");
     const isCucme = cfgL.includes("cucme") || cfgL.includes("telephony-service");
     const isCisco = cfgL.includes("cisco") || cfgL.includes("line vty") || cfgL.includes("enable secret") || isCucme;
     const isJuniper = cfgL.includes("junos") || cfgL.includes("set system") || cfgL.includes("set interfaces");
@@ -54,7 +55,8 @@ export default function AppContainer() {
     const isAws = cfgL.includes("security_group") || cfgL.includes("ip_permissions");
 
     let vendor = "Generic Network Device";
-    if (isCucme) vendor = "Cisco Systems (IOS 15.1 CUCME)";
+    if (isUnidentified) vendor = "UNIDENTIFIED VENDOR";
+    else if (isCucme) vendor = "Cisco Systems (IOS 15.1 CUCME)";
     else if (isCisco) vendor = "Cisco Systems (IOS / IOS-XE)";
     else if (isJuniper) vendor = "Juniper Networks (JunOS)";
     else if (isPalo) vendor = "Palo Alto Networks (PAN-OS)";
