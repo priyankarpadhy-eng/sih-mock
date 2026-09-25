@@ -122,8 +122,174 @@ const IMPORTANCE_CONFIG = {
   }
 };
 
+export const DEFAULT_TASKS: TaskItem[] = [
+  {
+    task_id: 'TASK-2026-8F3A',
+    title: 'Remediate CISCO-IA-5-001: Control IA-5 No Type-7 Password Obfuscation',
+    device_id: 'DEV-RTR-NYC-CORE-01',
+    device_hostname: 'RTR-NYC-CORE-01',
+    vendor: 'Cisco Systems',
+    status: 'TODO',
+    priority: 'CRITICAL',
+    reporter_uid: 'FIREBASE_UID_SUPERADMIN_01',
+    assignee_uid: 'FIREBASE_UID_OPERATOR_03',
+    finding_reference: {
+      rule_id: 'CISCO-IA-5-001',
+      raw_value: 'Detected insecure types: type_7, sha256_or_md5',
+    },
+    remediation_script: `! Cisco IOS: Replace Weak Reversible Password Hashes with Secret
+no username b
+username admin privilege 15 secret 4 <NEW_STRONG_SECRET>
+enable secret 4 <NEW_ENABLE_SECRET>
+service password-encryption`,
+    comments: [
+      {
+        comment_id: 'C001',
+        author_uid: 'FIREBASE_UID_SUPERADMIN_01',
+        author_name: 'Super Administrator',
+        text: 'Flagged during weekly perimeter scan. Passwords must be migrated to Secret 4 immediately.',
+        timestamp: '2026-09-25T09:42:00Z',
+      },
+    ],
+    created_at: '2026-09-25T09:41:40Z',
+    updated_at: '2026-09-25T09:41:40Z',
+  },
+  {
+    task_id: 'TASK-2026-E288',
+    title: 'Remediate CIS-1.1.2: Mandatory SSHv2 Enforcement & Telnet Prohibition',
+    device_id: 'DEV-RTR-NYC-CORE-01',
+    device_hostname: 'RTR-NYC-CORE-01',
+    vendor: 'Cisco Systems',
+    status: 'IN_PROGRESS',
+    priority: 'HIGH',
+    reporter_uid: 'FIREBASE_UID_AUDITOR_02',
+    assignee_uid: 'FIREBASE_UID_OPERATOR_03',
+    finding_reference: {
+      rule_id: 'CIS-1.1.2',
+      raw_value: 'transport input telnet ssh',
+    },
+    remediation_script: `line vty 0 4
+ transport input ssh
+ exec-timeout 10 0
+ exit`,
+    comments: [
+      {
+        comment_id: 'C002',
+        author_uid: 'FIREBASE_UID_OPERATOR_03',
+        author_name: 'Lead Network Operator',
+        text: 'Scheduled for change window at 22:00 UTC.',
+        timestamp: '2026-09-25T10:15:00Z',
+      },
+    ],
+    created_at: '2026-09-25T09:41:40Z',
+    updated_at: '2026-09-25T10:15:00Z',
+  },
+  {
+    task_id: 'TASK-2026-8920',
+    title: 'Remediate JUNOS-TEL-001: Junos OS Telnet Service Prohibition',
+    device_id: 'DEV-SRX-SFO-EDGE-01',
+    device_hostname: 'SRX-SFO-EDGE-01',
+    vendor: 'Juniper Networks',
+    status: 'BACKLOG',
+    priority: 'CRITICAL',
+    reporter_uid: 'FIREBASE_UID_SUPERADMIN_01',
+    assignee_uid: 'FIREBASE_UID_AUDITOR_02',
+    finding_reference: {
+      rule_id: 'JUNOS-TEL-001',
+      raw_value: 'services { telnet; }',
+    },
+    remediation_script: `delete system services telnet
+set system services ssh protocol-version v2
+commit comment "Disable telnet and enforce SSHv2"`,
+    comments: [],
+    created_at: '2026-09-25T09:01:09Z',
+    updated_at: '2026-09-25T09:01:09Z',
+  },
+  {
+    task_id: 'TASK-2026-187B',
+    title: 'Remediate PAN-SEC-01: Remove Public SNMP Community on Perimeter NGFW',
+    device_id: 'DEV-FW-DC1-PERIMETER-01',
+    device_hostname: 'FW-DC1-PERIMETER-01',
+    vendor: 'Palo Alto Networks',
+    status: 'IN_REVIEW',
+    priority: 'HIGH',
+    reporter_uid: 'FIREBASE_UID_AUDITOR_02',
+    assignee_uid: 'FIREBASE_UID_SECOPS_04',
+    finding_reference: {
+      rule_id: 'PAN-SEC-01',
+      raw_value: 'snmp community public',
+    },
+    remediation_script: `delete deviceconfig system snmp-setting version v2c
+set deviceconfig system snmp-setting version v3
+commit`,
+    comments: [
+      {
+        comment_id: 'C003',
+        author_uid: 'FIREBASE_UID_SECOPS_04',
+        author_name: 'SecOps Specialist',
+        text: 'SNMPv3 user created and tested. Awaiting auditor sign-off.',
+        timestamp: '2026-09-25T11:00:00Z',
+      },
+    ],
+    created_at: '2026-09-25T06:44:10Z',
+    updated_at: '2026-09-25T11:00:00Z',
+  },
+  {
+    task_id: 'TASK-2026-DBA7',
+    title: 'Remediate FOS-ADM-02: Disable Telnet Management on FortiGate-100F',
+    device_id: 'DEV-FGT-BRANCH-LON-01',
+    device_hostname: 'FGT-BRANCH-LON-01',
+    vendor: 'Fortinet',
+    status: 'RESOLVED',
+    priority: 'HIGH',
+    reporter_uid: 'FIREBASE_UID_AUDITOR_02',
+    assignee_uid: 'FIREBASE_UID_OPERATOR_03',
+    finding_reference: {
+      rule_id: 'FOS-ADM-02',
+      raw_value: 'set allowaccess ping https ssh telnet',
+    },
+    remediation_script: `config system interface
+ edit port1
+ set allowaccess ping https ssh
+ next
+end`,
+    comments: [
+      {
+        comment_id: 'C004',
+        author_uid: 'FIREBASE_UID_OPERATOR_03',
+        author_name: 'Lead Network Operator',
+        text: 'Applied in branch maintenance window. Re-audit passed.',
+        timestamp: '2026-09-25T12:30:00Z',
+      },
+    ],
+    created_at: '2026-09-24T11:20:00Z',
+    updated_at: '2026-09-25T12:30:00Z',
+  },
+  {
+    task_id: 'TASK-2026-44B1',
+    title: 'Configure Centralized Remote Syslog Forwarding (NIST AU-12)',
+    device_id: 'DEV-RTR-NYC-CORE-01',
+    device_hostname: 'RTR-NYC-CORE-01',
+    vendor: 'Cisco Systems',
+    status: 'TODO',
+    priority: 'MEDIUM',
+    reporter_uid: 'FIREBASE_UID_SUPERADMIN_01',
+    assignee_uid: 'FIREBASE_UID_OPERATOR_03',
+    finding_reference: {
+      rule_id: 'NIST-AU-12',
+      raw_value: 'No remote logging destination configured',
+    },
+    remediation_script: `logging host 10.0.1.50
+logging trap informational
+logging facility local7`,
+    comments: [],
+    created_at: '2026-09-25T08:30:00Z',
+    updated_at: '2026-09-25T08:30:00Z',
+  },
+];
+
 export const TaskWorkspacePage: React.FC<TaskWorkspacePageProps> = ({ onNavigate }) => {
-  const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [tasks, setTasks] = useState<TaskItem[]>(DEFAULT_TASKS);
   const [teamUsers, setTeamUsers] = useState<TeamUser[]>(DEFAULT_TEAM_USERS);
   const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
   const [commentText, setCommentText] = useState('');
@@ -146,13 +312,21 @@ export const TaskWorkspacePage: React.FC<TaskWorkspacePageProps> = ({ onNavigate
 
   const fetchTasks = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/tasks');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch('http://localhost:8000/api/v1/tasks', { signal: controller.signal });
+      clearTimeout(timeoutId);
       if (res.ok) {
         const data = await res.json();
-        setTasks(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setTasks(data);
+          return;
+        }
       }
-    } catch (err) {
-      console.error('Failed to fetch tasks', err);
+      setTasks(DEFAULT_TASKS);
+    } catch {
+      // Backend offline or running on remote deployed URL -> preserve DEFAULT_TASKS
+      setTasks(DEFAULT_TASKS);
     }
   };
 

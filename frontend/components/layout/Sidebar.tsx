@@ -114,7 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'remediation' as NavTab,
       label: 'Remediation',
       icon: Terminal,
-      roles: ['SUPER_ADMIN', 'NETWORK_OPERATOR'],
+      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
     },
     {
       id: 'tasks' as NavTab,
@@ -126,25 +126,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'skills' as NavTab,
       label: 'Compliance Rules',
       icon: Sparkles,
-      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'],
+      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
     },
     {
       id: 'workbench' as NavTab,
       label: 'Mapping Page',
       icon: Cpu,
-      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'],
+      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
     },
     {
       id: 'reports' as NavTab,
       label: 'Reports & Export',
       icon: FileText,
-      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'VIEWER'],
+      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
     },
     {
       id: 'settings' as NavTab,
       label: 'Settings',
       icon: Settings,
-      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR'],
+      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
     },
   ].filter((item) => item.roles.includes(userRole));
 
