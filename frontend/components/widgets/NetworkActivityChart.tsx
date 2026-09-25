@@ -1,364 +1,446 @@
 import React, { useState } from 'react';
-import { BarChart3, AlertTriangle, ShieldCheck, ShieldAlert, Cpu, Server, Layers } from 'lucide-react';
+import { BarChart3, AlertCircle, ShieldCheck, ShieldAlert, Cpu, Layers, AlertTriangle } from 'lucide-react';
 
-interface ComplianceGroup {
+interface ChartItem {
   id: string;
   name: string;
-  subtitle: string;
+  subLabel: string;
   hardware: string;
   vendor: string;
-  deviceType: string;
-  score: number;
   critical: number;
   warnings: number;
   passed: number;
-  totalControls: number;
-  keyIssues: string[];
+  score: number;
+  topIssue: string;
 }
+
+const VENDOR_CHART_DATA: ChartItem[] = [
+  {
+    id: 'cisco',
+    name: 'Cisco',
+    subLabel: 'IOS-XE',
+    hardware: 'ISR 4451 Router',
+    vendor: 'Cisco Systems',
+    critical: 2,
+    warnings: 1,
+    passed: 6,
+    score: 67,
+    topIssue: 'NIST-AC-17 (Telnet Cleartext)',
+  },
+  {
+    id: 'paloalto',
+    name: 'Palo Alto',
+    subLabel: 'PAN-OS',
+    hardware: 'PA-3220 NGFW',
+    vendor: 'Palo Alto Networks',
+    critical: 2,
+    warnings: 1,
+    passed: 7,
+    score: 70,
+    topIssue: 'PAN-TEL-01 (Insecure Telnet)',
+  },
+  {
+    id: 'juniper',
+    name: 'Juniper',
+    subLabel: 'Junos OS',
+    hardware: 'SRX340 Gateway',
+    vendor: 'Juniper Networks',
+    critical: 1,
+    warnings: 1,
+    passed: 7,
+    score: 78,
+    topIssue: 'CIS-JUNOS-2.3 (Telnet Enabled)',
+  },
+  {
+    id: 'fortinet',
+    name: 'Fortinet',
+    subLabel: 'FortiOS',
+    hardware: 'FortiGate-100F',
+    vendor: 'Fortinet',
+    critical: 1,
+    warnings: 1,
+    passed: 7,
+    score: 78,
+    topIssue: 'FOS-ADM-02 (Web Admin Timeout)',
+  },
+  {
+    id: 'huawei',
+    name: 'Huawei',
+    subLabel: 'VRP OS',
+    hardware: 'USG6000 NGFW',
+    vendor: 'Huawei',
+    critical: 3,
+    warnings: 1,
+    passed: 5,
+    score: 55,
+    topIssue: 'AAA Plaintext Authentication',
+  },
+  {
+    id: 'sonic',
+    name: 'SONiC',
+    subLabel: 'Linux NOS',
+    hardware: 'EdgeCore 7712',
+    vendor: 'SONiC Foundation',
+    critical: 1,
+    warnings: 2,
+    passed: 6,
+    score: 66,
+    topIssue: 'Default SNMP Community String',
+  },
+  {
+    id: 'aws',
+    name: 'AWS Cloud',
+    subLabel: 'VPC SG',
+    hardware: 'Cloud Security Group',
+    vendor: 'Amazon Web Services',
+    critical: 2,
+    warnings: 0,
+    passed: 8,
+    score: 80,
+    topIssue: '0.0.0.0/0 SSH Ingress Allowed',
+  },
+];
+
+const HARDWARE_CHART_DATA: ChartItem[] = [
+  {
+    id: 'hw-isr4451',
+    name: 'ISR 4451',
+    subLabel: 'Cisco Router',
+    hardware: 'ISR 4451',
+    vendor: 'Cisco Systems',
+    critical: 2,
+    warnings: 1,
+    passed: 6,
+    score: 67,
+    topIssue: 'CIS-CSC-16.1 (Weak Password)',
+  },
+  {
+    id: 'hw-pa3220',
+    name: 'PA-3220',
+    subLabel: 'Palo Alto NGFW',
+    hardware: 'PA-3220',
+    vendor: 'Palo Alto Networks',
+    critical: 2,
+    warnings: 1,
+    passed: 7,
+    score: 70,
+    topIssue: 'PAN-SEC-01 (Insecure SNMP)',
+  },
+  {
+    id: 'hw-srx340',
+    name: 'SRX340',
+    subLabel: 'Juniper Gateway',
+    hardware: 'SRX340',
+    vendor: 'Juniper Networks',
+    critical: 1,
+    warnings: 1,
+    passed: 7,
+    score: 78,
+    topIssue: 'CIS-JUNOS-2.3 (Telnet Enabled)',
+  },
+  {
+    id: 'hw-fgt100f',
+    name: 'FortiGate-100F',
+    subLabel: 'Fortinet FW',
+    hardware: 'FortiGate-100F',
+    vendor: 'Fortinet',
+    critical: 1,
+    warnings: 1,
+    passed: 7,
+    score: 78,
+    topIssue: 'FOS-ADM-02 (Telnet Management)',
+  },
+  {
+    id: 'hw-cat9300',
+    name: 'Catalyst 9300',
+    subLabel: 'Cisco Switch',
+    hardware: 'Catalyst 9300',
+    vendor: 'Cisco Systems',
+    critical: 1,
+    warnings: 1,
+    passed: 8,
+    score: 80,
+    topIssue: 'VLAN 1 Default Native VLAN',
+  },
+  {
+    id: 'hw-usg6000',
+    name: 'USG6000',
+    subLabel: 'Huawei NGFW',
+    hardware: 'USG6000',
+    vendor: 'Huawei',
+    critical: 3,
+    warnings: 1,
+    passed: 5,
+    score: 55,
+    topIssue: 'VRP Telnet Enabled on Gi0/0',
+  },
+  {
+    id: 'hw-vpc',
+    name: 'VPC Security Grp',
+    subLabel: 'AWS Cloud',
+    hardware: 'Cloud SG',
+    vendor: 'AWS',
+    critical: 2,
+    warnings: 0,
+    passed: 8,
+    score: 80,
+    topIssue: 'Unrestricted Ingress 0.0.0.0/0',
+  },
+];
 
 interface NetworkActivityChartProps {
   auditResult?: any;
   assets?: any[];
 }
 
-const DEFAULT_VENDOR_DATA: ComplianceGroup[] = [
-  {
-    id: 'cisco',
-    name: 'Cisco Systems',
-    subtitle: 'IOS-XE 16.09.04',
-    hardware: 'ISR 4451 Router',
-    vendor: 'Cisco Systems',
-    deviceType: 'Core Router',
-    score: 67,
-    critical: 2,
-    warnings: 1,
-    passed: 6,
-    totalControls: 9,
-    keyIssues: ['CIS-CSC-16.1 (Weak Password)', 'NIST-AC-17 (Telnet Cleartext)', 'Logging Buffer Overflow'],
-  },
-  {
-    id: 'paloalto',
-    name: 'Palo Alto Networks',
-    subtitle: 'PAN-OS 10.2.3',
-    hardware: 'PA-3220 NGFW',
-    vendor: 'Palo Alto Networks',
-    deviceType: 'Next-Gen Firewall',
-    score: 70,
-    critical: 2,
-    warnings: 1,
-    passed: 7,
-    totalControls: 10,
-    keyIssues: ['PAN-TEL-01 (Telnet Allowed)', 'PAN-SEC-01 (Insecure SNMP Community)', 'Insecure DNS Fallback'],
-  },
-  {
-    id: 'juniper',
-    name: 'Juniper Networks',
-    subtitle: 'Junos OS 21.4R1',
-    hardware: 'SRX340 Security Gateway',
-    vendor: 'Juniper Networks',
-    deviceType: 'Security Gateway',
-    score: 78,
-    critical: 1,
-    warnings: 1,
-    passed: 7,
-    totalControls: 9,
-    keyIssues: ['CIS-JUNOS-2.3 (Telnet Management)', 'NTP Peer Authentication Missing'],
-  },
-  {
-    id: 'fortinet',
-    name: 'Fortinet',
-    subtitle: 'FortiOS 7.2.4',
-    hardware: 'FortiGate-100F',
-    vendor: 'Fortinet',
-    deviceType: 'Perimeter Firewall',
-    score: 78,
-    critical: 1,
-    warnings: 1,
-    passed: 7,
-    totalControls: 9,
-    keyIssues: ['FOS-ADM-02 (Telnet Management)', 'Admin Web Idle Timeout > 10m'],
-  },
-];
+export const NetworkActivityChart: React.FC<NetworkActivityChartProps> = ({ auditResult }) => {
+  const [xAxisMode, setXAxisMode] = useState<'vendor' | 'hardware'>('vendor');
+  const [metricMode, setMetricMode] = useState<'errors' | 'all'>('errors');
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-const DEFAULT_HARDWARE_DATA: ComplianceGroup[] = [
-  {
-    id: 'hw-isr4451',
-    name: 'ISR 4451 Core Router',
-    subtitle: 'Cisco Systems &bull; 10.0.1.1',
-    hardware: 'ISR 4451',
-    vendor: 'Cisco Systems',
-    deviceType: 'Router',
-    score: 67,
-    critical: 2,
-    warnings: 1,
-    passed: 6,
-    totalControls: 9,
-    keyIssues: ['CIS-CSC-16.1 (Weak Password)', 'NIST-AC-17 (Telnet Cleartext)'],
-  },
-  {
-    id: 'hw-pa3220',
-    name: 'PA-3220 Next-Gen Firewall',
-    subtitle: 'Palo Alto Networks &bull; 192.168.1.1',
-    hardware: 'PA-3220',
-    vendor: 'Palo Alto Networks',
-    deviceType: 'Firewall',
-    score: 70,
-    critical: 2,
-    warnings: 1,
-    passed: 7,
-    totalControls: 10,
-    keyIssues: ['PAN-TEL-01 (Telnet Allowed)', 'PAN-SEC-01 (Insecure SNMP)'],
-  },
-  {
-    id: 'hw-srx340',
-    name: 'SRX340 Security Gateway',
-    subtitle: 'Juniper Networks &bull; 172.16.0.1',
-    hardware: 'SRX340',
-    vendor: 'Juniper Networks',
-    deviceType: 'Gateway',
-    score: 78,
-    critical: 1,
-    warnings: 1,
-    passed: 7,
-    totalControls: 9,
-    keyIssues: ['CIS-JUNOS-2.3 (Telnet Enabled)'],
-  },
-  {
-    id: 'hw-fgt100f',
-    name: 'FortiGate-100F Perimeter',
-    subtitle: 'Fortinet &bull; 10.10.1.1',
-    hardware: 'FortiGate-100F',
-    vendor: 'Fortinet',
-    deviceType: 'Firewall',
-    score: 78,
-    critical: 1,
-    warnings: 1,
-    passed: 7,
-    totalControls: 9,
-    keyIssues: ['FOS-ADM-02 (Telnet Allowed)'],
-  },
-];
+  const activeData = xAxisMode === 'vendor' ? VENDOR_CHART_DATA : HARDWARE_CHART_DATA;
 
-export const NetworkActivityChart: React.FC<NetworkActivityChartProps> = ({ auditResult, assets }) => {
-  const [viewMode, setViewMode] = useState<'vendor' | 'hardware'>('vendor');
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  // Y-axis configuration
+  // When metricMode === 'errors', max error is ~5 -> Y ticks [6, 4, 2, 0]
+  // When metricMode === 'all', max controls is ~10 -> Y ticks [10, 8, 6, 4, 2, 0]
+  const maxY = metricMode === 'errors' ? 6 : 12;
+  const yTicks = metricMode === 'errors' ? [6, 5, 4, 3, 2, 1, 0] : [12, 10, 8, 6, 4, 2, 0];
 
-  // If live audit result is available and vendor matches, we can enrich data
-  const data = viewMode === 'vendor' ? DEFAULT_VENDOR_DATA : DEFAULT_HARDWARE_DATA;
-
-  const totalCritical = data.reduce((acc, d) => acc + d.critical, 0);
-  const totalWarnings = data.reduce((acc, d) => acc + d.warnings, 0);
-  const totalIssues = totalCritical + totalWarnings;
-  const totalPassed = data.reduce((acc, d) => acc + d.passed, 0);
-  const avgScore = Math.round(data.reduce((acc, d) => acc + d.score, 0) / data.length);
+  const totalCritical = activeData.reduce((acc, d) => acc + d.critical, 0);
+  const totalWarnings = activeData.reduce((acc, d) => acc + d.warnings, 0);
+  const totalErrors = totalCritical + totalWarnings;
+  const totalPassed = activeData.reduce((acc, d) => acc + d.passed, 0);
 
   return (
-    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-sm space-y-6">
+    <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-sm space-y-5">
       
-      {/* Top Header & Grouping Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#F1F5F9] pb-4">
+      {/* Chart Header & Controls */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600">
-              <BarChart3 className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-[#0F172A] tracking-tight">
-                {viewMode === 'vendor' ? 'Vendor-Wise Compliance Issues' : 'Hardware Appliance Compliance Issues'}
-              </h2>
-              <p className="text-xs text-[#64748B] mt-0.5">
-                Distribution of critical violations, security warnings, and compliant controls across detected network assets.
-              </p>
-            </div>
+            <BarChart3 className="w-4 h-4 text-orange-600" />
+            <h2 className="text-base font-bold text-[#0F172A] tracking-tight">
+              Compliance Errors by {xAxisMode === 'vendor' ? 'Vendor' : 'Hardware Appliance'}
+            </h2>
           </div>
+          <p className="text-xs text-[#64748B] mt-0.5">
+            Error frequency on Y-axis and detected {xAxisMode === 'vendor' ? 'vendors' : 'hardware models'} on X-axis.
+          </p>
         </div>
 
-        {/* View Mode Toggle */}
-        <div className="flex items-center bg-[#F1F5F9] p-1 rounded-xl text-xs font-mono self-start sm:self-auto border border-[#E2E8F0]">
-          <button
-            onClick={() => { setViewMode('vendor'); setSelectedGroupId(null); }}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-              viewMode === 'vendor'
-                ? 'bg-white text-[#0F172A] shadow-xs'
-                : 'text-[#64748B] hover:text-[#0F172A]'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>By Vendor</span>
-          </button>
-          <button
-            onClick={() => { setViewMode('hardware'); setSelectedGroupId(null); }}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-              viewMode === 'hardware'
-                ? 'bg-white text-[#0F172A] shadow-xs'
-                : 'text-[#64748B] hover:text-[#0F172A]'
-            }`}
-          >
-            <Cpu className="w-3.5 h-3.5" />
-            <span>By Hardware</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Summary Stat Pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-        <div className="p-3 bg-[#FEF2F2] border border-[#FEE2E2] rounded-xl space-y-1">
-          <div className="text-[10px] text-[#991B1B] font-bold uppercase tracking-wider flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Critical Issues</span>
-          </div>
-          <div className="text-2xl font-bold text-[#991B1B]">{totalCritical}</div>
-          <div className="text-[11px] text-[#B91C1C]">Immediate remediation required</div>
-        </div>
-
-        <div className="p-3 bg-[#FFFBEB] border border-[#FEF3C7] rounded-xl space-y-1">
-          <div className="text-[10px] text-[#92400E] font-bold uppercase tracking-wider flex items-center gap-1.5">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            <span>Warnings Found</span>
-          </div>
-          <div className="text-2xl font-bold text-[#92400E]">{totalWarnings}</div>
-          <div className="text-[11px] text-[#B45309]">Configuration deviations</div>
-        </div>
-
-        <div className="p-3 bg-[#F0FDF4] border border-[#DCFCE7] rounded-xl space-y-1">
-          <div className="text-[10px] text-[#166534] font-bold uppercase tracking-wider flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Compliant Controls</span>
-          </div>
-          <div className="text-2xl font-bold text-[#166534]">{totalPassed}</div>
-          <div className="text-[11px] text-[#15803D]">Passed baseline controls</div>
-        </div>
-
-        <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl space-y-1">
-          <div className="text-[10px] text-[#334155] font-bold uppercase tracking-wider flex items-center gap-1.5">
-            <Server className="w-3.5 h-3.5" />
-            <span>Fleet Avg Score</span>
-          </div>
-          <div className="text-2xl font-bold text-[#0F172A]">{avgScore}%</div>
-          <div className="text-[11px] text-[#64748B]">NIST &bull; CIS &bull; STIG</div>
-        </div>
-      </div>
-
-      {/* Stacked Comparative Bars List */}
-      <div className="space-y-4 pt-1">
-        {data.map((item) => {
-          const total = item.totalControls;
-          const critPct = (item.critical / total) * 100;
-          const warnPct = (item.warnings / total) * 100;
-          const passPct = (item.passed / total) * 100;
-          const isSelected = selectedGroupId === item.id;
-
-          return (
-            <div
-              key={item.id}
-              onClick={() => setSelectedGroupId(isSelected ? null : item.id)}
-              className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                isSelected
-                  ? 'border-orange-400 bg-orange-50/20 shadow-xs ring-1 ring-orange-300'
-                  : 'border-[#E2E8F0] hover:border-slate-300 hover:bg-[#F8FAFC]'
+        {/* Toggles & Legend */}
+        <div className="flex flex-wrap items-center gap-3">
+          
+          {/* X-Axis Selector: Vendor vs Hardware */}
+          <div className="flex items-center bg-[#F1F5F9] p-0.5 rounded-xl text-xs font-mono border border-[#E2E8F0]">
+            <button
+              onClick={() => setXAxisMode('vendor')}
+              className={`px-3 py-1 rounded-lg font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                xAxisMode === 'vendor' ? 'bg-white text-[#0F172A] shadow-xs' : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
-              {/* Row Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold font-mono text-xs">
-                    {item.vendor[0]}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-[#0F172A]">{item.name}</span>
-                      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                        {item.hardware}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-[#64748B] font-mono mt-0.5" dangerouslySetInnerHTML={{ __html: item.subtitle }} />
-                  </div>
-                </div>
+              <Layers className="w-3.5 h-3.5" />
+              <span>Vendor X-Axis</span>
+            </button>
+            <button
+              onClick={() => setXAxisMode('hardware')}
+              className={`px-3 py-1 rounded-lg font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                xAxisMode === 'hardware' ? 'bg-white text-[#0F172A] shadow-xs' : 'text-[#64748B] hover:text-[#0F172A]'
+              }`}
+            >
+              <Cpu className="w-3.5 h-3.5" />
+              <span>Hardware X-Axis</span>
+            </button>
+          </div>
 
-                <div className="flex items-center gap-3 font-mono text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[#991B1B] font-bold">{item.critical} Critical</span>
-                    <span className="text-[#94A3B8]">&bull;</span>
-                    <span className="text-[#B45309] font-semibold">{item.warnings} Warning</span>
-                  </div>
+          {/* Metric Selector: Errors Only vs All Controls */}
+          <div className="flex items-center bg-[#F1F5F9] p-0.5 rounded-xl text-xs font-mono border border-[#E2E8F0]">
+            <button
+              onClick={() => setMetricMode('errors')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                metricMode === 'errors' ? 'bg-white text-[#0F172A] shadow-xs' : 'text-[#64748B]'
+              }`}
+            >
+              Errors Only
+            </button>
+            <button
+              onClick={() => setMetricMode('all')}
+              className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                metricMode === 'all' ? 'bg-white text-[#0F172A] shadow-xs' : 'text-[#64748B]'
+              }`}
+            >
+              All Controls
+            </button>
+          </div>
 
-                  <div className={`px-2.5 py-1 rounded-lg font-bold text-xs border ${
-                    item.score >= 80 
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                      : item.score >= 70 
-                        ? 'bg-amber-50 text-amber-700 border-amber-200' 
-                        : 'bg-rose-50 text-rose-700 border-rose-200'
-                  }`}>
-                    {item.score}% Score
-                  </div>
-                </div>
-              </div>
-
-              {/* Stacked Progress Bar */}
-              <div className="h-3 w-full bg-[#E2E8F0] rounded-full overflow-hidden flex shadow-inner">
-                {item.critical > 0 && (
-                  <div
-                    style={{ width: `${critPct}%` }}
-                    className="bg-[#EF4444] h-full transition-all"
-                    title={`Critical Issues: ${item.critical}`}
-                  />
-                )}
-                {item.warnings > 0 && (
-                  <div
-                    style={{ width: `${warnPct}%` }}
-                    className="bg-[#F59E0B] h-full transition-all"
-                    title={`Warnings: ${item.warnings}`}
-                  />
-                )}
-                {item.passed > 0 && (
-                  <div
-                    style={{ width: `${passPct}%` }}
-                    className="bg-[#10B981] h-full transition-all"
-                    title={`Passed Controls: ${item.passed}`}
-                  />
-                )}
-              </div>
-
-              {/* Key Issues Tags */}
-              <div className="mt-3 flex items-center justify-between gap-2 flex-wrap pt-2 border-t border-slate-100 text-[11px] font-mono">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-slate-400 font-semibold text-[10px] uppercase">Issues:</span>
-                  {item.keyIssues.map((issue, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200"
-                    >
-                      {issue}
-                    </span>
-                  ))}
-                </div>
-                <div className="text-slate-400 text-[10px]">
-                  {item.passed} / {item.totalControls} Controls Passed
-                </div>
-              </div>
+          {/* Legend Badges */}
+          <div className="hidden sm:flex items-center gap-2.5 text-xs font-mono">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-[#FEF2F2] border border-[#FEE2E2] rounded-lg">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
+              <span className="text-[#991B1B] font-semibold">Critical: {totalCritical}</span>
             </div>
-          );
-        })}
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-[#FFFBEB] border border-[#FEF3C7] rounded-lg">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
+              <span className="text-[#92400E] font-semibold">Warnings: {totalWarnings}</span>
+            </div>
+            {metricMode === 'all' && (
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-[#F0FDF4] border border-[#DCFCE7] rounded-lg">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
+                <span className="text-[#166534] font-semibold">Passed: {totalPassed}</span>
+              </div>
+            )}
+          </div>
+
+        </div>
       </div>
 
-      {/* Legend Footer */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#F1F5F9] text-xs font-mono text-[#64748B]">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
-            <span>Critical Severity (FAIL)</span>
+      {/* Main Chart Canvas with Y-Axis Guidelines & Stacked Vertical Bars */}
+      <div className="pt-2">
+        <div className="relative h-64 flex items-end">
+          
+          {/* Y-Axis Label */}
+          <div className="absolute -left-2 top-1/2 -translate-y-1/2 -rotate-90 text-[10px] font-mono font-bold text-[#94A3B8] tracking-wider pointer-events-none">
+            {metricMode === 'errors' ? 'ERRORS (FAIL/WARN)' : 'TOTAL CONTROLS'}
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]"></span>
-            <span>Medium / Warning</span>
+
+          {/* Y-Axis Guidelines */}
+          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 pl-8 sm:pl-10">
+            {yTicks.map((tick, idx) => (
+              <div key={idx} className="w-full flex items-center gap-2">
+                <span className="text-[10px] font-mono text-[#94A3B8] w-4 text-right shrink-0">{tick}</span>
+                <div className="w-full border-b border-dashed border-[#F1F5F9]" />
+              </div>
+            ))}
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></span>
-            <span>Compliant Baseline (PASS)</span>
+
+          {/* Bars Container */}
+          <div className="relative w-full h-full flex items-end justify-between gap-2 sm:gap-4 pl-12 sm:pl-14 pr-3 pb-8 z-10">
+            {activeData.map((item, idx) => {
+              const errorsCount = item.critical + item.warnings;
+              const totalVal = metricMode === 'errors' ? errorsCount : (item.critical + item.warnings + item.passed);
+              const barHeightPct = Math.min((totalVal / maxY) * 100, 100);
+
+              const critRatio = totalVal > 0 ? (item.critical / totalVal) * 100 : 0;
+              const warnRatio = totalVal > 0 ? (item.warnings / totalVal) * 100 : 0;
+              const passRatio = totalVal > 0 && metricMode === 'all' ? (item.passed / totalVal) * 100 : 0;
+
+              const isHovered = hoveredIdx === idx;
+
+              return (
+                <div
+                  key={item.id}
+                  className="flex-1 flex flex-col items-center justify-end h-full relative cursor-pointer group"
+                  onMouseEnter={() => setHoveredIdx(idx)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  {/* Floating Hover Tooltip Card */}
+                  {isHovered && (
+                    <div className="absolute -top-28 bg-[#0F172A] text-white text-[11px] font-mono py-2 px-3 rounded-xl shadow-2xl pointer-events-none z-30 whitespace-nowrap animate-in fade-in zoom-in-95 duration-150 border border-slate-700">
+                      <div className="font-bold border-b border-slate-700 pb-1.5 mb-1.5 flex items-center justify-between gap-4">
+                        <span className="text-white font-sans text-xs">{item.name}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          item.score >= 80 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' :
+                          item.score >= 70 ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                          'bg-rose-950 text-rose-300 border border-rose-800'
+                        }`}>
+                          {item.score}% Score
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-0.5">
+                        <div className="flex items-center justify-between gap-4 text-[#F87171]">
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#EF4444]"></span>
+                            <span>Critical Errors:</span>
+                          </span>
+                          <span className="font-bold">{item.critical}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 text-[#FBBF24]">
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
+                            <span>Warnings:</span>
+                          </span>
+                          <span className="font-bold">{item.warnings}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 text-[#34D399]">
+                          <span className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
+                            <span>Passed Controls:</span>
+                          </span>
+                          <span className="font-bold">{item.passed}</span>
+                        </div>
+                      </div>
+
+                      <div className="text-[10px] text-slate-300 pt-1.5 mt-1.5 border-t border-slate-800 flex items-center gap-1.5">
+                        <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                        <span className="truncate max-w-[200px]">{item.topIssue}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Concrete Stacked Vertical Bar with Distinct Colors */}
+                  <div
+                    style={{ height: `${Math.max(barHeightPct, 12)}%` }}
+                    className={`w-full max-w-[38px] flex flex-col justify-end rounded-t-md overflow-hidden transition-all duration-200 shadow-sm ${
+                      isHovered ? 'ring-2 ring-orange-500 scale-[1.06]' : 'hover:opacity-95'
+                    }`}
+                  >
+                    {/* Top Segment: Critical Errors (Red) */}
+                    {item.critical > 0 && (
+                      <div
+                        style={{ height: `${critRatio}%` }}
+                        className="bg-[#EF4444] w-full min-h-[5px] transition-all"
+                        title={`Critical Errors: ${item.critical}`}
+                      />
+                    )}
+                    {/* Middle Segment: Warnings (Amber) */}
+                    {item.warnings > 0 && (
+                      <div
+                        style={{ height: `${warnRatio}%` }}
+                        className="bg-[#F59E0B] w-full min-h-[4px] transition-all"
+                        title={`Warnings: ${item.warnings}`}
+                      />
+                    )}
+                    {/* Bottom Segment: Passed / Compliant (Emerald) */}
+                    {metricMode === 'all' && item.passed > 0 && (
+                      <div
+                        style={{ height: `${passRatio}%` }}
+                        className="bg-[#10B981] w-full min-h-[8px] transition-all"
+                        title={`Passed: ${item.passed}`}
+                      />
+                    )}
+                  </div>
+
+                </div>
+              );
+            })}
           </div>
+
+        </div>
+
+        {/* X-Axis Labels (Vendor / Hardware Names) */}
+        <div className="flex justify-between pl-12 sm:pl-14 pr-3 pt-2 border-t border-[#E2E8F0] text-[11px] font-mono text-[#64748B]">
+          {activeData.map((item, idx) => (
+            <div key={idx} className="flex-1 text-center font-medium px-0.5">
+              <div className="font-bold text-slate-800 text-[11px] truncate">{item.name}</div>
+              <div className="text-[10px] text-slate-400 truncate">{item.subLabel}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick Summary Sub-bar */}
+      <div className="pt-2 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-600 border-t border-slate-100">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] uppercase font-bold text-slate-400">Total Fleet Errors:</span>
+          <span className="font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded">
+            {totalErrors} Compliance Errors
+          </span>
+          <span className="text-slate-400">&bull;</span>
+          <span className="text-slate-500 font-sans">{totalCritical} Critical, {totalWarnings} Warnings</span>
         </div>
         <div className="text-[11px] text-slate-400">
-          Click any vendor or hardware to view breakdown
+          Hover over any bar to view line-level violation details
         </div>
       </div>
 
