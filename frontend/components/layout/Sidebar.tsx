@@ -37,8 +37,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [localAi, setLocalAi] = useState<{ online: boolean; model: string; endpoint: string }>({
-    online: true,
-    model: 'qwen3:4b',
+    online: false,
+    model: 'Not Connected',
     endpoint: 'http://localhost:11434'
   });
 
@@ -46,18 +46,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setMounted(true);
     const checkLocalAi = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/v1/ai/config');
+        const res = await fetch('http://localhost:8000/api/v1/ai/config', { signal: AbortSignal.timeout(3000) });
         if (res.ok) {
           const data = await res.json();
+          const isOnline = Boolean(data.local_ai?.status === 'ONLINE' || data.local_ai?.healthy === true);
           setLocalAi({
-            online: data.local_ai?.status === 'ONLINE',
-            model: data.local_ai?.model || 'qwen3:4b',
+            online: isOnline,
+            model: isOnline ? (data.local_ai?.model || 'qwen3:4b') : 'Not Connected',
             endpoint: data.local_ai?.endpoint || 'http://localhost:11434'
           });
+          return;
         }
       } catch {
         // keep fallback or offline
       }
+      setLocalAi({
+        online: false,
+        model: 'Not Connected',
+        endpoint: 'http://localhost:11434'
+      });
     };
     checkLocalAi();
     const interval = setInterval(checkLocalAi, 15000);
@@ -86,13 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     {
       id: 'ingestion' as NavTab,
-      label: 'Ingestion',
-      icon: UploadCloud,
-      roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR'],
-    },
-    {
-      id: 'auditor' as NavTab,
-      label: 'Auditor Matrix',
+      label: 'Ingestion & Audit',
       icon: ShieldCheck,
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR'],
     },

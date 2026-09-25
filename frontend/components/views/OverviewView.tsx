@@ -95,7 +95,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             className="w-full px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#0F172A] focus:outline-none focus:border-[#0F172A]"
           />
           <button
-            onClick={() => onNavigate('auditor')}
+            onClick={() => onNavigate('ingestion')}
             className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold font-mono text-xs rounded-xl shadow-sm transition-colors shrink-0"
           >
             Start Audit
@@ -280,7 +280,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
                       <button
                         onClick={() => {
                           onSelectDevice(item.device_id);
-                          onNavigate('auditor');
+                          onNavigate('ingestion');
                         }}
                         className="px-3 py-1.5 bg-[#0F172A] hover:bg-[#1E293B] text-white rounded-lg font-mono text-xs transition-colors"
                       >

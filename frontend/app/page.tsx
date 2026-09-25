@@ -265,12 +265,12 @@ export default function AppContainer() {
             onNavigate={setActiveTab}
             onSelectDevice={(id) => {
               setSelectedDeviceId(id);
-              setActiveTab('auditor');
+              setActiveTab('ingestion');
             }}
           />
         )}
 
-        {activeTab === 'ingestion' && (
+        {(activeTab === 'ingestion' || activeTab === 'auditor') && (
           <IngestionPage
             rawConfig={rawConfig}
             onConfigChange={(newCfg) => {
@@ -290,23 +290,6 @@ export default function AppContainer() {
             auditResult={auditResult}
             complianceScore={complianceScore}
             hostname={hostname}
-          />
-        )}
-
-        {activeTab === 'auditor' && (
-          <AuditorPage
-            rawConfig={rawConfig}
-            onConfigChange={(newCfg) => {
-              setRawConfig(newCfg);
-              detectVendorLocally(newCfg);
-              if (newCfg.trim()) handleEvaluate(newCfg);
-            }}
-            detectedVendor={detectedVendor}
-            onEvaluate={() => handleEvaluate(rawConfig)}
-            onLoadSample={handleLoadSample}
-            isLoading={isLoading}
-            auditResult={auditResult}
-            onNavigate={setActiveTab}
           />
         )}
 

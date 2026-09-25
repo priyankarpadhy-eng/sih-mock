@@ -9297,6 +9297,26 @@
   ],
   "audit_logs": [
     {
+      "log_id": "LOG-B6CD69",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "admin@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:43:08Z"
+    },
+    {
+      "log_id": "LOG-744E67",
+      "user_uid": "FIREBASE_UID_SUPERADMIN_01",
+      "user_email": "priyankar@vectornet.io",
+      "user_role": "SUPER_ADMIN",
+      "action_type": "AI_POOL_RECONFIGURED",
+      "resource_affected": "ai/key_pool",
+      "ip_address": "127.0.0.1",
+      "timestamp": "2026-09-24T18:42:39Z"
+    },
+    {
       "log_id": "LOG-FBEFD5",
       "user_uid": "FIREBASE_UID_SUPERADMIN_01",
       "user_email": "admin@vectornet.io",

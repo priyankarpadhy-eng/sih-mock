@@ -405,9 +405,9 @@ class AuditOrchestrator:
         failover_log = []
         ai_analysis_status = "NOT_ATTEMPTED"
 
-        if raw_text.strip():
+        if raw_text.strip() or (user_query and user_query.strip()):
             # Classify task (deterministic — no LLM needed for this)
-            task = classify_task(raw_text, user_query or "", detected)
+            task = classify_task(raw_text or "", user_query or "", detected)
             failover_log.append(
                 f"Task classified: type={task.task_type}, sensitivity={task.sensitivity}, "
                 f"cloud_allowed={task.cloud_allowed}"
@@ -434,7 +434,7 @@ class AuditOrchestrator:
             ai_res = ai_engine.query_with_failover(
                 prompt=user_prompt,
                 system_instruction=system_instruction,
-                sensitivity=task.sensitivity,
+                sensitivity=task.sensitivity if raw_text.strip() else "low",
                 task_type=task.task_type,
             )
             failover_log.extend(ai_res.get("failover_log", []))
@@ -444,27 +444,32 @@ class AuditOrchestrator:
 
             # Validate AI response (Section 27-28)
             if raw_ai_content:
-                validation = validate_response(
-                    content=raw_ai_content,
-                    raw_config=raw_text,
-                    vendor=detected,
-                )
-                failover_log.append(
-                    f"AI response validation: {'PASSED' if validation.passed else 'FAILED'} "
-                    f"(score={validation.score:.2f}, confidence={validation.confidence_level})"
-                )
-                if validation.issues:
-                    failover_log.extend([f"  - {issue}" for issue in validation.issues])
-
-                if validation.passed or validation.score >= 0.50:
-                    response_text = validation.cleaned_content or raw_ai_content
-                    ai_analysis_status = "AI_COMPLETE" if validation.passed else "AI_COMPLETE_WITH_WARNINGS"
-                elif validation.requires_retry:
-                    # Could implement retry here — for now fall through to deterministic
-                    failover_log.append("AI validation failed — using deterministic report")
-                    ai_analysis_status = "AI_SUBSTANDARD"
+                if not raw_text.strip():
+                    # General conversational query (no config to validate lines against)
+                    response_text = raw_ai_content
+                    ai_analysis_status = "AI_COMPLETE"
                 else:
-                    ai_analysis_status = "AI_FAILED"
+                    validation = validate_response(
+                        content=raw_ai_content,
+                        raw_config=raw_text,
+                        vendor=detected,
+                    )
+                    failover_log.append(
+                        f"AI response validation: {'PASSED' if validation.passed else 'FAILED'} "
+                        f"(score={validation.score:.2f}, confidence={validation.confidence_level})"
+                    )
+                    if validation.issues:
+                        failover_log.extend([f"  - {issue}" for issue in validation.issues])
+
+                    if validation.passed or validation.score >= 0.50:
+                        response_text = validation.cleaned_content or raw_ai_content
+                        ai_analysis_status = "AI_COMPLETE" if validation.passed else "AI_COMPLETE_WITH_WARNINGS"
+                    elif validation.requires_retry:
+                        # Could implement retry here — for now fall through to deterministic
+                        failover_log.append("AI validation failed — using deterministic report")
+                        ai_analysis_status = "AI_SUBSTANDARD"
+                    else:
+                        ai_analysis_status = "AI_FAILED"
             else:
                 failover_log.append("AI returned empty content — using deterministic report")
                 ai_analysis_status = "AI_EMPTY"
