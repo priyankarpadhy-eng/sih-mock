@@ -106,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'overview' as NavTab,
-      label: 'Posture Overview',
+      label: 'Overview',
       icon: LayoutDashboard,
       roles: ['SUPER_ADMIN', 'SECURITY_AUDITOR', 'NETWORK_OPERATOR', 'VIEWER'],
     },

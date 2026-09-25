@@ -347,6 +347,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
         body: JSON.stringify({ raw_text: rawConfig }),
       });
       if (res.ok) {
+        const data = await res.json();
         const schema = data.normalized_schema || data;
         setNormalizedSchema(schema);
       }
@@ -1246,7 +1247,7 @@ export const IngestionPage: React.FC<IngestionPageProps> = ({
                   </div>
                   {(pipelineStage === 'compliance' || pipelineStage === 'ai' || pipelineStage === 'completed') && (
                     <span className="font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                      {pipelineData.device_count && pipelineData.device_count > 1 ? `${pipelineData.device_count} devices joined` : `${pipelineData.controls_count || 18} controls mapped`}
+                      {(pipelineData as any).device_count && (pipelineData as any).device_count > 1 ? `${(pipelineData as any).device_count} devices joined` : `${pipelineData.controls_count || 18} controls mapped`}
                     </span>
                   )}
                 </div>
